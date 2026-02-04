@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import type { CardValue } from '@/types';
 
 interface CardProps {
@@ -12,7 +13,7 @@ interface CardProps {
     disabled?: boolean;
 }
 
-export function Card({
+function CardComponent({
     value,
     isSelected = false,
     isRevealed = false,
@@ -95,3 +96,5 @@ export function Card({
         </button>
     );
 }
+
+export const Card = memo(CardComponent);

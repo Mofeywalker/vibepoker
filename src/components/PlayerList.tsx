@@ -120,7 +120,7 @@ interface PlayerListProps {
     playersWithCards: Set<string>;
 }
 
-export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCards }: PlayerListProps) {
+function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWithCards }: PlayerListProps) {
     const t = useTranslations('players');
 
     return (
@@ -142,3 +142,5 @@ export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCa
         </div>
     );
 }
+
+export const PlayerList = memo(PlayerListComponent);

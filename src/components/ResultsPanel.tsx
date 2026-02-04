@@ -3,7 +3,7 @@
 
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
-import type { Results, CardValue } from '@/types';
+import { CARD_VALUES, type Results, type CardValue } from '@/types';
 
 interface ResultsPanelProps {
     results: Results;
@@ -71,14 +71,18 @@ function ResultsPanelComponent({ results, isHost, onAccept, onRevote, onStartNew
                     <div className="text-sm text-violet-800 dark:text-violet-300 font-medium">
                         {t('suggestion')}
                     </div>
-                    {isHost && results.suggestion !== null && (
-                        <button
-                            onClick={() => onAccept(results.suggestion!.toString() as CardValue)}
-                            className="mt-3 w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm"
-                        >
-                            {t('accept')}
-                        </button>
-                    )}
+                    {isHost && results.suggestion !== null && (() => {
+                        const suggestionStr = results.suggestion.toString();
+                        const isValidCard = (CARD_VALUES as readonly string[]).includes(suggestionStr);
+                        return isValidCard ? (
+                            <button
+                                onClick={() => onAccept(suggestionStr as CardValue)}
+                                className="mt-3 w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm"
+                            >
+                                {t('accept')}
+                            </button>
+                        ) : null;
+                    })()}
                 </div>
 
                 {/* Average */}

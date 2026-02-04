@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { SocketProvider } from "@/context/SocketContext";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,7 +44,9 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              {children}
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
             </ThemeProvider>
           </SocketProvider>
         </NextIntlClientProvider>

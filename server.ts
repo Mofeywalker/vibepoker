@@ -23,6 +23,61 @@ const handle = app.getRequestHandler();
 // In-memory room storage
 const rooms = new Map<string, Room>();
 
+// Validation constants
+const MAX_NAME_LENGTH = 50;
+const MAX_TOPIC_LENGTH = 200;
+const MAX_PLAYERS_PER_ROOM = 50;
+const MAX_ROOMS = 1000;
+
+// Rate limiting per socket
+const socketRateLimits = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(socketId: string, maxRequests = 30, windowMs = 1000): boolean {
+    const now = Date.now();
+    const limit = socketRateLimits.get(socketId);
+
+    if (!limit || now > limit.resetTime) {
+        socketRateLimits.set(socketId, { count: 1, resetTime: now + windowMs });
+        return true;
+    }
+
+    if (limit.count >= maxRequests) {
+        return false;
+    }
+
+    limit.count++;
+    return true;
+}
+
+// Validation functions
+function validatePlayerName(name: unknown): string | null {
+    if (typeof name !== 'string') return null;
+    const trimmed = name.trim();
+    if (trimmed.length === 0 || trimmed.length > MAX_NAME_LENGTH) return null;
+    return trimmed.replace(/[<>&"']/g, '');
+}
+
+function validateTopic(topic: unknown): string | null {
+    if (typeof topic !== 'string') return null;
+    const trimmed = topic.trim();
+    if (trimmed.length > MAX_TOPIC_LENGTH) return null;
+    return trimmed.replace(/[<>&"']/g, '');
+}
+
+function validateRoomId(roomId: unknown): string | null {
+    if (typeof roomId !== 'string') return null;
+    if (!/^[a-zA-Z0-9-]+$/.test(roomId)) return null;
+    if (roomId.length > 36) return null;
+    return roomId;
+}
+
+function validateCardValue(card: unknown): CardValue | null {
+    if (card === null) return null;
+    if (typeof card !== 'string') return null;
+    const VALID_CARDS = ['?', '0', '1', '2', '3', '5', '8', '13', '20', '∞'];
+    return VALID_CARDS.includes(card) ? card as CardValue : null;
+}
+
 // Fibonacci sequence for suggestions
 const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 20];
 
@@ -91,8 +146,12 @@ app.prepare().then(() => {
 
     const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
         cors: {
-            origin: '*',
-            methods: ['GET', 'POST']
+            origin: process.env.ALLOWED_ORIGINS?.split(',') || [
+                'http://localhost:3000',
+                'http://127.0.0.1:3000'
+            ],
+            methods: ['GET', 'POST'],
+            credentials: true
         }
     });
 
@@ -101,10 +160,29 @@ app.prepare().then(() => {
         let currentRoomId: string | null = null;
 
         socket.on('create-room', (playerName, callback) => {
+            if (!checkRateLimit(socket.id)) {
+                socket.emit('error', 'RATE_LIMITED');
+                callback('');
+                return;
+            }
+
+            const validName = validatePlayerName(playerName);
+            if (!validName) {
+                socket.emit('error', 'INVALID_NAME');
+                callback('');
+                return;
+            }
+
+            if (rooms.size >= MAX_ROOMS) {
+                socket.emit('error', 'SERVER_FULL');
+                callback('');
+                return;
+            }
+
             const roomId = uuidv4().substring(0, 8);
             const player: Player = {
                 id: socket.id,
-                name: playerName,
+                name: validName,
                 selectedCard: null,
                 isHost: true
             };
@@ -123,45 +201,78 @@ app.prepare().then(() => {
             socket.join(roomId);
             currentRoomId = roomId;
 
-            console.log(`Room created: ${roomId} by ${playerName}`);
+            console.log(`Room created: ${roomId} by ${validName}`);
             callback(roomId);
             socket.emit('room-state', room);
         });
 
         socket.on('join-room', (roomId, playerName, callback) => {
-            const room = rooms.get(roomId);
+            if (!checkRateLimit(socket.id)) {
+                socket.emit('error', 'RATE_LIMITED');
+                callback(false, 'RATE_LIMITED');
+                return;
+            }
+
+            const validRoomId = validateRoomId(roomId);
+            const validName = validatePlayerName(playerName);
+
+            if (!validRoomId || !validName) {
+                callback(false, 'INVALID_INPUT');
+                return;
+            }
+
+            const room = rooms.get(validRoomId);
 
             if (!room) {
-                callback(false, 'Raum nicht gefunden');
+                callback(false, 'ROOM_NOT_FOUND');
+                return;
+            }
+
+            if (room.players.length >= MAX_PLAYERS_PER_ROOM) {
+                callback(false, 'ROOM_FULL');
                 return;
             }
 
             // Check if player name already exists
-            if (room.players.some(p => p.name.toLowerCase() === playerName.toLowerCase())) {
-                callback(false, 'Name bereits vergeben');
+            if (room.players.some(p => p.name.toLowerCase() === validName.toLowerCase())) {
+                callback(false, 'NAME_TAKEN');
                 return;
             }
 
             const player: Player = {
                 id: socket.id,
-                name: playerName,
+                name: validName,
                 selectedCard: null,
                 isHost: false
             };
 
             room.players.push(player);
-            socket.join(roomId);
-            currentRoomId = roomId;
+            socket.join(validRoomId);
+            currentRoomId = validRoomId;
 
-            console.log(`${playerName} joined room ${roomId}`);
+            console.log(`${validName} joined room ${validRoomId}`);
             callback(true);
 
             // Notify all players in the room
-            io.to(roomId).emit('room-state', room);
+            io.to(validRoomId).emit('room-state', room);
         });
 
         socket.on('rejoin-room', (roomId, playerName, callback) => {
-            const room = rooms.get(roomId);
+            if (!checkRateLimit(socket.id)) {
+                socket.emit('error', 'RATE_LIMITED');
+                callback(false);
+                return;
+            }
+
+            const validRoomId = validateRoomId(roomId);
+            const validName = validatePlayerName(playerName);
+
+            if (!validRoomId || !validName) {
+                callback(false);
+                return;
+            }
+
+            const room = rooms.get(validRoomId);
 
             if (!room) {
                 callback(false);
@@ -169,7 +280,7 @@ app.prepare().then(() => {
             }
 
             // Check if player name exists but has no socket (disconnected)
-            const existingPlayer = room.players.find(p => p.name.toLowerCase() === playerName.toLowerCase());
+            const existingPlayer = room.players.find(p => p.name.toLowerCase() === validName.toLowerCase());
 
             if (existingPlayer) {
                 // Update the socket ID for the existing player
@@ -180,17 +291,22 @@ app.prepare().then(() => {
                     room.hostId = socket.id;
                 }
 
-                socket.join(roomId);
-                currentRoomId = roomId;
+                socket.join(validRoomId);
+                currentRoomId = validRoomId;
 
-                console.log(`${playerName} rejoined room ${roomId}`);
+                console.log(`${validName} rejoined room ${validRoomId}`);
                 callback(true);
-                io.to(roomId).emit('room-state', room);
+                io.to(validRoomId).emit('room-state', room);
             } else {
-                // Player doesn't exist, add them
+                // Player doesn't exist, add them if room has space
+                if (room.players.length >= MAX_PLAYERS_PER_ROOM) {
+                    callback(false);
+                    return;
+                }
+
                 const player: Player = {
                     id: socket.id,
-                    name: playerName,
+                    name: validName,
                     selectedCard: null,
                     isHost: room.players.length === 0 // Make host if first player
                 };
@@ -200,46 +316,64 @@ app.prepare().then(() => {
                 }
 
                 room.players.push(player);
-                socket.join(roomId);
-                currentRoomId = roomId;
+                socket.join(validRoomId);
+                currentRoomId = validRoomId;
 
-                console.log(`${playerName} joined room ${roomId} (via rejoin)`);
+                console.log(`${validName} joined room ${validRoomId} (via rejoin)`);
                 callback(true);
-                io.to(roomId).emit('room-state', room);
+                io.to(validRoomId).emit('room-state', room);
             }
         });
 
         socket.on('select-card', (roomId, card) => {
-            const room = rooms.get(roomId);
+            if (!checkRateLimit(socket.id, 10, 1000)) return; // Stricter limit for card selection
+
+            const validRoomId = validateRoomId(roomId);
+            if (!validRoomId) return;
+
+            const room = rooms.get(validRoomId);
             if (!room || room.isRevealed) return;
 
             const player = room.players.find(p => p.id === socket.id);
             if (!player) return;
 
-            console.log(`Player ${player.name} (${socket.id}) selected card: ${card}`);
+            // Validate card value (null is allowed for deselection)
+            const validCard = card === null ? null : validateCardValue(card);
+            if (card !== null && validCard === null) return;
 
-            player.selectedCard = card;
+            player.selectedCard = validCard;
 
-            // Important: Emit room-state so clients know their own selection (and potentially others' status)
-            io.to(roomId).emit('room-state', room);
+            // Important: Emit room-state so clients know their own selection
+            io.to(validRoomId).emit('room-state', room);
 
-            // Also keep emitting card-selected for backward compatibility or specific animations
-            io.to(roomId).emit('card-selected', socket.id, card !== null);
+            // Also keep emitting card-selected for backward compatibility
+            io.to(validRoomId).emit('card-selected', socket.id, validCard !== null);
         });
 
         socket.on('update-topic', (roomId, topic) => {
-            const room = rooms.get(roomId);
+            if (!checkRateLimit(socket.id)) return;
+
+            const validRoomId = validateRoomId(roomId);
+            if (!validRoomId) return;
+
+            const room = rooms.get(validRoomId);
             if (!room) return;
 
             // Only host can update topic
             if (room.hostId !== socket.id) return;
 
-            room.topic = topic;
-            io.to(roomId).emit('room-state', room);
+            const validTopic = validateTopic(topic);
+            room.topic = validTopic;
+            io.to(validRoomId).emit('room-state', room);
         });
 
         socket.on('reveal-cards', (roomId) => {
-            const room = rooms.get(roomId);
+            if (!checkRateLimit(socket.id)) return;
+
+            const validRoomId = validateRoomId(roomId);
+            if (!validRoomId) return;
+
+            const room = rooms.get(validRoomId);
             if (!room) return;
 
             // Only host can reveal
@@ -248,21 +382,24 @@ app.prepare().then(() => {
             room.isRevealed = true;
             room.results = calculateResults(room.players);
 
-            io.to(roomId).emit('cards-revealed', room);
+            io.to(validRoomId).emit('cards-revealed', room);
         });
 
         socket.on('accept-estimation', (roomId, value) => {
-            console.log(`Received accept-estimation for room ${roomId} with value ${value}`);
-            const room = rooms.get(roomId);
-            if (!room) {
-                console.log(`Room ${roomId} not found`);
-                return;
-            }
+            if (!checkRateLimit(socket.id)) return;
+
+            const validRoomId = validateRoomId(roomId);
+            if (!validRoomId) return;
+
+            const validValue = validateCardValue(value);
+            if (!validValue) return;
+
+            const room = rooms.get(validRoomId);
+            if (!room) return;
 
             // Only host can accept estimation
             if (room.hostId !== socket.id) {
-                console.log(`User ${socket.id} is not host (host is ${room.hostId})`);
-                socket.emit('error', 'Only host can accept estimation');
+                socket.emit('error', 'NOT_HOST');
                 return;
             }
 
@@ -272,7 +409,7 @@ app.prepare().then(() => {
 
             const historyItem: EstimationHistoryItem = {
                 topic: room.topic || 'Unknown Topic',
-                value: value,
+                value: validValue,
                 timestamp: Date.now()
             };
 
@@ -280,14 +417,19 @@ app.prepare().then(() => {
 
             // Mark results as accepted
             if (room.results) {
-                room.results.acceptedValue = value;
+                room.results.acceptedValue = validValue;
             }
 
-            io.to(roomId).emit('room-state', room);
+            io.to(validRoomId).emit('room-state', room);
         });
 
         socket.on('reset-round', (roomId) => {
-            const room = rooms.get(roomId);
+            if (!checkRateLimit(socket.id)) return;
+
+            const validRoomId = validateRoomId(roomId);
+            if (!validRoomId) return;
+
+            const room = rooms.get(validRoomId);
             if (!room) return;
 
             // Only host can reset
@@ -300,12 +442,17 @@ app.prepare().then(() => {
                 p.selectedCard = null;
             });
 
-            io.to(roomId).emit('round-reset');
-            io.to(roomId).emit('room-state', room);
+            io.to(validRoomId).emit('round-reset');
+            io.to(validRoomId).emit('room-state', room);
         });
 
         socket.on('revote', (roomId) => {
-            const room = rooms.get(roomId);
+            if (!checkRateLimit(socket.id)) return;
+
+            const validRoomId = validateRoomId(roomId);
+            if (!validRoomId) return;
+
+            const room = rooms.get(validRoomId);
             if (!room) return;
 
             // Only host can reset
@@ -318,8 +465,8 @@ app.prepare().then(() => {
                 p.selectedCard = null;
             });
 
-            io.to(roomId).emit('round-reset');
-            io.to(roomId).emit('room-state', room);
+            io.to(validRoomId).emit('round-reset');
+            io.to(validRoomId).emit('room-state', room);
         });
 
         socket.on('request-room-state', () => {
