@@ -171,6 +171,12 @@ app.prepare().then(() => {
             if (existingPlayer) {
                 // Update the socket ID for the existing player
                 existingPlayer.id = socket.id;
+
+                // If this player is the host, update the room's hostId
+                if (existingPlayer.isHost) {
+                    room.hostId = socket.id;
+                }
+
                 socket.join(roomId);
                 currentRoomId = roomId;
 
