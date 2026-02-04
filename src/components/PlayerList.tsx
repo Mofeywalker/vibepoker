@@ -91,6 +91,18 @@ export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCa
                                         isRevealed={true}
                                         size="sm"
                                     />
+                                ) : isCurrentPlayer && player.selectedCard ? (
+                                    <div className="relative group">
+                                        <Card
+                                            value={player.selectedCard}
+                                            isRevealed={false}
+                                            isSelected={true}
+                                            size="sm"
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <span className="text-xl font-bold text-white drop-shadow-md">{player.selectedCard}</span>
+                                        </div>
+                                    </div>
                                 ) : hasCard ? (
                                     <Card
                                         value="?"

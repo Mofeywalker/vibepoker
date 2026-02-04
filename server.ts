@@ -213,9 +213,14 @@ app.prepare().then(() => {
             const player = room.players.find(p => p.id === socket.id);
             if (!player) return;
 
+            console.log(`Player ${player.name} (${socket.id}) selected card: ${card}`);
+
             player.selectedCard = card;
 
-            // Notify others that this player has/hasn't selected (without revealing the value)
+            // Important: Emit room-state so clients know their own selection (and potentially others' status)
+            io.to(roomId).emit('room-state', room);
+
+            // Also keep emitting card-selected for backward compatibility or specific animations
             io.to(roomId).emit('card-selected', socket.id, card !== null);
         });
 
