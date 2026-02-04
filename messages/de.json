@@ -50,7 +50,11 @@
         "average": "Durchschnitt",
         "median": "Median",
         "mode": "Häufigster",
-        "distribution": "Verteilung"
+        "distribution": "Verteilung",
+        "accept": "Akzeptieren",
+        "history": "Historie",
+        "topic": "Thema",
+        "estimate": "Schätzung"
     },
     "cardDeck": {
         "selectEstimate": "Wähle deine Schätzung"

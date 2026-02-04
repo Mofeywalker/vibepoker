@@ -17,6 +17,7 @@ interface UseRoomReturn {
     revealCards: () => void;
     resetRound: () => void;
     updateTopic: (topic: string) => void;
+    acceptEstimation: (value: CardValue) => void;
     playersWithCards: Set<string>;
 }
 
@@ -182,6 +183,12 @@ export function useRoom(): UseRoomReturn {
         socket.emit('update-topic', roomIdRef.current, topic);
     }, [socket, isHost]);
 
+    const acceptEstimation = useCallback((value: CardValue) => {
+        console.log('Emitting accept-estimation', roomIdRef.current, value);
+        if (!socket || !roomIdRef.current || !isHost) return;
+        socket.emit('accept-estimation', roomIdRef.current, value);
+    }, [socket, isHost]);
+
     return {
         room,
         currentPlayer,
@@ -195,6 +202,7 @@ export function useRoom(): UseRoomReturn {
         revealCards,
         resetRound,
         updateTopic,
+        acceptEstimation,
         playersWithCards
     };
 }

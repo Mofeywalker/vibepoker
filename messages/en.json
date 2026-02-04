@@ -50,7 +50,11 @@
         "average": "Average",
         "median": "Median",
         "mode": "Most Common",
-        "distribution": "Distribution"
+        "distribution": "Distribution",
+        "accept": "Accept",
+        "history": "History",
+        "topic": "Topic",
+        "estimate": "Estimate"
     },
     "cardDeck": {
         "selectEstimate": "Select your estimate"

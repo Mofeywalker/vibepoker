@@ -17,6 +17,13 @@ export interface Results {
   breakdown: { value: CardValue; count: number }[];
 }
 
+
+export interface EstimationHistoryItem {
+  topic: string;
+  value: CardValue;
+  timestamp: number;
+}
+
 export interface Room {
   id: string;
   hostId: string;
@@ -24,6 +31,7 @@ export interface Room {
   players: Player[];
   isRevealed: boolean;
   results: Results | null;
+  history: EstimationHistoryItem[];
 }
 
 // Socket event types
@@ -46,4 +54,5 @@ export interface ClientToServerEvents {
   'reveal-cards': (roomId: string) => void;
   'reset-round': (roomId: string) => void;
   'request-room-state': () => void;
+  'accept-estimation': (roomId: string, value: CardValue) => void;
 }

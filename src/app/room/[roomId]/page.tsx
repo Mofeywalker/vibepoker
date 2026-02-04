@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { useSocket } from '@/context/SocketContext';
-import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle } from '@/components';
+import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, HistoryPanel } from '@/components';
 
 export default function RoomPage() {
     const params = useParams();
@@ -25,6 +25,7 @@ export default function RoomPage() {
         revealCards,
         resetRound,
         updateTopic,
+        acceptEstimation,
         playersWithCards
     } = useRoom();
 
@@ -313,7 +314,16 @@ export default function RoomPage() {
 
                         {/* Results panel (when revealed) */}
                         {room.isRevealed && room.results && (
-                            <ResultsPanel results={room.results} />
+                            <ResultsPanel
+                                results={room.results}
+                                isHost={isHost}
+                                onAccept={acceptEstimation}
+                            />
+                        )}
+
+                        {/* History panel (always visible if there's history) */}
+                        {room.history && room.history.length > 0 && (
+                            <HistoryPanel history={room.history} />
                         )}
 
                         {/* Players */}

@@ -8,6 +8,7 @@ import type {
     Player,
     CardValue,
     Results,
+    EstimationHistoryItem,
     ServerToClientEvents,
     ClientToServerEvents
 } from './src/types/index.js';
@@ -114,7 +115,8 @@ app.prepare().then(() => {
                 topic: null,
                 players: [player],
                 isRevealed: false,
-                results: null
+                results: null,
+                history: []
             };
 
             rooms.set(roomId, room);
@@ -249,6 +251,39 @@ app.prepare().then(() => {
             io.to(roomId).emit('cards-revealed', room);
         });
 
+        socket.on('accept-estimation', (roomId, value) => {
+            console.log(`Received accept-estimation for room ${roomId} with value ${value}`);
+            const room = rooms.get(roomId);
+            if (!room) {
+                console.log(`Room ${roomId} not found`);
+                return;
+            }
+
+            // Only host can accept estimation
+            if (room.hostId !== socket.id) {
+                console.log(`User ${socket.id} is not host (host is ${room.hostId})`);
+                socket.emit('error', 'Only host can accept estimation');
+                return;
+            }
+
+            if (!room.history) {
+                room.history = [];
+            }
+
+            const historyItem: EstimationHistoryItem = {
+                topic: room.topic || 'Unknown Topic',
+                value: value,
+                timestamp: Date.now()
+            };
+
+            room.history.push(historyItem);
+
+            // Optional: Auto-reset round or just let them see it in history?
+            // Usually you accept and then reset. For now just save and emit.
+
+            io.to(roomId).emit('room-state', room);
+        });
+
         socket.on('reset-round', (roomId) => {
             const room = rooms.get(roomId);
             if (!room) return;
@@ -258,6 +293,7 @@ app.prepare().then(() => {
 
             room.isRevealed = false;
             room.results = null;
+            room.topic = null; // Reset topic for new round
             room.players.forEach(p => {
                 p.selectedCard = null;
             });

@@ -2,13 +2,15 @@
 
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
-import type { Results } from '@/types';
+import type { Results, CardValue } from '@/types';
 
 interface ResultsPanelProps {
     results: Results;
+    isHost: boolean;
+    onAccept: (value: CardValue) => void;
 }
 
-function ResultsPanelComponent({ results }: ResultsPanelProps) {
+function ResultsPanelComponent({ results, isHost, onAccept }: ResultsPanelProps) {
     const t = useTranslations('results');
 
     return (
@@ -29,6 +31,14 @@ function ResultsPanelComponent({ results }: ResultsPanelProps) {
                     <div className="text-sm text-violet-800 dark:text-violet-300 font-medium">
                         {t('suggestion')}
                     </div>
+                    {isHost && results.suggestion !== null && (
+                        <button
+                            onClick={() => onAccept(results.suggestion!.toString() as CardValue)}
+                            className="mt-3 w-full py-2 px-3 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm"
+                        >
+                            {t('accept')}
+                        </button>
+                    )}
                 </div>
 
                 {/* Average */}
