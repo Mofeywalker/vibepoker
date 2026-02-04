@@ -25,6 +25,7 @@
         "noTopicSet": "Kein Thema festgelegt",
         "topicPlaceholder": "Thema (z.B. JIRA-123)",
         "save": "Speichern",
+        "cancel": "Abbrechen",
         "editTopic": "Thema bearbeiten",
         "cardsRevealed": "Karten aufgedeckt",
         "votedOf": "{voted}/{total} gewählt",

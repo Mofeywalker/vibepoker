@@ -25,6 +25,7 @@
         "noTopicSet": "No topic set",
         "topicPlaceholder": "Topic (e.g. JIRA-123)",
         "save": "Save",
+        "cancel": "Cancel",
         "editTopic": "Edit topic",
         "cardsRevealed": "Cards revealed",
         "votedOf": "{voted}/{total} voted",
