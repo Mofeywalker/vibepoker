@@ -36,12 +36,12 @@ export function Card({
 
     const frontClasses = `
     ${baseClasses}
-    bg-gradient-to-br from-slate-800 to-slate-900
-    border-2 ${isSelected ? 'border-violet-500 shadow-lg shadow-violet-500/30' : 'border-slate-700'}
+    bg-gradient-to-br from-white to-slate-100 dark:from-slate-800 dark:to-slate-900
+    border-2 ${isSelected ? 'border-violet-500 shadow-lg shadow-violet-500/30' : 'border-slate-200 dark:border-slate-700'}
     hover:border-violet-400 hover:shadow-lg hover:shadow-violet-500/20
     hover:scale-105 hover:-translate-y-1
     flex items-center justify-center
-    text-white
+    text-slate-900 dark:text-white
   `;
 
     const backClasses = `

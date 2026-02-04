@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRoom } from '@/hooks/useRoom';
 import { useSocket } from '@/context/SocketContext';
-import { Card } from '@/components';
+import { Card, ThemeToggle } from '@/components';
 
 export default function HomePage() {
   const router = useRouter();
@@ -39,7 +39,12 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6">
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 relative">
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Decorative cards */}
       <div className="fixed top-20 left-10 opacity-20 hidden lg:block animate-float">
         <Card value="5" size="lg" />
@@ -59,12 +64,12 @@ export default function HomePage() {
         {/* Logo & Title */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 mb-6 shadow-2xl shadow-violet-500/40">
-            <span className="text-4xl">🃏</span>
+            <span className="text-4xl text-white">🃏</span>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
-            Vibe<span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">POKER</span>
+          <h1 className="text-5xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
+            Vibe<span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400">POKER</span>
           </h1>
-          <p className="text-lg text-slate-400">
+          <p className="text-lg text-slate-700 dark:text-slate-400">
             Schätze Story Points gemeinsam im Team
           </p>
         </div>
@@ -72,12 +77,12 @@ export default function HomePage() {
         {/* Connection status */}
         <div className="flex justify-center mb-8">
           <div className={`
-            flex items-center gap-2 px-4 py-2 rounded-full text-sm
-            ${isConnected
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-              : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}
-          `}>
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+             flex items-center gap-2 px-4 py-2 rounded-full text-sm
+             ${isConnected
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30'}
+           `}>
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-amber-500 dark:bg-amber-400 animate-pulse'}`} />
             {isConnected ? 'Verbunden' : 'Verbinde...'}
           </div>
         </div>
@@ -94,7 +99,7 @@ export default function HomePage() {
                   w-full py-4 px-6 rounded-xl font-semibold text-lg
                   bg-gradient-to-r from-violet-600 to-purple-600
                   hover:from-violet-500 hover:to-purple-500
-                  disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed
+                  disabled:from-slate-400 disabled:to-slate-500 dark:disabled:from-slate-600 dark:disabled:to-slate-700 disabled:cursor-not-allowed
                   text-white shadow-lg shadow-violet-500/30
                   hover:shadow-xl hover:shadow-violet-500/40
                   transition-all duration-300
@@ -109,7 +114,7 @@ export default function HomePage() {
             ) : (
               <form onSubmit={handleCreateRoom} className="space-y-4">
                 <div>
-                  <label htmlFor="creatorName" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="creatorName" className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-2">
                     Dein Name
                   </label>
                   <input
@@ -120,8 +125,10 @@ export default function HomePage() {
                     placeholder="z.B. Max"
                     className="
                       w-full px-4 py-3 rounded-xl
-                      bg-slate-800/50 border border-slate-600
-                      text-white placeholder-slate-500
+                      bg-white/50 dark:bg-slate-800/50 
+                      border border-slate-200 dark:border-slate-600
+                      text-slate-900 dark:text-white 
+                      placeholder-slate-500 dark:placeholder-slate-500
                       focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent
                       transition-all duration-200
                     "
@@ -132,7 +139,7 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={() => setShowCreateForm(false)}
-                    className="flex-1 py-3 px-4 rounded-xl font-medium text-slate-300 bg-slate-700/50 hover:bg-slate-700 transition-colors"
+                    className="flex-1 py-3 px-4 rounded-xl font-medium text-slate-700 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
                     Abbrechen
                   </button>
@@ -143,7 +150,7 @@ export default function HomePage() {
                       flex-1 py-3 px-4 rounded-xl font-semibold
                       bg-gradient-to-r from-violet-600 to-purple-600
                       hover:from-violet-500 hover:to-purple-500
-                      disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed
+                      disabled:from-slate-400 disabled:to-slate-500 dark:disabled:from-slate-600 dark:disabled:to-slate-700 disabled:cursor-not-allowed
                       text-white transition-all duration-200
                       flex items-center justify-center gap-2
                     "
@@ -167,15 +174,15 @@ export default function HomePage() {
 
           {/* Divider */}
           <div className="flex items-center gap-4">
-            <div className="flex-1 h-px bg-slate-700" />
+            <div className="flex-1 h-px bg-slate-300 dark:bg-slate-700" />
             <span className="text-slate-500 text-sm">oder</span>
-            <div className="flex-1 h-px bg-slate-700" />
+            <div className="flex-1 h-px bg-slate-300 dark:bg-slate-700" />
           </div>
 
           {/* Join Room */}
           <form onSubmit={handleJoinRoom} className="glass-strong rounded-2xl p-6 space-y-4">
             <div>
-              <label htmlFor="roomId" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="roomId" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Raum-ID
               </label>
               <input
@@ -186,8 +193,10 @@ export default function HomePage() {
                 placeholder="z.B. a1b2c3d4"
                 className="
                   w-full px-4 py-3 rounded-xl
-                  bg-slate-800/50 border border-slate-600
-                  text-white placeholder-slate-500
+                  bg-white/50 dark:bg-slate-800/50 
+                  border border-slate-200 dark:border-slate-600
+                  text-slate-900 dark:text-white 
+                  placeholder-slate-400 dark:placeholder-slate-500
                   focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent
                   transition-all duration-200
                 "
@@ -198,9 +207,9 @@ export default function HomePage() {
               disabled={!joinRoomId.trim() || !isConnected}
               className="
                 w-full py-3 px-6 rounded-xl font-semibold
-                bg-slate-700 hover:bg-slate-600
-                disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed
-                text-white transition-all duration-200
+                bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600
+                disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-500 disabled:cursor-not-allowed
+                text-slate-900 dark:text-white transition-all duration-200
                 flex items-center justify-center gap-2
               "
             >
@@ -213,7 +222,7 @@ export default function HomePage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-slate-600 text-sm mt-12">
+        <p className="text-center text-slate-600 dark:text-slate-600 text-sm mt-12">
           Keine Anmeldung erforderlich • Echtzeit-Synchronisation
         </p>
       </div>

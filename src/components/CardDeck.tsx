@@ -23,7 +23,7 @@ export function CardDeck({ selectedCard, onSelectCard, disabled = false }: CardD
 
     return (
         <div className="w-full">
-            <h3 className="text-lg font-semibold text-slate-300 mb-4 text-center">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-300 mb-4 text-center">
                 Wähle deine Schätzung
             </h3>
             <div className="flex flex-wrap justify-center gap-3">

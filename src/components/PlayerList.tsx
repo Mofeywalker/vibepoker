@@ -40,7 +40,7 @@ function getAvatarColor(name: string): string {
 export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCards }: PlayerListProps) {
     return (
         <div className="w-full">
-            <h3 className="text-lg font-semibold text-slate-300 mb-4">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-300 mb-4">
                 Spieler ({players.length})
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -53,8 +53,10 @@ export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCa
                             key={player.id}
                             className={`
                 relative flex flex-col items-center gap-3 p-4 rounded-2xl
-                bg-slate-800/50 backdrop-blur-sm border
-                ${isCurrentPlayer ? 'border-violet-500/50 bg-violet-900/20' : 'border-slate-700/50'}
+                bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border
+                ${isCurrentPlayer
+                                    ? 'border-violet-500/50 bg-violet-100/50 dark:bg-violet-900/20 shadow-sm'
+                                    : 'border-slate-200 dark:border-slate-700/50'}
                 transition-all duration-300
               `}
                         >
@@ -77,7 +79,7 @@ export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCa
                             {/* Name */}
                             <span className={`
                 text-sm font-medium truncate max-w-full
-                ${isCurrentPlayer ? 'text-violet-300' : 'text-slate-300'}
+                ${isCurrentPlayer ? 'text-violet-800 dark:text-violet-300' : 'text-slate-900 dark:text-slate-300'}
               `}>
                                 {player.name}
                                 {isCurrentPlayer && ' (Du)'}
@@ -99,9 +101,6 @@ export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCa
                                             isSelected={true}
                                             size="sm"
                                         />
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <span className="text-xl font-bold text-white drop-shadow-md">{player.selectedCard}</span>
-                                        </div>
                                     </div>
                                 ) : hasCard ? (
                                     <Card
@@ -110,8 +109,8 @@ export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCa
                                         size="sm"
                                     />
                                 ) : (
-                                    <div className="w-12 h-16 rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center">
-                                        <span className="text-slate-500 text-xs">—</span>
+                                    <div className="w-12 h-16 rounded-lg border-2 border-dashed border-slate-400 dark:border-slate-600 flex items-center justify-center">
+                                        <span className="text-slate-500 dark:text-slate-500 text-xs">—</span>
                                     </div>
                                 )}
                             </div>

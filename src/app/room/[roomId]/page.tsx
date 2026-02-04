@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useRoom } from '@/hooks/useRoom';
 import { useSocket } from '@/context/SocketContext';
-import { CardDeck, PlayerList, JoinModal, ResultsPanel } from '@/components';
+import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle } from '@/components';
 
 export default function RoomPage() {
     const params = useParams();
@@ -128,48 +128,50 @@ export default function RoomPage() {
 
     return (
         <main className="min-h-screen flex flex-col">
-            {/* Header */}
-            <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-xl sticky top-0 z-40">
+            <header className="border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <a href="/" className="flex items-center gap-2 text-white hover:text-violet-400 transition-colors">
+                        <a href="/" className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-violet-500 dark:hover:text-violet-400 transition-colors">
                             <span className="text-2xl">🃏</span>
                             <span className="font-bold text-xl hidden sm:inline">VibePOKER</span>
                         </a>
-                        <div className="h-6 w-px bg-slate-700" />
+                        <div className="h-6 w-px bg-slate-300 dark:bg-slate-700" />
                         <div className="flex items-center gap-2">
-                            <span className="text-slate-400 text-sm hidden sm:inline">Raum:</span>
-                            <code className="px-3 py-1 rounded-lg bg-slate-800 text-violet-400 font-mono text-sm">
+                            <span className="text-slate-700 dark:text-slate-400 text-sm hidden sm:inline">Raum:</span>
+                            <code className="px-3 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-violet-700 dark:text-violet-400 font-mono text-sm">
                                 {roomId}
                             </code>
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleCopyLink}
-                        className="
-              flex items-center gap-2 px-4 py-2 rounded-xl
-              bg-slate-800 hover:bg-slate-700
-              text-white text-sm font-medium
-              transition-all duration-200
-            "
-                    >
-                        {copySuccess ? (
-                            <>
-                                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span className="text-emerald-400">Kopiert!</span>
-                            </>
-                        ) : (
-                            <>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                                </svg>
-                                <span className="hidden sm:inline">Link teilen</span>
-                            </>
-                        )}
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <ThemeToggle />
+                        <button
+                            onClick={handleCopyLink}
+                            className="
+                  flex items-center gap-2 px-4 py-2 rounded-xl
+                  bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700
+                  text-slate-900 dark:text-white text-sm font-medium
+                  transition-all duration-200
+                "
+                        >
+                            {copySuccess ? (
+                                <>
+                                    <svg className="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span className="text-emerald-500 dark:text-emerald-400">Kopiert!</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                    </svg>
+                                    <span className="hidden sm:inline">Link teilen</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -180,13 +182,13 @@ export default function RoomPage() {
                         {/* Topic Section */}
                         <div className="flex items-center justify-center min-h-[3rem]">
                             {isEditingTopic && isHost ? (
-                                <div className="flex items-center gap-2 w-full max-w-xl animate-in fade-in zoom-in duration-200">
+                                <div className="flex items-center gap-2 w-full max-w-xl animate-zoom-in">
                                     <input
                                         type="text"
                                         value={topicInput}
                                         onChange={(e) => setTopicInput(e.target.value)}
                                         placeholder="Thema (z.B. JIRA-123)"
-                                        className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all shadow-sm"
+                                        className="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all shadow-sm"
                                         autoFocus
                                         onKeyDown={(e) => e.key === 'Enter' && handleSaveTopic()}
                                     />
@@ -204,7 +206,7 @@ export default function RoomPage() {
                                             setIsEditingTopic(false);
                                             setTopicInput(room.topic || '');
                                         }}
-                                        className="p-2 bg-slate-700/50 text-slate-400 hover:bg-slate-700/80 rounded-lg border border-slate-600 transition-colors"
+                                        className="p-2 bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/80 rounded-lg border border-slate-300 dark:border-slate-600 transition-colors"
                                         title="Abbrechen"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,7 +216,7 @@ export default function RoomPage() {
                                 </div>
                             ) : (
                                 <div className="group relative flex items-center justify-center gap-3">
-                                    <h2 className={`text-2xl md:text-3xl font-bold text-center ${room.topic ? 'text-white' : 'text-slate-500 italic'}`}>
+                                    <h2 className={`text-2xl md:text-3xl font-bold text-center ${room.topic ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-500 italic'}`}>
                                         {room.topic || 'Kein Thema festgelegt'}
                                     </h2>
                                     {isHost && (
@@ -241,10 +243,10 @@ export default function RoomPage() {
                                 <div className={`
                   flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
                   ${room.isRevealed
-                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                                        ? 'bg-emerald-100/50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/50 dark:border-emerald-500/30'
                                         : allVoted
-                                            ? 'bg-violet-500/10 text-violet-400 border border-violet-500/30 animate-pulse'
-                                            : 'bg-slate-700/50 text-slate-300 border border-slate-600'}
+                                            ? 'bg-violet-100 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/50 dark:border-violet-500/30 animate-pulse'
+                                            : 'bg-slate-200 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600'}
                 `}>
                                     {room.isRevealed ? (
                                         <>
