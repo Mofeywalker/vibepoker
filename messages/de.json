@@ -54,7 +54,8 @@
         "accept": "Akzeptieren",
         "history": "Historie",
         "topic": "Thema",
-        "estimate": "Schätzung"
+        "estimate": "Schätzung",
+        "revote": "Neu abstimmen"
     },
     "cardDeck": {
         "selectEstimate": "Wähle deine Schätzung"

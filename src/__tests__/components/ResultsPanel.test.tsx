@@ -18,7 +18,8 @@ describe('ResultsPanel', () => {
     const defaultProps = {
         results: mockResults as any,
         isHost: false,
-        onAccept: vi.fn()
+        onAccept: vi.fn(),
+        onRevote: vi.fn()
     };
 
     it('renders result statistics correctly', () => {
@@ -41,14 +42,16 @@ describe('ResultsPanel', () => {
         expect(screen.getAllByText('×1')).toHaveLength(2);
     });
 
-    it('shows accept button for host', () => {
+    it('shows actions for host', () => {
         render(<ResultsPanel {...defaultProps} isHost={true} />);
         expect(screen.getByText('Accept')).toBeInTheDocument();
+        expect(screen.getByText('Re-vote')).toBeInTheDocument();
     });
 
-    it('does not show accept button for non-host', () => {
+    it('does not show actions for non-host', () => {
         render(<ResultsPanel {...defaultProps} isHost={false} />);
         expect(screen.queryByText('Accept')).not.toBeInTheDocument();
+        expect(screen.queryByText('Re-vote')).not.toBeInTheDocument();
     });
 
     it('calls onAccept when accept button is clicked', () => {
@@ -58,4 +61,13 @@ describe('ResultsPanel', () => {
         fireEvent.click(screen.getByText('Accept'));
         expect(onAccept).toHaveBeenCalledWith('5');
     });
+
+    it('calls onRevote when revote button is clicked', () => {
+        const onRevote = vi.fn();
+        render(<ResultsPanel {...defaultProps} isHost={true} onRevote={onRevote} />);
+
+        fireEvent.click(screen.getByText('Re-vote'));
+        expect(onRevote).toHaveBeenCalled();
+    });
 });
+

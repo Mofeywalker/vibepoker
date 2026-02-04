@@ -1,5 +1,5 @@
 // Card values for Planning Poker (Fibonacci-like sequence)
-export const CARD_VALUES = ['?', '0', '1', '2', '3', '5', '8', '13', '21', '∞'] as const;
+export const CARD_VALUES = ['?', '0', '1', '2', '3', '5', '8', '13', '20', '∞'] as const;
 export type CardValue = typeof CARD_VALUES[number];
 
 export interface Player {
@@ -53,6 +53,7 @@ export interface ClientToServerEvents {
   'select-card': (roomId: string, card: CardValue | null) => void;
   'reveal-cards': (roomId: string) => void;
   'reset-round': (roomId: string) => void;
+  'revote': (roomId: string) => void;
   'request-room-state': () => void;
   'accept-estimation': (roomId: string, value: CardValue) => void;
 }

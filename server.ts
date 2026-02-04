@@ -24,7 +24,7 @@ const handle = app.getRequestHandler();
 const rooms = new Map<string, Room>();
 
 // Fibonacci sequence for suggestions
-const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 21];
+const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 20];
 
 function calculateResults(players: Player[]): Results {
     const validCards = players
@@ -294,6 +294,24 @@ app.prepare().then(() => {
             room.isRevealed = false;
             room.results = null;
             room.topic = null; // Reset topic for new round
+            room.players.forEach(p => {
+                p.selectedCard = null;
+            });
+
+            io.to(roomId).emit('round-reset');
+            io.to(roomId).emit('room-state', room);
+        });
+
+        socket.on('revote', (roomId) => {
+            const room = rooms.get(roomId);
+            if (!room) return;
+
+            // Only host can reset
+            if (room.hostId !== socket.id) return;
+
+            room.isRevealed = false;
+            room.results = null;
+            // topic is NOT reset for revote
             room.players.forEach(p => {
                 p.selectedCard = null;
             });

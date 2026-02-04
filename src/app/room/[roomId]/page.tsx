@@ -26,6 +26,7 @@ export default function RoomPage() {
         resetRound,
         updateTopic,
         acceptEstimation,
+        revote,
         playersWithCards
     } = useRoom();
 
@@ -318,6 +319,7 @@ export default function RoomPage() {
                                 results={room.results}
                                 isHost={isHost}
                                 onAccept={acceptEstimation}
+                                onRevote={revote}
                             />
                         )}
 

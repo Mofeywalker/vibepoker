@@ -7,7 +7,7 @@ describe('CardDeck', () => {
         const handleSelect = vi.fn();
         render(<CardDeck selectedCard={null} onSelectCard={handleSelect} />);
 
-        // Fibonnaci sequence usually: 0, 1, 2, 3, 5, 8, 13, 21, etc. or similar set
+        // Fibonnaci sequence usually: 0, 1, 2, 3, 5, 8, 13, 20, etc. or similar set
         // Based on previous file views, I saw "5", "13", "8", "3" in the background of page.tsx
         // Let's assume standard set or check if "Select your estimate" text is present (header)
         expect(screen.getByText('Select your estimate')).toBeInTheDocument();
