@@ -15,6 +15,7 @@ export interface Results {
   mode: CardValue | null;
   suggestion: number | null;
   breakdown: { value: CardValue; count: number }[];
+  acceptedValue?: CardValue;
 }
 
 

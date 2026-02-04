@@ -320,6 +320,7 @@ export default function RoomPage() {
                                 isHost={isHost}
                                 onAccept={acceptEstimation}
                                 onRevote={revote}
+                                onStartNewRound={resetRound}
                             />
                         )}
 

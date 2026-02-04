@@ -278,8 +278,10 @@ app.prepare().then(() => {
 
             room.history.push(historyItem);
 
-            // Optional: Auto-reset round or just let them see it in history?
-            // Usually you accept and then reset. For now just save and emit.
+            // Mark results as accepted
+            if (room.results) {
+                room.results.acceptedValue = value;
+            }
 
             io.to(roomId).emit('room-state', room);
         });

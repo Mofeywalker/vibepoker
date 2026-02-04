@@ -10,10 +10,48 @@ interface ResultsPanelProps {
     isHost: boolean;
     onAccept: (value: CardValue) => void;
     onRevote: () => void;
+    onStartNewRound: () => void;
 }
 
-function ResultsPanelComponent({ results, isHost, onAccept, onRevote }: ResultsPanelProps) {
+function ResultsPanelComponent({ results, isHost, onAccept, onRevote, onStartNewRound }: ResultsPanelProps) {
     const t = useTranslations('results');
+
+    // If result is accepted, show summary view
+    if (results.acceptedValue) {
+        return (
+            <div className="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-2xl p-8 shadow-xl text-center animate-zoom-in">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-500 mb-6">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                    {t('acceptedResult')}
+                </h3>
+
+                <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-500 to-teal-500 mb-8 py-2">
+                    {results.acceptedValue}
+                </div>
+
+                {isHost && (
+                    <button
+                        onClick={onStartNewRound}
+                        className="
+                            px-6 py-3 rounded-xl font-semibold text-white
+                            bg-gradient-to-r from-violet-600 to-purple-600
+                            hover:from-violet-500 hover:to-purple-500
+                            shadow-lg shadow-violet-500/30
+                            hover:shadow-xl hover:shadow-violet-500/40
+                            transition-all duration-200
+                        "
+                    >
+                        {t('startNewRound')}
+                    </button>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div className="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-xl">

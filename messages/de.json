@@ -55,7 +55,9 @@
         "history": "Historie",
         "topic": "Thema",
         "estimate": "Schätzung",
-        "revote": "Neu abstimmen"
+        "revote": "Neu abstimmen",
+        "acceptedResult": "Ergebnis akzeptiert",
+        "startNewRound": "Neue Runde starten"
     },
     "cardDeck": {
         "selectEstimate": "Wähle deine Schätzung"

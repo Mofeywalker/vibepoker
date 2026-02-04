@@ -19,7 +19,8 @@ describe('ResultsPanel', () => {
         results: mockResults as any,
         isHost: false,
         onAccept: vi.fn(),
-        onRevote: vi.fn()
+        onRevote: vi.fn(),
+        onStartNewRound: vi.fn()
     };
 
     it('renders result statistics correctly', () => {
@@ -69,5 +70,27 @@ describe('ResultsPanel', () => {
         fireEvent.click(screen.getByText('Re-vote'));
         expect(onRevote).toHaveBeenCalled();
     });
-});
 
+    it('shows summary popup when result is accepted', () => {
+        const acceptedResults = { ...mockResults, acceptedValue: '5' };
+        render(<ResultsPanel {...defaultProps} results={acceptedResults as any} />);
+
+        expect(screen.getByText('Result Accepted')).toBeInTheDocument();
+    });
+
+    it('shows start new round button for host when result is accepted', () => {
+        const acceptedResults = { ...mockResults, acceptedValue: '5' };
+        render(<ResultsPanel {...defaultProps} results={acceptedResults as any} isHost={true} />);
+
+        expect(screen.getByText('Start New Round')).toBeInTheDocument();
+    });
+
+    it('calls onStartNewRound when start button is clicked', () => {
+        const onStartNewRound = vi.fn();
+        const acceptedResults = { ...mockResults, acceptedValue: '5' };
+        render(<ResultsPanel {...defaultProps} results={acceptedResults as any} isHost={true} onStartNewRound={onStartNewRound} />);
+
+        fireEvent.click(screen.getByText('Start New Round'));
+        expect(onStartNewRound).toHaveBeenCalled();
+    });
+});
