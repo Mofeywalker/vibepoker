@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { Results } from '@/types';
 
 interface ResultsPanelProps {
@@ -7,13 +8,15 @@ interface ResultsPanelProps {
 }
 
 export function ResultsPanel({ results }: ResultsPanelProps) {
+    const t = useTranslations('results');
+
     return (
         <div className="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-xl">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
                     📊
                 </span>
-                Ergebnis
+                {t('title')}
             </h3>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -23,7 +26,7 @@ export function ResultsPanel({ results }: ResultsPanelProps) {
                         {results.suggestion !== null ? results.suggestion : '—'}
                     </div>
                     <div className="text-sm text-violet-800 dark:text-violet-300 font-medium">
-                        Vorschlag
+                        {t('suggestion')}
                     </div>
                 </div>
 
@@ -33,7 +36,7 @@ export function ResultsPanel({ results }: ResultsPanelProps) {
                         {results.average !== null ? results.average : '—'}
                     </div>
                     <div className="text-xs text-slate-600 dark:text-slate-400">
-                        Durchschnitt
+                        {t('average')}
                     </div>
                 </div>
 
@@ -43,7 +46,7 @@ export function ResultsPanel({ results }: ResultsPanelProps) {
                         {results.median !== null ? results.median : '—'}
                     </div>
                     <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Median
+                        {t('median')}
                     </div>
                 </div>
 
@@ -53,7 +56,7 @@ export function ResultsPanel({ results }: ResultsPanelProps) {
                         {results.mode || '—'}
                     </div>
                     <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Häufigster
+                        {t('mode')}
                     </div>
                 </div>
             </div>
@@ -61,7 +64,7 @@ export function ResultsPanel({ results }: ResultsPanelProps) {
             {/* Breakdown */}
             {results.breakdown.length > 0 && (
                 <div>
-                    <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Verteilung</h4>
+                    <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">{t('distribution')}</h4>
                     <div className="flex flex-wrap gap-2">
                         {results.breakdown.map(({ value, count }) => (
                             <div

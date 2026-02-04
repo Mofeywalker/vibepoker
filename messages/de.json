@@ -1,0 +1,62 @@
+{
+    "home": {
+        "tagline": "Schätze Story Points gemeinsam im Team",
+        "connected": "Verbunden",
+        "connecting": "Verbinde...",
+        "createRoom": "Raum erstellen",
+        "yourName": "Dein Name",
+        "namePlaceholder": "z.B. Max",
+        "cancel": "Abbrechen",
+        "creating": "Erstelle...",
+        "create": "Erstellen",
+        "or": "oder",
+        "roomId": "Raum-ID",
+        "roomIdPlaceholder": "z.B. a1b2c3d4",
+        "joinRoom": "Raum beitreten",
+        "footer": "Keine Anmeldung erforderlich • Echtzeit-Synchronisation"
+    },
+    "room": {
+        "room": "Raum",
+        "shareLink": "Link teilen",
+        "copied": "Kopiert!",
+        "connectingToServer": "Verbinde zum Server...",
+        "loadingRoom": "Lade Raum...",
+        "waitingToJoin": "Warte auf Beitritt...",
+        "noTopicSet": "Kein Thema festgelegt",
+        "topicPlaceholder": "Thema (z.B. JIRA-123)",
+        "save": "Speichern",
+        "editTopic": "Thema bearbeiten",
+        "cardsRevealed": "Karten aufgedeckt",
+        "votedOf": "{voted}/{total} gewählt",
+        "readyToReveal": "Bereit zum Aufdecken!",
+        "reveal": "Aufdecken",
+        "newRound": "Neue Runde"
+    },
+    "join": {
+        "title": "Raum beitreten",
+        "description": "Gib deinen Namen ein, um am Planning teilzunehmen",
+        "yourName": "Dein Name",
+        "namePlaceholder": "z.B. Max Mustermann",
+        "joining": "Beitritt...",
+        "join": "Beitreten"
+    },
+    "players": {
+        "title": "Spieler",
+        "you": "(Du)"
+    },
+    "results": {
+        "title": "Ergebnis",
+        "suggestion": "Vorschlag",
+        "average": "Durchschnitt",
+        "median": "Median",
+        "mode": "Häufigster",
+        "distribution": "Verteilung"
+    },
+    "cardDeck": {
+        "selectEstimate": "Wähle deine Schätzung"
+    },
+    "metadata": {
+        "title": "VibePOKER – Planning Poker für Teams",
+        "description": "Schätze Story Points gemeinsam im Team mit Echtzeit-Planning-Poker. Keine Anmeldung erforderlich."
+    }
+}

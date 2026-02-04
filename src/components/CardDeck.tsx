@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { CARD_VALUES, type CardValue } from '@/types';
 import { Card } from './Card';
 
@@ -10,6 +11,8 @@ interface CardDeckProps {
 }
 
 export function CardDeck({ selectedCard, onSelectCard, disabled = false }: CardDeckProps) {
+    const t = useTranslations('cardDeck');
+
     const handleCardClick = (value: CardValue) => {
         if (disabled) return;
 
@@ -24,7 +27,7 @@ export function CardDeck({ selectedCard, onSelectCard, disabled = false }: CardD
     return (
         <div className="w-full">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-300 mb-4 text-center">
-                Wähle deine Schätzung
+                {t('selectEstimate')}
             </h3>
             <div className="flex flex-wrap justify-center gap-3">
                 {CARD_VALUES.map((value) => (

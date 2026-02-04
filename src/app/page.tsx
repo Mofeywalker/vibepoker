@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { useSocket } from '@/context/SocketContext';
 import { Card, ThemeToggle } from '@/components';
@@ -10,6 +11,7 @@ export default function HomePage() {
   const router = useRouter();
   const { isConnected } = useSocket();
   const { createRoom } = useRoom();
+  const t = useTranslations('home');
 
   const [joinRoomId, setJoinRoomId] = useState('');
   const [creatorName, setCreatorName] = useState('');
@@ -70,7 +72,7 @@ export default function HomePage() {
             Vibe<span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400">POKER</span>
           </h1>
           <p className="text-lg text-slate-700 dark:text-slate-400">
-            Schätze Story Points gemeinsam im Team
+            {t('tagline')}
           </p>
         </div>
 
@@ -83,7 +85,7 @@ export default function HomePage() {
               : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30'}
            `}>
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-amber-500 dark:bg-amber-400 animate-pulse'}`} />
-            {isConnected ? 'Verbunden' : 'Verbinde...'}
+            {isConnected ? t('connected') : t('connecting')}
           </div>
         </div>
 
@@ -109,20 +111,20 @@ export default function HomePage() {
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                Raum erstellen
+                {t('createRoom')}
               </button>
             ) : (
               <form onSubmit={handleCreateRoom} className="space-y-4">
                 <div>
                   <label htmlFor="creatorName" className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-2">
-                    Dein Name
+                    {t('yourName')}
                   </label>
                   <input
                     type="text"
                     id="creatorName"
                     value={creatorName}
                     onChange={(e) => setCreatorName(e.target.value)}
-                    placeholder="z.B. Max"
+                    placeholder={t('namePlaceholder')}
                     className="
                       w-full px-4 py-3 rounded-xl
                       bg-white/50 dark:bg-slate-800/50 
@@ -141,7 +143,7 @@ export default function HomePage() {
                     onClick={() => setShowCreateForm(false)}
                     className="flex-1 py-3 px-4 rounded-xl font-medium text-slate-700 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
-                    Abbrechen
+                    {t('cancel')}
                   </button>
                   <button
                     type="submit"
@@ -161,10 +163,10 @@ export default function HomePage() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        <span>Erstelle...</span>
+                        <span>{t('creating')}</span>
                       </>
                     ) : (
-                      'Erstellen'
+                      t('create')
                     )}
                   </button>
                 </div>
@@ -175,7 +177,7 @@ export default function HomePage() {
           {/* Divider */}
           <div className="flex items-center gap-4">
             <div className="flex-1 h-px bg-slate-300 dark:bg-slate-700" />
-            <span className="text-slate-500 text-sm">oder</span>
+            <span className="text-slate-500 text-sm">{t('or')}</span>
             <div className="flex-1 h-px bg-slate-300 dark:bg-slate-700" />
           </div>
 
@@ -183,14 +185,14 @@ export default function HomePage() {
           <form onSubmit={handleJoinRoom} className="glass-strong rounded-2xl p-6 space-y-4">
             <div>
               <label htmlFor="roomId" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Raum-ID
+                {t('roomId')}
               </label>
               <input
                 type="text"
                 id="roomId"
                 value={joinRoomId}
                 onChange={(e) => setJoinRoomId(e.target.value)}
-                placeholder="z.B. a1b2c3d4"
+                placeholder={t('roomIdPlaceholder')}
                 className="
                   w-full px-4 py-3 rounded-xl
                   bg-white/50 dark:bg-slate-800/50 
@@ -216,14 +218,14 @@ export default function HomePage() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
-              Raum beitreten
+              {t('joinRoom')}
             </button>
           </form>
         </div>
 
         {/* Footer */}
         <p className="text-center text-slate-600 dark:text-slate-600 text-sm mt-12">
-          Keine Anmeldung erforderlich • Echtzeit-Synchronisation
+          {t('footer')}
         </p>
       </div>
     </main>

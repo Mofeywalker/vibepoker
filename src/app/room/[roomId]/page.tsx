@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { useSocket } from '@/context/SocketContext';
 import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle } from '@/components';
@@ -9,6 +10,7 @@ import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle } from '@/co
 export default function RoomPage() {
     const params = useParams();
     const roomId = params.roomId as string;
+    const t = useTranslations('room');
 
     const { isConnected } = useSocket();
     const {
@@ -119,7 +121,7 @@ export default function RoomPage() {
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        <span>Verbinde zum Server...</span>
+                        <span>{t('connectingToServer')}</span>
                     </div>
                 </div>
             </main>
@@ -137,7 +139,7 @@ export default function RoomPage() {
                         </a>
                         <div className="h-6 w-px bg-slate-300 dark:bg-slate-700" />
                         <div className="flex items-center gap-2">
-                            <span className="text-slate-700 dark:text-slate-400 text-sm hidden sm:inline">Raum:</span>
+                            <span className="text-slate-700 dark:text-slate-400 text-sm hidden sm:inline">{t('room')}:</span>
                             <code className="px-3 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-violet-700 dark:text-violet-400 font-mono text-sm">
                                 {roomId}
                             </code>
@@ -160,14 +162,14 @@ export default function RoomPage() {
                                     <svg className="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <span className="text-emerald-500 dark:text-emerald-400">Kopiert!</span>
+                                    <span className="text-emerald-500 dark:text-emerald-400">{t('copied')}</span>
                                 </>
                             ) : (
                                 <>
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                                     </svg>
-                                    <span className="hidden sm:inline">Link teilen</span>
+                                    <span className="hidden sm:inline">{t('shareLink')}</span>
                                 </>
                             )}
                         </button>
@@ -187,7 +189,7 @@ export default function RoomPage() {
                                         type="text"
                                         value={topicInput}
                                         onChange={(e) => setTopicInput(e.target.value)}
-                                        placeholder="Thema (z.B. JIRA-123)"
+                                        placeholder={t('topicPlaceholder')}
                                         className="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all shadow-sm"
                                         autoFocus
                                         onKeyDown={(e) => e.key === 'Enter' && handleSaveTopic()}
@@ -195,7 +197,7 @@ export default function RoomPage() {
                                     <button
                                         onClick={handleSaveTopic}
                                         className="p-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/30 transition-colors"
-                                        title="Speichern"
+                                        title={t('save')}
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -207,7 +209,7 @@ export default function RoomPage() {
                                             setTopicInput(room.topic || '');
                                         }}
                                         className="p-2 bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/80 rounded-lg border border-slate-300 dark:border-slate-600 transition-colors"
-                                        title="Abbrechen"
+                                        title={t('cancel')}
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -217,7 +219,7 @@ export default function RoomPage() {
                             ) : (
                                 <div className="group relative flex items-center justify-center gap-3">
                                     <h2 className={`text-2xl md:text-3xl font-bold text-center ${room.topic ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-500 italic'}`}>
-                                        {room.topic || 'Kein Thema festgelegt'}
+                                        {room.topic || t('noTopicSet')}
                                     </h2>
                                     {isHost && (
                                         <button
@@ -226,7 +228,7 @@ export default function RoomPage() {
                                                 setIsEditingTopic(true);
                                             }}
                                             className="opacity-0 group-hover:opacity-100 p-2 text-violet-400 hover:text-violet-300 transition-opacity bg-violet-500/10 rounded-lg"
-                                            title="Thema bearbeiten"
+                                            title={t('editTopic')}
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -253,12 +255,12 @@ export default function RoomPage() {
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
-                                            <span>Karten aufgedeckt</span>
+                                            <span>{t('cardsRevealed')}</span>
                                         </>
                                     ) : (
                                         <>
-                                            <span>{votedCount}/{totalPlayers} gewählt</span>
-                                            {allVoted && <span>• Bereit zum Aufdecken!</span>}
+                                            <span>{t('votedOf', { voted: votedCount, total: totalPlayers })}</span>
+                                            {allVoted && <span>• {t('readyToReveal')}</span>}
                                         </>
                                     )}
                                 </div>
@@ -285,7 +287,7 @@ export default function RoomPage() {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
-                                            Aufdecken
+                                            {t('reveal')}
                                         </button>
                                     ) : (
                                         <button
@@ -302,7 +304,7 @@ export default function RoomPage() {
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                             </svg>
-                                            Neue Runde
+                                            {t('newRound')}
                                         </button>
                                     )}
                                 </div>
@@ -342,10 +344,10 @@ export default function RoomPage() {
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
-                                    <span>Lade Raum...</span>
+                                    <span>{t('loadingRoom')}</span>
                                 </div>
                             ) : (
-                                <div className="text-slate-400">Warte auf Beitritt...</div>
+                                <div className="text-slate-400">{t('waitingToJoin')}</div>
                             )}
                         </div>
                     </div>

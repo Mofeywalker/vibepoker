@@ -1,0 +1,62 @@
+{
+    "home": {
+        "tagline": "Estimate story points together as a team",
+        "connected": "Connected",
+        "connecting": "Connecting...",
+        "createRoom": "Create Room",
+        "yourName": "Your Name",
+        "namePlaceholder": "e.g. Max",
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "create": "Create",
+        "or": "or",
+        "roomId": "Room ID",
+        "roomIdPlaceholder": "e.g. a1b2c3d4",
+        "joinRoom": "Join Room",
+        "footer": "No registration required • Real-time sync"
+    },
+    "room": {
+        "room": "Room",
+        "shareLink": "Share Link",
+        "copied": "Copied!",
+        "connectingToServer": "Connecting to server...",
+        "loadingRoom": "Loading room...",
+        "waitingToJoin": "Waiting to join...",
+        "noTopicSet": "No topic set",
+        "topicPlaceholder": "Topic (e.g. JIRA-123)",
+        "save": "Save",
+        "editTopic": "Edit topic",
+        "cardsRevealed": "Cards revealed",
+        "votedOf": "{voted}/{total} voted",
+        "readyToReveal": "Ready to reveal!",
+        "reveal": "Reveal",
+        "newRound": "New Round"
+    },
+    "join": {
+        "title": "Join Room",
+        "description": "Enter your name to participate in the planning",
+        "yourName": "Your Name",
+        "namePlaceholder": "e.g. John Doe",
+        "joining": "Joining...",
+        "join": "Join"
+    },
+    "players": {
+        "title": "Players",
+        "you": "(You)"
+    },
+    "results": {
+        "title": "Results",
+        "suggestion": "Suggestion",
+        "average": "Average",
+        "median": "Median",
+        "mode": "Most Common",
+        "distribution": "Distribution"
+    },
+    "cardDeck": {
+        "selectEstimate": "Select your estimate"
+    },
+    "metadata": {
+        "title": "VibePOKER – Planning Poker for Teams",
+        "description": "Estimate story points together with real-time planning poker. No registration required."
+    }
+}

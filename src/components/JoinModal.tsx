@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface JoinModalProps {
     onJoin: (name: string) => void;
@@ -10,6 +11,7 @@ interface JoinModalProps {
 
 export function JoinModal({ onJoin, isLoading = false, error }: JoinModalProps) {
     const [name, setName] = useState('');
+    const t = useTranslations('join');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,24 +34,24 @@ export function JoinModal({ onJoin, isLoading = false, error }: JoinModalProps) 
                         </svg>
                     </div>
                     <h2 className="text-2xl font-bold text-white mb-2">
-                        Raum beitreten
+                        {t('title')}
                     </h2>
                     <p className="text-slate-400">
-                        Gib deinen Namen ein, um am Planning teilzunehmen
+                        {t('description')}
                     </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
-                            Dein Name
+                            {t('yourName')}
                         </label>
                         <input
                             type="text"
                             id="name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="z.B. Max Mustermann"
+                            placeholder={t('namePlaceholder')}
                             className="
                 w-full px-4 py-3 rounded-xl
                 bg-slate-800/50 border border-slate-600
@@ -88,10 +90,10 @@ export function JoinModal({ onJoin, isLoading = false, error }: JoinModalProps) 
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                 </svg>
-                                <span>Beitritt...</span>
+                                <span>{t('joining')}</span>
                             </>
                         ) : (
-                            'Beitreten'
+                            t('join')
                         )}
                     </button>
                 </form>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { Player, CardValue } from '@/types';
 import { Card } from './Card';
 
@@ -38,10 +39,12 @@ function getAvatarColor(name: string): string {
 }
 
 export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCards }: PlayerListProps) {
+    const t = useTranslations('players');
+
     return (
         <div className="w-full">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-300 mb-4">
-                Spieler ({players.length})
+                {t('title')} ({players.length})
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                 {players.map((player) => {
@@ -82,7 +85,7 @@ export function PlayerList({ players, currentPlayerId, isRevealed, playersWithCa
                 ${isCurrentPlayer ? 'text-violet-800 dark:text-violet-300' : 'text-slate-900 dark:text-slate-300'}
               `}>
                                 {player.name}
-                                {isCurrentPlayer && ' (Du)'}
+                                {isCurrentPlayer && ` ${t('you')}`}
                             </span>
 
                             {/* Card status */}
