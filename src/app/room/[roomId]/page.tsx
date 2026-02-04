@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
-import { useSocket } from '@/context/SocketContext';
 import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, HistoryPanel } from '@/components';
 
 export default function RoomPage() {
@@ -12,7 +11,6 @@ export default function RoomPage() {
     const roomId = params.roomId as string;
     const t = useTranslations('room');
 
-    const { isConnected } = useSocket();
     const {
         room,
         currentPlayer,
@@ -52,7 +50,7 @@ export default function RoomPage() {
 
     // Check if user needs to join
     useEffect(() => {
-        if (!isConnected || hasJoined || isLoading || isRejoining) return;
+        if (hasJoined || isLoading || isRejoining) return;
 
         // Check if we already have room state (happens when navigating from create)
         if (room && room.id === roomId) {
@@ -89,7 +87,7 @@ export default function RoomPage() {
         if (!room && !savedPlayerName) {
             setShowJoinModal(true);
         }
-    }, [isConnected, room, hasJoined, isLoading, roomId, rejoinRoom, isRejoining]);
+    }, [room, hasJoined, isLoading, roomId, rejoinRoom, isRejoining]);
 
     const handleJoin = useCallback(async (name: string) => {
         const success = await joinRoom(roomId, name);
@@ -114,21 +112,7 @@ export default function RoomPage() {
     const totalPlayers = room?.players.length || 0;
     const allVoted = votedCount === totalPlayers && totalPlayers > 0;
 
-    if (!isConnected) {
-        return (
-            <main className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        <span>{t('connectingToServer')}</span>
-                    </div>
-                </div>
-            </main>
-        );
-    }
+
 
     return (
         <main className="min-h-screen flex flex-col">

@@ -4,12 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
-import { useSocket } from '@/context/SocketContext';
 import { Card, ThemeToggle } from '@/components';
 
 export default function HomePage() {
   const router = useRouter();
-  const { isConnected } = useSocket();
   const { createRoom } = useRoom();
   const t = useTranslations('home');
 
@@ -20,7 +18,7 @@ export default function HomePage() {
 
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!creatorName.trim() || !isConnected) return;
+    if (!creatorName.trim()) return;
 
     setIsCreating(true);
     try {
@@ -76,18 +74,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Connection status */}
-        <div className="flex justify-center mb-8">
-          <div className={`
-             flex items-center gap-2 px-4 py-2 rounded-full text-sm
-             ${isConnected
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30'}
-           `}>
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-amber-500 dark:bg-amber-400 animate-pulse'}`} />
-            {isConnected ? t('connected') : t('connecting')}
-          </div>
-        </div>
+
 
         {/* Action cards */}
         <div className="space-y-4">
@@ -96,7 +83,6 @@ export default function HomePage() {
             {!showCreateForm ? (
               <button
                 onClick={() => setShowCreateForm(true)}
-                disabled={!isConnected}
                 className="
                   w-full py-4 px-6 rounded-xl font-semibold text-lg
                   bg-gradient-to-r from-violet-600 to-purple-600
@@ -206,7 +192,7 @@ export default function HomePage() {
             </div>
             <button
               type="submit"
-              disabled={!joinRoomId.trim() || !isConnected}
+              disabled={!joinRoomId.trim()}
               className="
                 w-full py-3 px-6 rounded-xl font-semibold
                 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600

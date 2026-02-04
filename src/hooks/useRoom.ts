@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSocket } from '@/context/SocketContext';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { PartyKitClient } from '@/lib/realtime/partykit-client';
 import type { Room, Player, CardValue } from '@/types';
 
 interface UseRoomReturn {
@@ -23,193 +23,107 @@ interface UseRoomReturn {
 }
 
 export function useRoom(): UseRoomReturn {
-    const { socket, isConnected } = useSocket();
     const [room, setRoom] = useState<Room | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [playersWithCards, setPlayersWithCards] = useState<Set<string>>(new Set());
-
-    const currentPlayer = room?.players.find(p => p.id === socket?.id) || null;
-    const isHost = currentPlayer?.isHost || false;
+    const clientRef = useRef<PartyKitClient | null>(null);
+    const currentRoomIdRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!socket) return;
+        clientRef.current = new PartyKitClient();
 
-        const handleRoomState = (newRoom: Room) => {
+        clientRef.current.onRoomUpdate((newRoom) => {
             setRoom(newRoom);
-            // Update players with cards
-            const withCards = new Set<string>();
-            newRoom.players.forEach(p => {
-                if (p.selectedCard !== null) {
-                    withCards.add(p.id);
-                }
-            });
-            setPlayersWithCards(withCards);
             setIsLoading(false);
-        };
+        });
 
-        const handleCardSelected = (playerId: string, hasCard: boolean) => {
-            setPlayersWithCards(prev => {
-                const next = new Set(prev);
-                if (hasCard) {
-                    next.add(playerId);
-                } else {
-                    next.delete(playerId);
-                }
-                return next;
-            });
-        };
-
-        const handleCardsRevealed = (newRoom: Room) => {
-            setRoom(newRoom);
-        };
-
-        const handleRoundReset = () => {
-            setPlayersWithCards(new Set());
-        };
-
-        const handlePlayerLeft = (playerId: string) => {
-            setPlayersWithCards(prev => {
-                const next = new Set(prev);
-                next.delete(playerId);
-                return next;
-            });
-        };
-
-        const handleError = (message: string) => {
-            setError(message);
+        clientRef.current.onError((errorMsg) => {
+            setError(errorMsg);
             setIsLoading(false);
-        };
-
-        socket.on('room-state', handleRoomState);
-        socket.on('card-selected', handleCardSelected);
-        socket.on('cards-revealed', handleCardsRevealed);
-        socket.on('round-reset', handleRoundReset);
-        socket.on('player-left', handlePlayerLeft);
-        socket.on('error', handleError);
-
-        // Request current room state in case we already joined
-        socket.emit('request-room-state');
+        });
 
         return () => {
-            socket.off('room-state', handleRoomState);
-            socket.off('card-selected', handleCardSelected);
-            socket.off('cards-revealed', handleCardsRevealed);
-            socket.off('round-reset', handleRoundReset);
-            socket.off('player-left', handlePlayerLeft);
-            socket.off('error', handleError);
+            clientRef.current?.disconnect();
         };
-    }, [socket]);
+    }, []);
+
+    const currentPlayer = room?.players.find(
+        p => p.id === clientRef.current?.currentPlayerId
+    ) || null;
+
+    const playersWithCards = useMemo(() => {
+        const withCards = new Set<string>();
+        room?.players.forEach(p => {
+            if (p.selectedCard !== null) {
+                withCards.add(p.id);
+            }
+        });
+        return withCards;
+    }, [room?.players]);
 
     const createRoom = useCallback(async (playerName: string): Promise<string> => {
-        if (!socket || !isConnected) {
-            throw new Error('Socket not connected');
-        }
+        if (!clientRef.current) throw new Error('Client not initialized');
+
+        // Generate room ID (8 characters like before)
+        const roomId = Math.random().toString(36).substring(2, 10);
+        currentRoomIdRef.current = roomId;
 
         setIsLoading(true);
         setError(null);
 
-        return new Promise((resolve) => {
-            socket.emit('create-room', playerName, (roomId) => {
-                // Store player info for reconnection
-                localStorage.setItem(`vibepoker-player-${roomId}`, playerName);
-                resolve(roomId);
-            });
-        });
-    }, [socket, isConnected]);
+        try {
+            await clientRef.current.connect({ roomId, playerName });
+            return roomId;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to create room');
+            setIsLoading(false);
+            throw err;
+        }
+    }, []);
 
     const joinRoom = useCallback(async (roomId: string, playerName: string): Promise<boolean> => {
-        if (!socket || !isConnected) {
-            throw new Error('Socket not connected');
-        }
+        if (!clientRef.current) return false;
 
+        currentRoomIdRef.current = roomId;
         setIsLoading(true);
         setError(null);
 
-        return new Promise((resolve) => {
-            socket.emit('join-room', roomId, playerName, (success, errorMsg) => {
-                if (!success && errorMsg) {
-                    setError(errorMsg);
-                } else if (success) {
-                    // Store player info for reconnection
-                    localStorage.setItem(`vibepoker-player-${roomId}`, playerName);
-                }
-                setIsLoading(false);
-                resolve(success);
-            });
-        });
-    }, [socket, isConnected]);
+        try {
+            await clientRef.current.connect({ roomId, playerName });
+            return true;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to join room');
+            setIsLoading(false);
+            return false;
+        }
+    }, []);
 
     const rejoinRoom = useCallback(async (roomId: string, playerName: string): Promise<boolean> => {
-        if (!socket || !isConnected) {
-            throw new Error('Socket not connected');
-        }
-
-        setIsLoading(true);
-        setError(null);
-
-        return new Promise((resolve) => {
-            socket.emit('rejoin-room', roomId, playerName, (success) => {
-                setIsLoading(false);
-                resolve(success);
-            });
-        });
-    }, [socket, isConnected]);
-
-    const roomIdRef = useRef<string | null>(null);
-
-    useEffect(() => {
-        if (room?.id) {
-            roomIdRef.current = room.id;
-        }
-    }, [room?.id]);
-
-    const selectCard = useCallback((card: CardValue | null) => {
-        if (!socket || !roomIdRef.current) return;
-        socket.emit('select-card', roomIdRef.current, card);
-    }, [socket]);
-
-    const revealCards = useCallback(() => {
-        if (!socket || !roomIdRef.current || !isHost) return;
-        socket.emit('reveal-cards', roomIdRef.current);
-    }, [socket, isHost]);
-
-    const resetRound = useCallback(() => {
-        if (!socket || !roomIdRef.current || !isHost) return;
-        socket.emit('reset-round', roomIdRef.current);
-    }, [socket, isHost]);
-
-    const updateTopic = useCallback((topic: string) => {
-        if (!socket || !roomIdRef.current || !isHost) return;
-        socket.emit('update-topic', roomIdRef.current, topic);
-    }, [socket, isHost]);
-
-    const acceptEstimation = useCallback((value: CardValue) => {
-        console.log('Emitting accept-estimation', roomIdRef.current, value);
-        if (!socket || !roomIdRef.current || !isHost) return;
-        socket.emit('accept-estimation', roomIdRef.current, value);
-    }, [socket, isHost]);
-
-    const revote = useCallback(() => {
-        if (!socket || !roomIdRef.current || !isHost) return;
-        socket.emit('revote', roomIdRef.current);
-    }, [socket, isHost]);
+        // PartyKit handles rejoin the same as join
+        return joinRoom(roomId, playerName);
+    }, [joinRoom]);
 
     return {
         room,
         currentPlayer,
-        isHost,
+        isHost: currentPlayer?.isHost || false,
         isLoading,
         error,
+        playersWithCards,
         createRoom,
         joinRoom,
         rejoinRoom,
-        selectCard,
-        revealCards,
-        resetRound,
-        updateTopic,
-        acceptEstimation,
-        revote,
-        playersWithCards
+        selectCard: useCallback((card: CardValue | null) =>
+            clientRef.current?.selectCard(card), []),
+        updateTopic: useCallback((topic: string) =>
+            clientRef.current?.updateTopic(topic), []),
+        revealCards: useCallback(() =>
+            clientRef.current?.revealCards(), []),
+        acceptEstimation: useCallback((value: CardValue) =>
+            clientRef.current?.acceptEstimation(value), []),
+        resetRound: useCallback(() =>
+            clientRef.current?.resetRound(), []),
+        revote: useCallback(() =>
+            clientRef.current?.revote(), [])
     };
 }

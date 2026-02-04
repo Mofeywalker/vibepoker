@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
-import { SocketProvider } from "@/context/SocketContext";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
@@ -37,18 +36,16 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-main min-h-screen`}
       >
         <NextIntlClientProvider messages={messages}>
-          <SocketProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <ErrorBoundary>
-                {children}
-              </ErrorBoundary>
-            </ThemeProvider>
-          </SocketProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

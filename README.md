@@ -1,15 +1,16 @@
 # VibePOKER 🎴
 
-A real-time Planning Poker application for agile teams to estimate story points collaboratively. Built with Next.js, Socket.IO, and TypeScript.
+A real-time Planning Poker application for agile teams to estimate story points collaboratively. Built with Next.js, PartyKit, and TypeScript.
 
 ![Planning Poker](https://img.shields.io/badge/Planning-Poker-violet)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
-![Socket.IO](https://img.shields.io/badge/Socket.IO-4-green)
+![PartyKit](https://img.shields.io/badge/PartyKit-Latest-orange)
+![Vercel](https://img.shields.io/badge/Vercel-Ready-black)
 
 ## ✨ Features
 
-- **Real-time Collaboration** — Instant synchronization across all participants using Socket.IO
+- **Real-time Collaboration** — Instant synchronization across all participants using PartyKit
 - **No Registration Required** — Create or join rooms instantly with just a name
 - **Fibonacci Voting** — Standard Planning Poker card values: ?, 0, 1, 2, 3, 5, 8, 13, 20, ∞
 - **Smart Suggestions** — Automatic calculation of average, median, mode, and Fibonacci-aligned suggestions
@@ -19,12 +20,14 @@ A real-time Planning Poker application for agile teams to estimate story points 
 - **Responsive Design** — Works seamlessly on desktop, tablet, and mobile devices
 - **Host Controls** — Room creator can reveal cards, accept results, and start new rounds
 - **Revote Feature** — Re-estimate the same topic without resetting it
+- **Persistent State** — Room data persists using PartyKit's built-in storage
+- **Edge Deployment** — Runs on Cloudflare Workers for global low-latency access
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 20+ 
+- Node.js 20+
 - npm, yarn, pnpm, or bun
 
 ### Installation
@@ -37,20 +40,39 @@ cd vibepoker
 # Install dependencies
 npm install
 
-# Run the development server
+# Copy environment configuration
+cp .env.example .env.local
+
+# Run the development server (starts both Next.js and PartyKit)
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Production Build
+### Production Deployment
+
+#### 1. Deploy PartyKit Server
 
 ```bash
-# Build the application
-npm run build
+npx partykit deploy
+```
 
-# Start the production server
-npm start
+This will output your PartyKit server URL (e.g., `https://vibepoker.username.partykit.dev`).
+
+#### 2. Deploy to Vercel
+
+```bash
+# Install Vercel CLI (if not already installed)
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+Set the following environment variable in Vercel:
+
+```bash
+NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.username.partykit.dev
 ```
 
 ## 🎮 How to Use
@@ -68,7 +90,7 @@ npm start
 
 - **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
 - **Language:** [TypeScript 5](https://www.typescriptlang.org/)
-- **Real-time:** [Socket.IO 4](https://socket.io/)
+- **Real-time:** [PartyKit](https://partykit.io/) (Cloudflare Workers)
 - **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
 - **i18n:** [next-intl](https://next-intl-docs.vercel.app/)
 - **Theme:** [next-themes](https://github.com/pacocoursey/next-themes)
@@ -77,10 +99,9 @@ npm start
 ## 🔒 Security Features
 
 - **Input Validation** — All user inputs are sanitized and validated
-- **Rate Limiting** — 30 requests/second per socket (10/sec for card selection)
-- **CORS Protection** — Configurable allowed origins via environment variables
 - **XSS Prevention** — Dangerous characters stripped from names and topics
-- **Room Limits** — Maximum 1000 rooms, 50 players per room
+- **Room Limits** — Maximum 50 players per room
+- **Type Safety** — Full TypeScript coverage with strict mode
 
 ## 🧪 Testing
 
@@ -101,13 +122,15 @@ vibepoker/
 ├── src/
 │   ├── app/                 # Next.js app router pages
 │   ├── components/          # React components
-│   ├── context/             # React context providers
-│   ├── hooks/               # Custom React hooks
+│   ├── hooks/               # Custom React hooks (useRoom)
+│   ├── lib/
+│   │   └── realtime/        # Real-time abstraction layer
 │   ├── providers/           # Theme and other providers
 │   ├── types/               # TypeScript type definitions
 │   └── __tests__/           # Component tests
+├── party/
+│   └── vibepoker.ts         # PartyKit server implementation
 ├── messages/                # i18n translation files
-├── server.ts                # Socket.IO server
 └── public/                  # Static assets
 ```
 
@@ -115,14 +138,14 @@ vibepoker/
 
 ### Environment Variables
 
-Create a `.env.local` file for production:
+Create a `.env.local` file:
 
 ```bash
-# Allowed CORS origins (comma-separated)
-ALLOWED_ORIGINS=https://your-domain.com,https://www.your-domain.com
+# PartyKit host (local development)
+NEXT_PUBLIC_PARTYKIT_HOST=localhost:1999
 
-# Port (optional, defaults to 3000)
-PORT=3000
+# Production: use your PartyKit deployment URL
+# NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.username.partykit.dev
 ```
 
 ## 🌍 Internationalization
@@ -143,7 +166,21 @@ Edit `src/types/index.ts` to customize the Fibonacci sequence:
 export const CARD_VALUES = ['?', '0', '1', '2', '3', '5', '8', '13', '20', '∞'] as const;
 ```
 
-Don't forget to update the `FIBONACCI` array in `server.ts` for accurate suggestions.
+Don't forget to update the `FIBONACCI` array in `party/vibepoker.ts` for accurate suggestions.
+
+## 🏛️ Architecture
+
+VibePOKER uses a clean abstraction layer for real-time communication:
+
+```
+Next.js Client → RealtimeClient Interface → PartyKitClient → PartyKit Server
+```
+
+This architecture allows for:
+- **Platform Independence** — Easy to switch real-time providers
+- **Type Safety** — Fully typed event system
+- **Testability** — Mock the real-time layer for testing
+- **Vercel Compatibility** — PartyKit runs on Cloudflare Workers
 
 ## 📝 License
 
@@ -153,13 +190,16 @@ This project is open source and available under the [MIT License](LICENSE).
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 🐛 Known Limitations
+## ✨ What's New
 
-- **In-Memory State** — Room data is stored in memory and will be lost on server restart
-- **No Persistence** — Estimation history is not saved to a database
-- **Single Server** — Cannot scale horizontally without Redis or similar state management
+### v2.0 - PartyKit Migration
 
-For production use with persistence, consider integrating Redis or a database.
+- ✅ Migrated from Socket.IO to PartyKit
+- ✅ Full Vercel deployment support
+- ✅ Persistent state using PartyKit storage
+- ✅ Edge deployment on Cloudflare Workers
+- ✅ Clean real-time abstraction layer
+- ✅ Improved type safety and error handling
 
 ## 📞 Support
 
