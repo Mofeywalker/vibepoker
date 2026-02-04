@@ -20,6 +20,7 @@ export interface Results {
 export interface Room {
   id: string;
   hostId: string;
+  topic: string | null;
   players: Player[];
   isRevealed: boolean;
   results: Results | null;
@@ -40,6 +41,7 @@ export interface ClientToServerEvents {
   'create-room': (playerName: string, callback: (roomId: string) => void) => void;
   'join-room': (roomId: string, playerName: string, callback: (success: boolean, error?: string) => void) => void;
   'rejoin-room': (roomId: string, playerName: string, callback: (success: boolean) => void) => void;
+  'update-topic': (roomId: string, topic: string) => void;
   'select-card': (roomId: string, card: CardValue | null) => void;
   'reveal-cards': (roomId: string) => void;
   'reset-round': (roomId: string) => void;

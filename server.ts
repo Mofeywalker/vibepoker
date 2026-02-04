@@ -111,6 +111,7 @@ app.prepare().then(() => {
             const room: Room = {
                 id: roomId,
                 hostId: socket.id,
+                topic: null,
                 players: [player],
                 isRevealed: false,
                 results: null
@@ -222,6 +223,17 @@ app.prepare().then(() => {
 
             // Also keep emitting card-selected for backward compatibility or specific animations
             io.to(roomId).emit('card-selected', socket.id, card !== null);
+        });
+
+        socket.on('update-topic', (roomId, topic) => {
+            const room = rooms.get(roomId);
+            if (!room) return;
+
+            // Only host can update topic
+            if (room.hostId !== socket.id) return;
+
+            room.topic = topic;
+            io.to(roomId).emit('room-state', room);
         });
 
         socket.on('reveal-cards', (roomId) => {

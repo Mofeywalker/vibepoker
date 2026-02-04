@@ -22,6 +22,7 @@ export default function RoomPage() {
         selectCard,
         revealCards,
         resetRound,
+        updateTopic,
         playersWithCards
     } = useRoom();
 
@@ -29,7 +30,21 @@ export default function RoomPage() {
     const [hasJoined, setHasJoined] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
     const [isRejoining, setIsRejoining] = useState(false);
+    const [isEditingTopic, setIsEditingTopic] = useState(false);
+    const [topicInput, setTopicInput] = useState('');
     const rejoinAttempted = useRef(false);
+
+    // Sync topic input when room updates
+    useEffect(() => {
+        if (room?.topic) {
+            setTopicInput(room.topic);
+        }
+    }, [room?.topic]);
+
+    const handleSaveTopic = () => {
+        updateTopic(topicInput);
+        setIsEditingTopic(false);
+    };
 
     // Check if user needs to join
     useEffect(() => {
@@ -162,6 +177,64 @@ export default function RoomPage() {
             <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
                 {room ? (
                     <div className="space-y-8">
+                        {/* Topic Section */}
+                        <div className="flex items-center justify-center min-h-[3rem]">
+                            {isEditingTopic && isHost ? (
+                                <div className="flex items-center gap-2 w-full max-w-xl animate-in fade-in zoom-in duration-200">
+                                    <input
+                                        type="text"
+                                        value={topicInput}
+                                        onChange={(e) => setTopicInput(e.target.value)}
+                                        placeholder="Thema (z.B. JIRA-123)"
+                                        className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all shadow-sm"
+                                        autoFocus
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSaveTopic()}
+                                    />
+                                    <button
+                                        onClick={handleSaveTopic}
+                                        className="p-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/30 transition-colors"
+                                        title="Speichern"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsEditingTopic(false);
+                                            setTopicInput(room.topic || '');
+                                        }}
+                                        className="p-2 bg-slate-700/50 text-slate-400 hover:bg-slate-700/80 rounded-lg border border-slate-600 transition-colors"
+                                        title="Abbrechen"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="group relative flex items-center justify-center gap-3">
+                                    <h2 className={`text-2xl md:text-3xl font-bold text-center ${room.topic ? 'text-white' : 'text-slate-500 italic'}`}>
+                                        {room.topic || 'Kein Thema festgelegt'}
+                                    </h2>
+                                    {isHost && (
+                                        <button
+                                            onClick={() => {
+                                                setTopicInput(room.topic || '');
+                                                setIsEditingTopic(true);
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 p-2 text-violet-400 hover:text-violet-300 transition-opacity bg-violet-500/10 rounded-lg"
+                                            title="Thema bearbeiten"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                         {/* Status bar */}
                         <div className="flex flex-wrap items-center justify-between gap-4">
                             <div className="flex items-center gap-4">

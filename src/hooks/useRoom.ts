@@ -16,6 +16,7 @@ interface UseRoomReturn {
     selectCard: (card: CardValue | null) => void;
     revealCards: () => void;
     resetRound: () => void;
+    updateTopic: (topic: string) => void;
     playersWithCards: Set<string>;
 }
 
@@ -168,6 +169,11 @@ export function useRoom(): UseRoomReturn {
         socket.emit('reset-round', room.id);
     }, [socket, room, isHost]);
 
+    const updateTopic = useCallback((topic: string) => {
+        if (!socket || !room || !isHost) return;
+        socket.emit('update-topic', room.id, topic);
+    }, [socket, room, isHost]);
+
     return {
         room,
         currentPlayer,
@@ -180,6 +186,7 @@ export function useRoom(): UseRoomReturn {
         selectCard,
         revealCards,
         resetRound,
+        updateTopic,
         playersWithCards
     };
 }
