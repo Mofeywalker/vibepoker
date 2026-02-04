@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Results } from '@/types';
 
@@ -7,7 +8,7 @@ interface ResultsPanelProps {
     results: Results;
 }
 
-export function ResultsPanel({ results }: ResultsPanelProps) {
+function ResultsPanelComponent({ results }: ResultsPanelProps) {
     const t = useTranslations('results');
 
     return (
@@ -81,3 +82,5 @@ export function ResultsPanel({ results }: ResultsPanelProps) {
         </div>
     );
 }
+
+export const ResultsPanel = memo(ResultsPanelComponent);

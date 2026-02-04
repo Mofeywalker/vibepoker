@@ -1,5 +1,4 @@
-'use client';
-
+import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { CARD_VALUES, type CardValue } from '@/types';
 import { Card } from './Card';
@@ -10,7 +9,7 @@ interface CardDeckProps {
     disabled?: boolean;
 }
 
-export function CardDeck({ selectedCard, onSelectCard, disabled = false }: CardDeckProps) {
+function CardDeckComponent({ selectedCard, onSelectCard, disabled = false }: CardDeckProps) {
     const t = useTranslations('cardDeck');
 
     const handleCardClick = (value: CardValue) => {
@@ -44,3 +43,5 @@ export function CardDeck({ selectedCard, onSelectCard, disabled = false }: CardD
         </div>
     );
 }
+
+export const CardDeck = memo(CardDeckComponent);

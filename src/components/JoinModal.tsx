@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useTranslations } from 'next-intl';
 
 interface JoinModalProps {
@@ -9,7 +9,7 @@ interface JoinModalProps {
     error?: string | null;
 }
 
-export function JoinModal({ onJoin, isLoading = false, error }: JoinModalProps) {
+function JoinModalComponent({ onJoin, isLoading = false, error }: JoinModalProps) {
     const [name, setName] = useState('');
     const t = useTranslations('join');
 
@@ -101,3 +101,5 @@ export function JoinModal({ onJoin, isLoading = false, error }: JoinModalProps) 
         </div>
     );
 }
+
+export const JoinModal = memo(JoinModalComponent);

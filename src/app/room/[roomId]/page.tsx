@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
@@ -89,13 +89,13 @@ export default function RoomPage() {
         }
     }, [isConnected, room, hasJoined, isLoading, roomId, rejoinRoom, isRejoining]);
 
-    const handleJoin = async (name: string) => {
+    const handleJoin = useCallback(async (name: string) => {
         const success = await joinRoom(roomId, name);
         if (success) {
             setHasJoined(true);
             setShowJoinModal(false);
         }
-    };
+    }, [joinRoom, roomId]);
 
     const handleCopyLink = async () => {
         try {

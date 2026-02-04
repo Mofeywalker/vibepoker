@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSocket } from '@/context/SocketContext';
 import type { Room, Player, CardValue } from '@/types';
 
@@ -154,25 +154,33 @@ export function useRoom(): UseRoomReturn {
         });
     }, [socket, isConnected]);
 
+    const roomIdRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (room?.id) {
+            roomIdRef.current = room.id;
+        }
+    }, [room?.id]);
+
     const selectCard = useCallback((card: CardValue | null) => {
-        if (!socket || !room) return;
-        socket.emit('select-card', room.id, card);
-    }, [socket, room]);
+        if (!socket || !roomIdRef.current) return;
+        socket.emit('select-card', roomIdRef.current, card);
+    }, [socket]);
 
     const revealCards = useCallback(() => {
-        if (!socket || !room || !isHost) return;
-        socket.emit('reveal-cards', room.id);
-    }, [socket, room, isHost]);
+        if (!socket || !roomIdRef.current || !isHost) return;
+        socket.emit('reveal-cards', roomIdRef.current);
+    }, [socket, isHost]);
 
     const resetRound = useCallback(() => {
-        if (!socket || !room || !isHost) return;
-        socket.emit('reset-round', room.id);
-    }, [socket, room, isHost]);
+        if (!socket || !roomIdRef.current || !isHost) return;
+        socket.emit('reset-round', roomIdRef.current);
+    }, [socket, isHost]);
 
     const updateTopic = useCallback((topic: string) => {
-        if (!socket || !room || !isHost) return;
-        socket.emit('update-topic', room.id, topic);
-    }, [socket, room, isHost]);
+        if (!socket || !roomIdRef.current || !isHost) return;
+        socket.emit('update-topic', roomIdRef.current, topic);
+    }, [socket, isHost]);
 
     return {
         room,
