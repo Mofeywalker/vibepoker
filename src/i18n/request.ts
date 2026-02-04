@@ -13,7 +13,7 @@ export default getRequestConfig(async () => {
     for (const lang of acceptLanguage.split(',')) {
         const code = lang.split(';')[0].trim().slice(0, 2).toLowerCase();
         if (routing.locales.includes(code as typeof routing.locales[number])) {
-            locale = code;
+            locale = code as typeof routing.locales[number];
             break;
         }
     }
