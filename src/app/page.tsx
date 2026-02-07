@@ -25,6 +25,8 @@ export default function HomePage() {
       const roomId = await createRoom(creatorName.trim());
       // Save to sessionStorage so the room page knows we're already a member
       sessionStorage.setItem(`vibepoker-joined-${roomId}`, 'true');
+      // Save to localStorage so the room page knows we're already a member and can auto-join
+      localStorage.setItem(`vibepoker-player-${roomId}`, creatorName.trim());
       router.push(`/room/${roomId}`);
     } catch (error) {
       console.error('Failed to create room:', error);

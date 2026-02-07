@@ -44,6 +44,7 @@ export function useRoom(): UseRoomReturn {
 
         return () => {
             clientRef.current?.disconnect();
+            setIsLoading(false);
         };
     }, []);
 

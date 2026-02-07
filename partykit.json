@@ -1,4 +1,5 @@
 {
     "name": "vibepoker",
-    "main": "party/vibepoker.ts"
+    "main": "party/vibepoker.ts",
+    "compatibilityDate": "2026-02-06"
 }

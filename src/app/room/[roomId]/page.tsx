@@ -31,10 +31,8 @@ export default function RoomPage() {
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [hasJoined, setHasJoined] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
-    const [isRejoining, setIsRejoining] = useState(false);
     const [isEditingTopic, setIsEditingTopic] = useState(false);
     const [topicInput, setTopicInput] = useState('');
-    const rejoinAttempted = useRef(false);
 
     // Sync topic input when room updates
     useEffect(() => {
@@ -50,7 +48,7 @@ export default function RoomPage() {
 
     // Check if user needs to join
     useEffect(() => {
-        if (hasJoined || isLoading || isRejoining) return;
+        if (hasJoined || isLoading) return;
 
         // Check if we already have room state (happens when navigating from create)
         if (room && room.id === roomId) {
@@ -61,13 +59,9 @@ export default function RoomPage() {
         // Check localStorage for saved player name (for rejoining after refresh)
         const savedPlayerName = localStorage.getItem(`vibepoker-player-${roomId}`);
 
-        if (savedPlayerName && !rejoinAttempted.current) {
-            rejoinAttempted.current = true;
-            setIsRejoining(true);
-
+        if (savedPlayerName) {
             // Try to rejoin with saved name
             rejoinRoom(roomId, savedPlayerName).then(success => {
-                setIsRejoining(false);
                 if (success) {
                     setHasJoined(true);
                 } else {
@@ -76,7 +70,6 @@ export default function RoomPage() {
                     setShowJoinModal(true);
                 }
             }).catch(() => {
-                setIsRejoining(false);
                 localStorage.removeItem(`vibepoker-player-${roomId}`);
                 setShowJoinModal(true);
             });
@@ -87,7 +80,7 @@ export default function RoomPage() {
         if (!room && !savedPlayerName) {
             setShowJoinModal(true);
         }
-    }, [room, hasJoined, isLoading, roomId, rejoinRoom, isRejoining]);
+    }, [room, hasJoined, isLoading, roomId, rejoinRoom]);
 
     const handleJoin = useCallback(async (name: string) => {
         const success = await joinRoom(roomId, name);
