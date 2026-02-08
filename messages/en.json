@@ -9,6 +9,7 @@
         "cancel": "Cancel",
         "creating": "Creating...",
         "create": "Create",
+        "selectDeck": "Select Deck Type",
         "or": "or",
         "roomId": "Room ID",
         "roomIdPlaceholder": "e.g. a1b2c3d4",

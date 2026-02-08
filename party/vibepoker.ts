@@ -1,5 +1,17 @@
 import type * as Party from "partykit/server";
-import { CARD_VALUES, type CardValue, type Player, type Room, type Results, type EstimationHistoryItem } from "../src/types";
+import { type DeckType, type CardValue, type Player, type Room, type Results, type EstimationHistoryItem } from "../src/types";
+
+// const DECKS = { ... } is already defined below this block, so I don't need to re-add it here as I'm just reverting the import block replacement.
+// Wait, I need to check where DECKS is defined. In step 625 I see DECKS defined after the imports.
+// I will just restore the import line and remove the mocks.
+
+const DECKS = {
+    fibonacci: ['0', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89', '?', '☕'],
+    scrum: ['0', '½', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?', '☕'],
+    sequential: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '?', '☕'],
+    hourly: ['1', '2', '3', '4', '6', '8', '12', '16', '24', '32', '40', '?', '☕'],
+    tshirt: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '?', '☕']
+} as const;
 
 // Validation constants
 const MAX_NAME_LENGTH = 50;
@@ -20,12 +32,13 @@ function validateTopic(topic: unknown): string {
     return topic.trim().slice(0, MAX_TOPIC_LENGTH).replace(/[<>&"']/g, '');
 }
 
-function validateCardValue(value: unknown): CardValue | null {
+function validateCardValue(value: unknown, deckType: DeckType = 'scrum'): CardValue | null {
     if (typeof value !== 'string') return null;
-    return (CARD_VALUES as readonly string[]).includes(value) ? value as CardValue : null;
+    const validCards = DECKS[deckType] || DECKS.scrum;
+    return (validCards as readonly string[]).includes(value) ? value as CardValue : null;
 }
 
-function calculateResults(players: Player[]): Results {
+function calculateResults(players: Player[], deckType: DeckType = 'scrum'): Results {
     const allCards = players.map(p => p.selectedCard).filter((card): card is CardValue => card !== null);
 
     // Count occurrences
@@ -42,11 +55,12 @@ function calculateResults(players: Player[]): Results {
 
     // Filter numeric values
     const numericValues = allCards
-        .filter(card => card !== '?' && card !== '∞')
-        .map(card => parseInt(card))
+        .filter(card => card !== '?' && card !== '☕')
+        .map(card => card === '½' ? 0.5 : parseFloat(card))
         .filter(n => !isNaN(n));
 
-    if (numericValues.length === 0) {
+    // If no numeric values or it's a non-numeric deck (like T-Shirt), returns basic results
+    if (numericValues.length === 0 || deckType === 'tshirt') {
         return { average: null, median: null, mode, suggestion: null, breakdown };
     }
 
@@ -61,14 +75,22 @@ function calculateResults(players: Player[]): Results {
         ? sorted[mid]
         : (sorted[mid - 1] + sorted[mid]) / 2;
 
-    // Suggestion: closest Fibonacci
-    let suggestion = FIBONACCI[0];
-    let minDiff = Math.abs(average - FIBONACCI[0]);
-    for (const fib of FIBONACCI) {
-        const diff = Math.abs(average - fib);
+    // Suggestion: closest Fibonacci/Card Value
+    // We use the deck's values to find the closest one
+    const deckValues = (DECKS[deckType] || DECKS.scrum)
+        .filter(v => v !== '?' && v !== '☕')
+        .map(v => v === '½' ? 0.5 : parseFloat(v))
+        .filter(n => !isNaN(n))
+        .sort((a, b) => a - b);
+
+    let suggestion = deckValues[0];
+    let minDiff = Math.abs(average - deckValues[0]);
+
+    for (const val of deckValues) {
+        const diff = Math.abs(average - val);
         if (diff < minDiff) {
             minDiff = diff;
-            suggestion = fib;
+            suggestion = val;
         }
     }
 
@@ -85,64 +107,88 @@ export default class VibePOKERServer implements Party.Server {
     constructor(readonly room: Party.Room) { }
 
     async onStart() {
-        const state = await this.room.storage.get<Room>("room-state");
-        if (!state) {
-            const initialRoom: Room = {
-                id: this.room.id,
-                hostId: "",
-                topic: null,
-                players: [],
-                isRevealed: false,
-                results: null,
-                history: []
-            };
-            await this.room.storage.put("room-state", initialRoom);
+        try {
+            const state = await this.room.storage.get<Room>("room-state");
+            if (!state) {
+                const initialRoom: Room = {
+                    id: this.room.id,
+                    hostId: "",
+                    topic: null,
+                    players: [],
+                    isRevealed: false,
+                    results: null,
+                    history: []
+                };
+                await this.room.storage.put("room-state", initialRoom);
+            }
+        } catch (e: any) {
+            console.error("Error in onStart:", e);
         }
     }
 
     async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
-        const url = new URL(ctx.request.url);
-        const playerName = url.searchParams.get("name");
+        try {
+            const url = new URL(ctx.request.url);
+            const playerName = url.searchParams.get("name");
+            const deckType = url.searchParams.get("deckType") as DeckType | null;
 
-        if (!playerName) {
-            connection.close(1008, "NAME_REQUIRED");
-            return;
+
+            if (!playerName) {
+                connection.close(1008, "NAME_REQUIRED");
+                return;
+            }
+
+            const validName = validatePlayerName(playerName);
+            if (!validName) {
+                connection.close(1008, "INVALID_NAME");
+                return;
+            }
+
+            const room = await this.room.storage.get<Room>("room-state");
+
+            if (!room) return;
+
+
+
+            if (room.players.length >= MAX_PLAYERS_PER_ROOM) {
+                connection.close(1008, "ROOM_FULL");
+                return;
+            }
+
+            if (room.players.some(p => p.name.toLowerCase() === validName.toLowerCase())) {
+                connection.close(1008, "NAME_TAKEN");
+                return;
+            }
+
+            const player: Player = {
+                id: connection.id,
+                name: validName,
+                selectedCard: null,
+                isHost: room.players.length === 0
+            };
+
+            if (player.isHost) {
+                room.hostId = connection.id;
+                // Set/Update deck type if provided, otherwise default to scrum
+                if (deckType && DECKS[deckType as keyof typeof DECKS]) {
+                    // console.log(`[onConnect] Setting deckType to: ${deckType}`);
+                    room.deckType = deckType;
+                } else if (!room.deckType) {
+                    // console.log(`[onConnect] Defaulting deckType to scrum`);
+                    room.deckType = 'scrum';
+                }
+            }
+
+
+
+            room.players.push(player);
+            await this.room.storage.put("room-state", room);
+
+            this.broadcastRoomState(room);
+        } catch (e: any) {
+            console.error("Error in onConnect:", e);
+            connection.close(1011, "Internal Error: " + e.message);
         }
-
-        const validName = validatePlayerName(playerName);
-        if (!validName) {
-            connection.close(1008, "INVALID_NAME");
-            return;
-        }
-
-        const room = await this.room.storage.get<Room>("room-state");
-        if (!room) return;
-
-        if (room.players.length >= MAX_PLAYERS_PER_ROOM) {
-            connection.close(1008, "ROOM_FULL");
-            return;
-        }
-
-        if (room.players.some(p => p.name.toLowerCase() === validName.toLowerCase())) {
-            connection.close(1008, "NAME_TAKEN");
-            return;
-        }
-
-        const player: Player = {
-            id: connection.id,
-            name: validName,
-            selectedCard: null,
-            isHost: room.players.length === 0
-        };
-
-        if (player.isHost) {
-            room.hostId = connection.id;
-        }
-
-        room.players.push(player);
-        await this.room.storage.put("room-state", room);
-
-        this.broadcastRoomState(room);
     }
 
     async onMessage(message: string, sender: Party.Connection) {
@@ -200,7 +246,7 @@ export default class VibePOKERServer implements Party.Server {
         const player = room.players.find(p => p.id === playerId);
         if (!player || room.isRevealed) return;
 
-        const validCard = card === null ? null : validateCardValue(card);
+        const validCard = card === null ? null : validateCardValue(card, room.deckType);
         if (card !== null && validCard === null) return;
 
         player.selectedCard = validCard;
@@ -220,7 +266,7 @@ export default class VibePOKERServer implements Party.Server {
         if (room.hostId !== playerId) return;
 
         room.isRevealed = true;
-        room.results = calculateResults(room.players);
+        room.results = calculateResults(room.players, room.deckType);
         await this.room.storage.put("room-state", room);
         this.broadcastRoomState(room);
     }
@@ -228,7 +274,7 @@ export default class VibePOKERServer implements Party.Server {
     private async handleAcceptEstimation(room: Room, playerId: string, value: unknown) {
         if (room.hostId !== playerId) return;
 
-        const validValue = validateCardValue(value);
+        const validValue = validateCardValue(value, room.deckType);
         if (!validValue) return;
 
         if (!room.history) room.history = [];

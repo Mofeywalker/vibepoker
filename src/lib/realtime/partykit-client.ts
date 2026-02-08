@@ -1,6 +1,6 @@
 import PartySocket from 'partysocket';
 import type { RealtimeClient, ConnectionConfig } from './types';
-import type { Room, CardValue } from '@/types';
+import type { Room, CardValue, DeckType } from '@/types';
 
 export class PartyKitClient implements RealtimeClient {
     private socket: PartySocket | null = null;
@@ -18,11 +18,13 @@ export class PartyKitClient implements RealtimeClient {
 
     async connect(config: ConnectionConfig): Promise<void> {
         const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST || 'localhost:1999';
-
         this.socket = new PartySocket({
             host,
             room: config.roomId,
-            query: { name: config.playerName }
+            query: {
+                name: config.playerName,
+                deckType: config.deckType
+            }
         });
 
         return new Promise((resolve, reject) => {

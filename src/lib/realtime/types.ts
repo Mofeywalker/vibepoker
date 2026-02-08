@@ -1,8 +1,9 @@
-import type { Room, CardValue } from '@/types';
+import type { Room, CardValue, DeckType } from '@/types';
 
 export interface ConnectionConfig {
     roomId: string;
     playerName: string;
+    deckType?: DeckType;
 }
 
 export interface RealtimeClient {

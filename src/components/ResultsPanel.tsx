@@ -8,12 +8,13 @@ import { CARD_VALUES, type Results, type CardValue } from '@/types';
 interface ResultsPanelProps {
     results: Results;
     isHost: boolean;
+    validCards: readonly string[];
     onAccept: (value: CardValue) => void;
     onRevote: () => void;
     onStartNewRound: () => void;
 }
 
-function ResultsPanelComponent({ results, isHost, onAccept, onRevote, onStartNewRound }: ResultsPanelProps) {
+function ResultsPanelComponent({ results, isHost, validCards, onAccept, onRevote, onStartNewRound }: ResultsPanelProps) {
     const t = useTranslations('results');
 
     // If result is accepted, show summary view
@@ -73,7 +74,7 @@ function ResultsPanelComponent({ results, isHost, onAccept, onRevote, onStartNew
                     </div>
                     {isHost && results.suggestion !== null && (() => {
                         const suggestionStr = results.suggestion.toString();
-                        const isValidCard = (CARD_VALUES as readonly string[]).includes(suggestionStr);
+                        const isValidCard = validCards.includes(suggestionStr);
                         return isValidCard ? (
                             <button
                                 onClick={() => onAccept(suggestionStr as CardValue)}

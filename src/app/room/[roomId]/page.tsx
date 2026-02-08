@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, HistoryPanel } from '@/components';
+import { DECKS } from '@/types';
 
 export default function RoomPage() {
     const params = useParams();
@@ -58,10 +59,11 @@ export default function RoomPage() {
 
         // Check localStorage for saved player name (for rejoining after refresh)
         const savedPlayerName = localStorage.getItem(`vibepoker-player-${roomId}`);
+        const savedDeckType = localStorage.getItem(`vibepoker-deck-${roomId}`) as any;
 
         if (savedPlayerName) {
             // Try to rejoin with saved name
-            rejoinRoom(roomId, savedPlayerName).then(success => {
+            rejoinRoom(roomId, savedPlayerName, savedDeckType).then(success => {
                 if (success) {
                     setHasJoined(true);
                 } else {
@@ -104,6 +106,8 @@ export default function RoomPage() {
     const votedCount = playersWithCards.size;
     const totalPlayers = room?.players.length || 0;
     const allVoted = votedCount === totalPlayers && totalPlayers > 0;
+
+    const deckValues = room?.deckType && DECKS[room.deckType] ? DECKS[room.deckType] : DECKS.scrum;
 
 
 
@@ -295,6 +299,7 @@ export default function RoomPage() {
                             <ResultsPanel
                                 results={room.results}
                                 isHost={isHost}
+                                validCards={deckValues}
                                 onAccept={acceptEstimation}
                                 onRevote={revote}
                                 onStartNewRound={resetRound}
@@ -320,6 +325,7 @@ export default function RoomPage() {
                                 <CardDeck
                                     selectedCard={currentPlayer?.selectedCard || null}
                                     onSelectCard={selectCard}
+                                    values={deckValues}
                                     disabled={room.isRevealed}
                                 />
                             </div>

@@ -6,10 +6,11 @@ import { Card } from './Card';
 interface CardDeckProps {
     selectedCard: CardValue | null;
     onSelectCard: (card: CardValue | null) => void;
+    values: readonly string[];
     disabled?: boolean;
 }
 
-function CardDeckComponent({ selectedCard, onSelectCard, disabled = false }: CardDeckProps) {
+function CardDeckComponent({ selectedCard, onSelectCard, values, disabled = false }: CardDeckProps) {
     const t = useTranslations('cardDeck');
 
     const handleCardClick = (value: CardValue) => {
@@ -29,7 +30,7 @@ function CardDeckComponent({ selectedCard, onSelectCard, disabled = false }: Car
                 {t('selectEstimate')}
             </h3>
             <div className="flex flex-wrap justify-center gap-3">
-                {CARD_VALUES.map((value) => (
+                {values.map((value) => (
                     <Card
                         key={value}
                         value={value}

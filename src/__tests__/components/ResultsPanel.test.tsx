@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@/test/utils';
 import { ResultsPanel } from '@/components/ResultsPanel';
+import { DECKS } from '@/types';
 
 describe('ResultsPanel', () => {
     const mockResults = {
@@ -18,6 +19,7 @@ describe('ResultsPanel', () => {
     const defaultProps = {
         results: mockResults as any,
         isHost: false,
+        validCards: DECKS.scrum,
         onAccept: vi.fn(),
         onRevote: vi.fn(),
         onStartNewRound: vi.fn()

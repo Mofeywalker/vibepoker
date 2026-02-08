@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { PartyKitClient } from '@/lib/realtime/partykit-client';
-import type { Room, Player, CardValue } from '@/types';
+import type { Room, Player, CardValue, DeckType } from '@/types';
 
 interface UseRoomReturn {
     room: Room | null;
@@ -10,9 +10,9 @@ interface UseRoomReturn {
     isHost: boolean;
     isLoading: boolean;
     error: string | null;
-    createRoom: (playerName: string) => Promise<string>;
-    joinRoom: (roomId: string, playerName: string) => Promise<boolean>;
-    rejoinRoom: (roomId: string, playerName: string) => Promise<boolean>;
+    createRoom: (playerName: string, deckType?: DeckType) => Promise<string>;
+    joinRoom: (roomId: string, playerName: string, deckType?: DeckType) => Promise<boolean>;
+    rejoinRoom: (roomId: string, playerName: string, deckType?: DeckType) => Promise<boolean>;
     selectCard: (card: CardValue | null) => void;
     revealCards: () => void;
     resetRound: () => void;
@@ -62,7 +62,7 @@ export function useRoom(): UseRoomReturn {
         return withCards;
     }, [room?.players]);
 
-    const createRoom = useCallback(async (playerName: string): Promise<string> => {
+    const createRoom = useCallback(async (playerName: string, deckType: DeckType = 'scrum'): Promise<string> => {
         if (!clientRef.current) throw new Error('Client not initialized');
 
         // Generate room ID (8 characters like before)
@@ -73,7 +73,7 @@ export function useRoom(): UseRoomReturn {
         setError(null);
 
         try {
-            await clientRef.current.connect({ roomId, playerName });
+            await clientRef.current.connect({ roomId, playerName, deckType });
             return roomId;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create room');
@@ -82,7 +82,7 @@ export function useRoom(): UseRoomReturn {
         }
     }, []);
 
-    const joinRoom = useCallback(async (roomId: string, playerName: string): Promise<boolean> => {
+    const joinRoom = useCallback(async (roomId: string, playerName: string, deckType?: DeckType): Promise<boolean> => {
         if (!clientRef.current) return false;
 
         currentRoomIdRef.current = roomId;
@@ -90,7 +90,7 @@ export function useRoom(): UseRoomReturn {
         setError(null);
 
         try {
-            await clientRef.current.connect({ roomId, playerName });
+            await clientRef.current.connect({ roomId, playerName, deckType });
             return true;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to join room');
@@ -99,9 +99,9 @@ export function useRoom(): UseRoomReturn {
         }
     }, []);
 
-    const rejoinRoom = useCallback(async (roomId: string, playerName: string): Promise<boolean> => {
+    const rejoinRoom = useCallback(async (roomId: string, playerName: string, deckType?: DeckType): Promise<boolean> => {
         // PartyKit handles rejoin the same as join
-        return joinRoom(roomId, playerName);
+        return joinRoom(roomId, playerName, deckType);
     }, [joinRoom]);
 
     return {

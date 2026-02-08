@@ -1,11 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@/test/utils';
 import { CardDeck } from '@/components/CardDeck';
+import { DECKS } from '@/types';
 
 describe('CardDeck', () => {
+    const deck = DECKS.fibonacci;
+
     it('renders all cards', () => {
         const handleSelect = vi.fn();
-        render(<CardDeck selectedCard={null} onSelectCard={handleSelect} />);
+        render(<CardDeck selectedCard={null} onSelectCard={handleSelect} values={deck} />);
 
         // Fibonnaci sequence usually: 0, 1, 2, 3, 5, 8, 13, 20, etc. or similar set
         // Based on previous file views, I saw "5", "13", "8", "3" in the background of page.tsx
@@ -19,7 +22,7 @@ describe('CardDeck', () => {
 
     it('calls onSelectCard when a card is clicked', () => {
         const handleSelect = vi.fn();
-        render(<CardDeck selectedCard={null} onSelectCard={handleSelect} />);
+        render(<CardDeck selectedCard={null} onSelectCard={handleSelect} values={deck} />);
 
         const card5 = screen.getByText('5');
         fireEvent.click(card5);
@@ -29,7 +32,7 @@ describe('CardDeck', () => {
 
     it('deselects card when clicked again', () => {
         const handleSelect = vi.fn();
-        render(<CardDeck selectedCard="5" onSelectCard={handleSelect} />);
+        render(<CardDeck selectedCard="5" onSelectCard={handleSelect} values={deck} />);
 
         const card5 = screen.getByText('5');
         fireEvent.click(card5);
@@ -39,7 +42,7 @@ describe('CardDeck', () => {
 
     it('does not trigger selection when disabled', () => {
         const handleSelect = vi.fn();
-        render(<CardDeck selectedCard={null} onSelectCard={handleSelect} disabled={true} />);
+        render(<CardDeck selectedCard={null} onSelectCard={handleSelect} disabled={true} values={deck} />);
 
         const card5 = screen.getByText('5');
         fireEvent.click(card5);

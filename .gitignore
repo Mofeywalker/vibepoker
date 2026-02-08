@@ -42,3 +42,6 @@ next-env.d.ts
 
 # partykit
 .partykit
+
+#server logs
+server.log

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { Card, ThemeToggle } from '@/components';
+import { DECKS, type DeckType } from '@/types';
 
 export default function HomePage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function HomePage() {
 
   const [joinRoomId, setJoinRoomId] = useState('');
   const [creatorName, setCreatorName] = useState('');
+  const [selectedDeck, setSelectedDeck] = useState<DeckType>('scrum');
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -22,11 +24,12 @@ export default function HomePage() {
 
     setIsCreating(true);
     try {
-      const roomId = await createRoom(creatorName.trim());
+      const roomId = await createRoom(creatorName.trim(), selectedDeck);
       // Save to sessionStorage so the room page knows we're already a member
       sessionStorage.setItem(`vibepoker-joined-${roomId}`, 'true');
       // Save to localStorage so the room page knows we're already a member and can auto-join
       localStorage.setItem(`vibepoker-player-${roomId}`, creatorName.trim());
+      localStorage.setItem(`vibepoker-deck-${roomId}`, selectedDeck);
       router.push(`/room/${roomId}`);
     } catch (error) {
       console.error('Failed to create room:', error);
@@ -124,6 +127,39 @@ export default function HomePage() {
                     "
                     autoFocus
                   />
+                </div>
+
+                <div>
+                  <label htmlFor="deckType" className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-2">
+                    {t('selectDeck')}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="deckType"
+                      value={selectedDeck}
+                      onChange={(e) => setSelectedDeck(e.target.value as DeckType)}
+                      className="
+                        w-full px-4 py-3 rounded-xl
+                        bg-white/50 dark:bg-slate-800/50 
+                        border border-slate-200 dark:border-slate-600
+                        text-slate-900 dark:text-white 
+                        focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent
+                        transition-all duration-200
+                        appearance-none
+                      "
+                    >
+                      <option value="scrum">Scrum (0, ½, 1, 2, 3...)</option>
+                      <option value="fibonacci">Fibonacci (0, 1, 2, 3, 5...)</option>
+                      <option value="sequential">Sequential (0-10)</option>
+                      <option value="hourly">Hourly (1h, 2h, 4h...)</option>
+                      <option value="tshirt">T-Shirt (XS, S, M...)</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex gap-3">
                   <button
