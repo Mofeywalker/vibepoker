@@ -17,7 +17,9 @@ const DECKS = {
 const MAX_NAME_LENGTH = 50;
 const MAX_TOPIC_LENGTH = 200;
 const MAX_PLAYERS_PER_ROOM = 50;
-const FIBONACCI = [0, 1, 2, 3, 5, 8, 13, 20];
+const TSHIRT_VALUES: Record<string, number> = {
+    'XS': 1, 'S': 2, 'M': 3, 'L': 5, 'XL': 8, 'XXL': 13
+};
 
 // Validation functions
 function validatePlayerName(name: unknown): string | null {
@@ -38,7 +40,7 @@ function validateCardValue(value: unknown, deckType: DeckType = 'scrum'): CardVa
     return (validCards as readonly string[]).includes(value) ? value as CardValue : null;
 }
 
-function calculateResults(players: Player[], deckType: DeckType = 'scrum'): Results {
+export function calculateResults(players: Player[], deckType: DeckType = 'scrum'): Results {
     const allCards = players.map(p => p.selectedCard).filter((card): card is CardValue => card !== null);
 
     // Count occurrences
@@ -56,11 +58,16 @@ function calculateResults(players: Player[], deckType: DeckType = 'scrum'): Resu
     // Filter numeric values
     const numericValues = allCards
         .filter(card => card !== '?' && card !== '☕')
-        .map(card => card === '½' ? 0.5 : parseFloat(card))
+        .map(card => {
+            if (deckType === 'tshirt' && typeof card === 'string') {
+                return TSHIRT_VALUES[card] || NaN;
+            }
+            return card === '½' ? 0.5 : parseFloat(card);
+        })
         .filter(n => !isNaN(n));
 
-    // If no numeric values or it's a non-numeric deck (like T-Shirt), returns basic results
-    if (numericValues.length === 0 || deckType === 'tshirt') {
+    // If no numeric values, return basic results
+    if (numericValues.length === 0) {
         return { average: null, median: null, mode, suggestion: null, breakdown };
     }
 
@@ -71,26 +78,63 @@ function calculateResults(players: Player[], deckType: DeckType = 'scrum'): Resu
     // Median
     const sorted = [...numericValues].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    const median = sorted.length % 2 !== 0
+    let median = sorted.length % 2 !== 0
         ? sorted[mid]
         : (sorted[mid - 1] + sorted[mid]) / 2;
 
-    // Suggestion: closest Fibonacci/Card Value
-    // We use the deck's values to find the closest one
+    if (deckType === 'tshirt') {
+        // Round median to nearest T-shirt size value for consistency if needed,
+        // or just keep it as is. Usually median is just a value.
+        // But for T-shirt, maybe we want to map it back?
+        // For now, let's leave median as number (internal) or maybe it should be null for tshirt?
+        // The interface says median is number | null.
+        // If we want to display TS(median), we'd need to map it back.
+        // But let's follow the plan: suggestion is what matters.
+        // Actually, for T-shirt, median as a number (e.g. 2) corresponds to 'S'.
+        // But if median is 2.5, it's between S and M.
+    }
+
+    // Suggestion: closes value
     const deckValues = (DECKS[deckType] || DECKS.scrum)
-        .filter(v => v !== '?' && v !== '☕')
-        .map(v => v === '½' ? 0.5 : parseFloat(v))
-        .filter(n => !isNaN(n))
-        .sort((a, b) => a - b);
+        .filter(v => v !== '?' && v !== '☕');
 
-    let suggestion = deckValues[0];
-    let minDiff = Math.abs(average - deckValues[0]);
+    let suggestion: string | number | null = null;
 
-    for (const val of deckValues) {
-        const diff = Math.abs(average - val);
-        if (diff < minDiff) {
-            minDiff = diff;
-            suggestion = val;
+    if (deckType === 'tshirt') {
+        // Find closest T-shirt size
+        let minDiff = Number.MAX_VALUE;
+        let closestSize = deckValues[0];
+
+        for (const size of deckValues) {
+            const val = TSHIRT_VALUES[size];
+            if (val !== undefined) {
+                const diff = Math.abs(average - val);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestSize = size;
+                }
+            }
+        }
+        suggestion = closestSize;
+    } else {
+        // Numeric decks
+        const numericDeckValues = deckValues
+            .map(v => v === '½' ? 0.5 : parseFloat(v))
+            .filter(n => !isNaN(n))
+            .sort((a, b) => a - b);
+
+        if (numericDeckValues.length > 0) {
+            let closestVal = numericDeckValues[0];
+            let minDiff = Math.abs(average - closestVal);
+
+            for (const val of numericDeckValues) {
+                const diff = Math.abs(average - val);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestVal = val;
+                }
+            }
+            suggestion = closestVal;
         }
     }
 

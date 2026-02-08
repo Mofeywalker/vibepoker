@@ -23,7 +23,7 @@ export interface Results {
   average: number | null;
   median: number | null;
   mode: CardValue | null;
-  suggestion: number | null;
+  suggestion: string | number | null;
   breakdown: { value: CardValue; count: number }[];
   acceptedValue?: CardValue;
 }
