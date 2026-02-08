@@ -1,6 +1,6 @@
 
 import { describe, it, expect } from 'vitest';
-import { calculateResults } from '../../../party/vibepoker';
+import { calculateResults } from '../../lib/poker-logic';
 import { Player } from '../../types';
 
 describe('calculateResults', () => {
