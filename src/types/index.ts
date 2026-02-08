@@ -20,8 +20,8 @@ export interface Player {
 }
 
 export interface Results {
-  average: number | null;
-  median: number | null;
+  average: string | number | null;
+  median: string | number | null;
   mode: CardValue | null;
   suggestion: string | number | null;
   breakdown: { value: CardValue; count: number }[];

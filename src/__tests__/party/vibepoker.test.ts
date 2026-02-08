@@ -20,7 +20,7 @@ describe('calculateResults', () => {
         // Average: 2 (S)
         const results = calculateResults(players, 'tshirt');
         expect(results.suggestion).toBe('S');
-        expect(results.average).toBe(2);
+        expect(results.average).toBe('S');
     });
 
     it('should calculate T-shirt suggestion correctly (Average falls between values)', () => {
@@ -34,7 +34,7 @@ describe('calculateResults', () => {
         // So M is closer.
         const results = calculateResults(players, 'tshirt');
         expect(results.suggestion).toBe('M');
-        expect(results.average).toBe(3.5);
+        expect(results.average).toBe('M'); // Was 3.5
     });
 
     it('should calculate T-shirt suggestion correctly (Rounding up)', () => {
@@ -45,10 +45,7 @@ describe('calculateResults', () => {
         // Average: 4. Closest to 4 is M (3) or L (5)?
         // 4 - 3 = 1
         // 5 - 4 = 1
-        // Distances are equal. Our logic picks the first one found that is strictly smaller?
-        // Logic: if (diff < minDiff). Since M comes before L in the list.
-        // It will pick M first. Then check L. Diff is same. Condition is <, so it keeps M.
-        // Let's verify what we want. Usually we don't care much, but let's see.
+        // Distances are equal. Picks first in loop (M).
         const results = calculateResults(players, 'tshirt');
         expect(results.suggestion).toBe('M');
     });
@@ -61,7 +58,7 @@ describe('calculateResults', () => {
         ];
         const results = calculateResults(players, 'tshirt');
         expect(results.suggestion).toBe('S');
-        expect(results.average).toBe(2);
+        expect(results.average).toBe('S'); // Was 2
     });
 
     it('should fall back to basic results if no valid values', () => {
