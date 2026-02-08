@@ -12,8 +12,8 @@ A real-time Planning Poker application for agile teams to estimate story points 
 
 - **Real-time Collaboration** — Instant synchronization across all participants using PartyKit
 - **No Registration Required** — Create or join rooms instantly with just a name
-- **Fibonacci Voting** — Standard Planning Poker card values: ?, 0, 1, 2, 3, 5, 8, 13, 20, ∞
-- **Smart Suggestions** — Automatic calculation of average, median, mode, and Fibonacci-aligned suggestions
+- **Flexible Deck Types** — Choose from Fibonacci, Scrum, Sequential, Hourly, or T-Shirt sizing
+- **Smart Suggestions** — Automatic calculation of average, median, mode, and deck-aligned suggestions
 - **Estimation History** — Track all accepted estimations with topics and timestamps
 - **Internationalization** — Full support for English and German (auto-detects browser language)
 - **Dark Mode** — Beautiful light/dark theme with system preference detection
@@ -113,7 +113,7 @@ npm test
 npm run test:watch
 ```
 
-Current test coverage: **26 tests** across 5 component test suites.
+Run unit tests for components and logic using Vitest.
 
 ## 📁 Project Structure
 
@@ -158,15 +158,18 @@ Translation files are located in `messages/`.
 
 ## 🎨 Customization
 
-### Card Values
+### Card Values & Decks
 
-Edit `src/types/index.ts` to customize the Fibonacci sequence:
+Edit `src/types/index.ts` to customize the available decks or add new ones:
 
 ```typescript
-export const CARD_VALUES = ['?', '0', '1', '2', '3', '5', '8', '13', '20', '∞'] as const;
+export const DECKS = {
+  fibonacci: ['0', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89', '?', '☕'],
+  // ... other decks
+} as const;
 ```
 
-Don't forget to update the `FIBONACCI` array in `party/vibepoker.ts` for accurate suggestions.
+Remember to update `party/vibepoker.ts` if you introduce non-numeric decks that require custom calculation logic.
 
 ## 🏛️ Architecture
 
