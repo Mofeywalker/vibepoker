@@ -22,10 +22,28 @@ export function validateTopic(topic: unknown): string {
     return topic.trim().slice(0, MAX_TOPIC_LENGTH).replace(/[<>&"']/g, '');
 }
 
+/**
+ * Normalizes a card value by removing emoji variation selectors
+ * and performing standard Unicode normalization.
+ */
+export function normalizeCardValue(value: string): string {
+    return value
+        .normalize('NFC')
+        .replace(/\ufe0f/g, '');
+}
+
 export function validateCardValue(value: unknown, deckType: DeckType = 'scrum'): CardValue | null {
     if (typeof value !== 'string') return null;
+
+    const normalizedValue = normalizeCardValue(value);
     const validCards = DECKS[deckType] || DECKS.scrum;
-    return (validCards as readonly string[]).includes(value) ? value as CardValue : null;
+
+    // Find a matching card in the deck using normalized comparison
+    const matchedCard = (validCards as readonly string[]).find(
+        card => normalizeCardValue(card) === normalizedValue
+    );
+
+    return (matchedCard as CardValue) || null;
 }
 
 // Helper to find closest T-shirt size

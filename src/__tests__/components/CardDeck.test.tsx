@@ -49,4 +49,17 @@ describe('CardDeck', () => {
 
         expect(handleSelect).not.toHaveBeenCalled();
     });
+
+    it('toggles the mug card', () => {
+        const handleSelect = vi.fn();
+        const { rerender } = render(<CardDeck selectedCard={null} onSelectCard={handleSelect} values={deck} />);
+
+        const mugCard = screen.getByText('☕');
+        fireEvent.click(mugCard);
+        expect(handleSelect).toHaveBeenCalledWith('☕');
+
+        rerender(<CardDeck selectedCard="☕" onSelectCard={handleSelect} values={deck} />);
+        fireEvent.click(mugCard);
+        expect(handleSelect).toHaveBeenCalledWith(null);
+    });
 });
