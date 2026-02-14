@@ -22,10 +22,42 @@ export function validateTopic(topic: unknown): string {
     return topic.trim().slice(0, MAX_TOPIC_LENGTH).replace(/[<>&"']/g, '');
 }
 
+/**
+ * Normalizes a card value by removing emoji variation selectors
+ * and performing standard Unicode normalization.
+ */
+export function normalizeCardValue(value: string): string {
+    const normalized = value
+        .trim()
+        .normalize('NFC')
+        // Strip emoji/text presentation selectors (e.g. ☕️ / ☕︎)
+        .replace(/[\ufe0e\ufe0f]/g, '');
+
+    // Accept common alternate encodings for "½" that might appear across clients.
+    if (normalized === '1/2' || normalized === '0.5') return '½';
+
+    return normalized;
+}
+
 export function validateCardValue(value: unknown, deckType: DeckType = 'scrum'): CardValue | null {
-    if (typeof value !== 'string') return null;
+    let strValue: string;
+    if (typeof value === 'string') {
+        strValue = value;
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+        strValue = String(value);
+    } else {
+        return null;
+    }
+
+    const normalizedValue = normalizeCardValue(strValue);
     const validCards = DECKS[deckType] || DECKS.scrum;
-    return (validCards as readonly string[]).includes(value) ? value as CardValue : null;
+
+    // Find a matching card in the deck using normalized comparison
+    const matchedCard = (validCards as readonly string[]).find(
+        card => normalizeCardValue(card) === normalizedValue
+    );
+
+    return (matchedCard as CardValue) || null;
 }
 
 // Helper to find closest T-shirt size

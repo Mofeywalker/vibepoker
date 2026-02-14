@@ -76,7 +76,7 @@ function CardComponent({
     if (isRevealed) {
         return (
             <div className={revealedClasses}>
-                <span className="drop-shadow-lg">{value}</span>
+                <span className="drop-shadow-lg emoji-text">{value}</span>
             </div>
         );
     }
@@ -87,11 +87,11 @@ function CardComponent({
             disabled={disabled}
             className={frontClasses}
         >
-            <span className={`drop-shadow-lg ${isSelected ? 'scale-110' : ''}`}>
+            <span className={`drop-shadow-lg emoji-text ${isSelected ? 'scale-110' : ''}`}>
                 {value}
             </span>
             {isSelected && (
-                <div className="absolute inset-0 rounded-xl bg-violet-500/10 animate-pulse" />
+                <div className="absolute inset-0 rounded-xl bg-violet-500/10 animate-pulse pointer-events-none" />
             )}
         </button>
     );

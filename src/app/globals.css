@@ -191,3 +191,9 @@ body {
   background: rgba(139, 92, 246, 0.4);
   color: white;
 }
+
+/* Emoji rendering - ensures emoji-default presentation in Firefox */
+.emoji-text {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif;
+  text-rendering: optimizeLegibility;
+}
