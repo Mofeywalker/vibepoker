@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateCardValue, normalizeCardValue } from '../../lib/poker-logic';
+import { validateCardValue, normalizeCardValue, getInitials, getAvatarColor } from '../../lib/poker-logic';
 import { DECKS } from '../../types';
 
 describe('poker-logic normalization', () => {
@@ -47,3 +47,49 @@ describe('poker-logic normalization', () => {
         }
     });
 });
+
+describe('getInitials', () => {
+    it('should return two initials for multiple names', () => {
+        expect(getInitials('John Doe')).toBe('JD');
+        expect(getInitials('Alice Bob Charlie')).toBe('AB');
+    });
+
+    it('should handle single names', () => {
+        expect(getInitials('John')).toBe('J');
+    });
+
+    it('should handle multiple spaces', () => {
+        expect(getInitials('  John   Doe  ')).toBe('JD');
+    });
+
+    it('should uppercase initials', () => {
+        expect(getInitials('john doe')).toBe('JD');
+    });
+});
+
+describe('getAvatarColor', () => {
+    it('should be deterministic for same name and id', () => {
+        const color1 = getAvatarColor('Alice', 'id1');
+        const color2 = getAvatarColor('Alice', 'id1');
+        expect(color1).toBe(color2);
+    });
+
+    it('should return different colors for different ids with same name', () => {
+        const color1 = getAvatarColor('Alice', 'id1');
+        const color2 = getAvatarColor('Alice', 'id2');
+        expect(color1).not.toBe(color2);
+    });
+
+    it('should return different colors for different names', () => {
+        const color1 = getAvatarColor('Alice', 'id1');
+        const color2 = getAvatarColor('Bob', 'id1');
+        expect(color1).not.toBe(color2);
+    });
+
+    it('should return a valid linear-gradient string', () => {
+        const color = getAvatarColor('Alice', 'id1');
+        expect(color).toMatch(/^linear-gradient\(135deg, hsl\(\d+, \d+%, \d+%\), hsl\(\d+, \d+%, \d+%\)\)$/);
+    });
+});
+
+

@@ -17,6 +17,34 @@ export function validatePlayerName(name: unknown): string | null {
     return trimmed.replace(/[<>&"']/g, '');
 }
 
+export function getInitials(name: string): string {
+    return name
+        .trim()
+        .split(/\s+/)
+        .map(part => part[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+}
+
+export function getAvatarColor(name: string, id: string): string {
+    let hash = 0;
+    // Use name for the base color, but add ID to ensure uniqueness for collisions
+    const str = name + id;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const h = Math.abs(hash) % 360;
+    const s = 65 + (Math.abs(hash >> 8) % 20); // 65-85% saturation
+    const l = 45 + (Math.abs(hash >> 16) % 10); // 45-55% lightness
+    
+    const color1 = `hsl(${h}, ${s}%, ${l}%)`;
+    const color2 = `hsl(${(h + 40) % 360}, ${s}%, ${l - 5}%)`;
+    
+    return `linear-gradient(135deg, ${color1}, ${color2})`;
+}
+
 export function validateTopic(topic: unknown): string {
     if (typeof topic !== 'string') return '';
     return topic.trim().slice(0, MAX_TOPIC_LENGTH).replace(/[<>&"']/g, '');

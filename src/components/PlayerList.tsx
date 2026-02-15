@@ -4,39 +4,13 @@ import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Player } from '@/types';
 import { Card } from './Card';
+import { getInitials, getAvatarColor } from '@/lib/poker-logic';
 
 interface PlayerItemProps {
     player: Player;
     isCurrentPlayer: boolean;
     hasCard: boolean;
     isRevealed: boolean;
-}
-
-function getInitials(name: string): string {
-    return name
-        .split(' ')
-        .map(part => part[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-}
-
-function getAvatarColor(name: string): string {
-    const colors = [
-        'from-pink-500 to-rose-500',
-        'from-violet-500 to-purple-500',
-        'from-blue-500 to-cyan-500',
-        'from-emerald-500 to-teal-500',
-        'from-amber-500 to-orange-500',
-        'from-red-500 to-pink-500',
-    ];
-
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    return colors[Math.abs(hash) % colors.length];
 }
 
 const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed }: PlayerItemProps) => {
@@ -61,11 +35,10 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed }: Playe
             )}
 
             {/* Avatar */}
-            <div className={`
-                w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(player.name)}
-                flex items-center justify-center text-white font-bold text-lg
-                shadow-lg
-            `}>
+            <div 
+                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                style={{ background: getAvatarColor(player.name, player.id) }}
+            >
                 {getInitials(player.name)}
             </div>
 
