@@ -1,6 +1,6 @@
 import PartySocket from 'partysocket';
 import type { RealtimeClient, ConnectionConfig } from './types';
-import type { Room, CardValue, DeckType } from '@/types';
+import type { Room, CardValue, DeckType, RoundingPreference } from '@/types';
 
 export class PartyKitClient implements RealtimeClient {
     private socket: PartySocket | null = null;
@@ -101,5 +101,9 @@ export class PartyKitClient implements RealtimeClient {
 
     revote(): void {
         this.send({ type: 'revote' });
+    }
+
+    setRounding(rounding: RoundingPreference): void {
+        this.send({ type: 'set-rounding', rounding });
     }
 }

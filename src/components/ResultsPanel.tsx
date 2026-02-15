@@ -3,18 +3,20 @@
 
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { CARD_VALUES, type Results, type CardValue } from '@/types';
+import { CARD_VALUES, type Results, type CardValue, type RoundingPreference } from '@/types';
 
 interface ResultsPanelProps {
     results: Results;
     isHost: boolean;
     validCards: readonly string[];
+    roundingPreference?: RoundingPreference;
     onAccept: (value: CardValue) => void;
     onRevote: () => void;
     onStartNewRound: () => void;
+    onSetRounding?: (rounding: RoundingPreference) => void;
 }
 
-function ResultsPanelComponent({ results, isHost, validCards, onAccept, onRevote, onStartNewRound }: ResultsPanelProps) {
+function ResultsPanelComponent({ results, isHost, validCards, roundingPreference = 'down', onAccept, onRevote, onStartNewRound, onSetRounding }: ResultsPanelProps) {
     const t = useTranslations('results');
 
     // If result is accepted, show summary view
@@ -62,6 +64,32 @@ function ResultsPanelComponent({ results, isHost, validCards, onAccept, onRevote
                 </span>
                 {t('title')}
             </h3>
+
+            {/* Rounding controls for host */}
+            {isHost && onSetRounding && (
+                <div className="flex justify-center mb-6">
+                    <div className="bg-slate-100 dark:bg-slate-700/30 p-1 rounded-xl inline-flex border border-slate-200 dark:border-slate-700/50">
+                        <button
+                            onClick={() => onSetRounding('down')}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${roundingPreference === 'down'
+                                ? 'bg-white dark:bg-slate-600 text-violet-600 dark:text-violet-300 shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                }`}
+                        >
+                            {t('roundDown')}
+                        </button>
+                        <button
+                            onClick={() => onSetRounding('up')}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${roundingPreference === 'up'
+                                ? 'bg-white dark:bg-slate-600 text-violet-600 dark:text-violet-300 shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                }`}
+                        >
+                            {t('roundUp')}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {/* Suggestion - highlighted */}

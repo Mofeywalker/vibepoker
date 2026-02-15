@@ -95,4 +95,15 @@ describe('ResultsPanel', () => {
         fireEvent.click(screen.getByText('Start New Round'));
         expect(onStartNewRound).toHaveBeenCalled();
     });
+
+    it('shows rounding toggle for host', () => {
+        const onSetRounding = vi.fn();
+        render(<ResultsPanel {...defaultProps} isHost={true} onSetRounding={onSetRounding} />);
+
+        expect(screen.getByText('Round Up')).toBeInTheDocument();
+        expect(screen.getByText('Round Down')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('Round Up'));
+        expect(onSetRounding).toHaveBeenCalledWith('up');
+    });
 });

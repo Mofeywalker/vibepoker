@@ -1,4 +1,4 @@
-import { DECKS, type DeckType, type CardValue, type Player, type Results } from '@/types';
+import { DECKS, type DeckType, type CardValue, type Player, type Results, type RoundingPreference } from '@/types';
 
 // Constants
 export const MAX_NAME_LENGTH = 50;
@@ -88,26 +88,26 @@ export function validateCardValue(value: unknown, deckType: DeckType = 'scrum'):
     return (matchedCard as CardValue) || null;
 }
 
-// Helper to find closest T-shirt size
-function findClosestTshirtSize(value: number, deckValues: readonly string[]): string {
-    let minDiff = Number.MAX_VALUE;
-    let closestSize = deckValues[0];
+// Helper to find closest or rounded T-shirt size
+function findTshirtSize(value: number, deckValues: readonly string[], rounding: RoundingPreference = 'down'): string {
+    const numericDeck = deckValues
+        .map(size => ({ size, val: TSHIRT_VALUES[size] }))
+        .filter(item => item.val !== undefined)
+        .sort((a, b) => a.val - b.val);
 
-    for (const size of deckValues) {
-        const val = TSHIRT_VALUES[size];
-        if (val !== undefined) {
-            const diff = Math.abs(value - val);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closestSize = size;
-            }
-        }
+    if (numericDeck.length === 0) return deckValues[0];
+
+    if (rounding === 'up') {
+        const found = numericDeck.find(item => item.val >= value);
+        return found ? found.size : numericDeck[numericDeck.length - 1].size;
+    } else {
+        const found = [...numericDeck].reverse().find(item => item.val <= value);
+        return found ? found.size : numericDeck[0].size;
     }
-    return closestSize;
 }
 
 // Result Calculation
-export function calculateResults(players: Player[], deckType: DeckType = 'scrum'): Results {
+export function calculateResults(players: Player[], deckType: DeckType = 'scrum', rounding: RoundingPreference = 'down'): Results {
     const allCards = players.map(p => p.selectedCard).filter((card): card is CardValue => card !== null);
 
     // Count occurrences
@@ -157,9 +157,9 @@ export function calculateResults(players: Player[], deckType: DeckType = 'scrum'
     let median: string | number | null = null;
 
     if (deckType === 'tshirt') {
-        suggestion = findClosestTshirtSize(numericAverage, deckValues);
-        average = findClosestTshirtSize(numericAverage, deckValues);
-        median = findClosestTshirtSize(numericMedian, deckValues);
+        suggestion = findTshirtSize(numericAverage, deckValues, rounding);
+        average = findTshirtSize(numericAverage, deckValues, rounding);
+        median = findTshirtSize(numericMedian, deckValues, rounding);
     } else {
         // Numeric decks
         const numericDeckValues = deckValues
@@ -168,17 +168,16 @@ export function calculateResults(players: Player[], deckType: DeckType = 'scrum'
             .sort((a, b) => a - b);
 
         if (numericDeckValues.length > 0) {
-            let closestVal = numericDeckValues[0];
-            let minDiff = Math.abs(numericAverage - closestVal);
-
-            for (const val of numericDeckValues) {
-                const diff = Math.abs(numericAverage - val);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestVal = val;
-                }
+            if (rounding === 'up') {
+                const found = numericDeckValues.find(v => v >= numericAverage);
+                suggestion = found !== undefined ? found : numericDeckValues[numericDeckValues.length - 1];
+            } else {
+                const found = [...numericDeckValues].reverse().find(v => v <= numericAverage);
+                suggestion = found !== undefined ? found : numericDeckValues[0];
             }
-            suggestion = closestVal;
+
+            // Convert back to string representation if it was '½'
+            if (suggestion === 0.5) suggestion = '½';
         }
 
         average = Math.round(numericAverage * 10) / 10;

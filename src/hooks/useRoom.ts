@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { PartyKitClient } from '@/lib/realtime/partykit-client';
-import type { Room, Player, CardValue, DeckType } from '@/types';
+import type { Room, Player, CardValue, DeckType, RoundingPreference } from '@/types';
 
 interface UseRoomReturn {
     room: Room | null;
@@ -19,6 +19,7 @@ interface UseRoomReturn {
     updateTopic: (topic: string) => void;
     acceptEstimation: (value: CardValue) => void;
     revote: () => void;
+    setRounding: (rounding: RoundingPreference) => void;
     playersWithCards: Set<string>;
 }
 
@@ -125,6 +126,8 @@ export function useRoom(): UseRoomReturn {
         resetRound: useCallback(() =>
             clientRef.current?.resetRound(), []),
         revote: useCallback(() =>
-            clientRef.current?.revote(), [])
+            clientRef.current?.revote(), []),
+        setRounding: useCallback((rounding: RoundingPreference) =>
+            clientRef.current?.setRounding(rounding), [])
     };
 }

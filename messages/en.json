@@ -58,6 +58,9 @@
         "topic": "Topic",
         "estimate": "Estimate",
         "revote": "Re-vote",
+        "rounding": "Rounding",
+        "roundUp": "Round Up",
+        "roundDown": "Round Down",
         "acceptedResult": "Result Accepted",
         "startNewRound": "Start New Round"
     },

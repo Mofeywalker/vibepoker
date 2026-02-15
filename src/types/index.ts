@@ -11,6 +11,7 @@ export type DeckType = keyof typeof DECKS;
 export type CardValue = string;
 export const CARD_VALUES = DECKS.scrum; // Default for backward compatibility/imports
 
+export type RoundingPreference = 'up' | 'down';
 
 export interface Player {
   id: string;
@@ -40,6 +41,7 @@ export interface Room {
   hostId: string;
   topic: string | null;
   deckType?: DeckType;
+  roundingPreference?: RoundingPreference;
   players: Player[];
   isRevealed: boolean;
   results: Results | null;

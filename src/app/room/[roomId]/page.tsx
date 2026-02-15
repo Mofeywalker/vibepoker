@@ -26,6 +26,7 @@ export default function RoomPage() {
         updateTopic,
         acceptEstimation,
         revote,
+        setRounding,
         playersWithCards
     } = useRoom();
 
@@ -300,9 +301,11 @@ export default function RoomPage() {
                                 results={room.results}
                                 isHost={isHost}
                                 validCards={deckValues}
+                                roundingPreference={room.roundingPreference}
                                 onAccept={acceptEstimation}
                                 onRevote={revote}
                                 onStartNewRound={resetRound}
+                                onSetRounding={setRounding}
                             />
                         )}
 

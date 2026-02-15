@@ -58,6 +58,9 @@
         "topic": "Thema",
         "estimate": "Schätzung",
         "revote": "Neu abstimmen",
+        "rounding": "Rundung",
+        "roundUp": "Aufrunden",
+        "roundDown": "Abrunden",
         "acceptedResult": "Ergebnis akzeptiert",
         "startNewRound": "Neue Runde starten"
     },

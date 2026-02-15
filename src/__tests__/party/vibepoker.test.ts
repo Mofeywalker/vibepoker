@@ -80,4 +80,38 @@ describe('calculateResults', () => {
         expect(results.suggestion).toBe(2);
         expect(results.average).toBe(2);
     });
+
+    it('should respect rounding preference (Round Down)', () => {
+        const players = [
+            createPlayer('1', '3'),
+            createPlayer('2', '5')
+        ];
+        // Average: 4. Deck: [..., 3, 5, ...]
+        const results = calculateResults(players, 'scrum', 'down');
+        expect(results.suggestion).toBe(3);
+    });
+
+    it('should respect rounding preference (Round Up)', () => {
+        const players = [
+            createPlayer('1', '3'),
+            createPlayer('2', '5')
+        ];
+        // Average: 4. Deck: [..., 3, 5, ...]
+        const results = calculateResults(players, 'scrum', 'up');
+        expect(results.suggestion).toBe(5);
+    });
+
+    it('should respect rounding preference for T-shirt deck', () => {
+        const players = [
+            createPlayer('1', 'S'), // 2
+            createPlayer('2', 'L')  // 5
+        ];
+        // Average: 3.5. Deck: [XS(1), S(2), M(3), L(5), ...]
+        
+        const downResults = calculateResults(players, 'tshirt', 'down');
+        expect(downResults.suggestion).toBe('M'); // 3 <= 3.5
+        
+        const upResults = calculateResults(players, 'tshirt', 'up');
+        expect(upResults.suggestion).toBe('L'); // 5 >= 3.5
+    });
 });

@@ -1,4 +1,4 @@
-import type { Room, CardValue, DeckType } from '@/types';
+import type { Room, CardValue, DeckType, RoundingPreference } from '@/types';
 
 export interface ConnectionConfig {
     roomId: string;
@@ -24,4 +24,5 @@ export interface RealtimeClient {
     acceptEstimation(value: CardValue): void;
     resetRound(): void;
     revote(): void;
+    setRounding(rounding: RoundingPreference): void;
 }

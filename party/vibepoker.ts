@@ -29,7 +29,8 @@ export default class VibePOKERServer implements Party.Server {
                     players: [],
                     isRevealed: false,
                     results: null,
-                    history: []
+                    history: [],
+                    roundingPreference: 'down'
                 };
                 await this.room.storage.put("room-state", initialRoom);
             }
@@ -128,6 +129,9 @@ export default class VibePOKERServer implements Party.Server {
                     case "revote":
                         shouldBroadcast = this.handleRevote(room, sender.id);
                         break;
+                    case "set-rounding":
+                        shouldBroadcast = this.handleSetRounding(room, sender.id, msg.rounding);
+                        break;
                 }
 
                 if (shouldBroadcast) {
@@ -198,7 +202,23 @@ export default class VibePOKERServer implements Party.Server {
         if (room.hostId !== playerId) return false;
 
         room.isRevealed = true;
-        room.results = calculateResults(room.players, room.deckType);
+        room.results = calculateResults(room.players, room.deckType, room.roundingPreference);
+        return true;
+    }
+
+    private handleSetRounding(room: Room, playerId: string, rounding: unknown): boolean {
+        if (room.hostId !== playerId) return false;
+        if (rounding !== 'up' && rounding !== 'down') return false;
+
+        if (room.roundingPreference === rounding) return false;
+
+        room.roundingPreference = rounding;
+        
+        // If cards are already revealed, recalculate results with new rounding
+        if (room.isRevealed) {
+            room.results = calculateResults(room.players, room.deckType, room.roundingPreference);
+        }
+        
         return true;
     }
 
