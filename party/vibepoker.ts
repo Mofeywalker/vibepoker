@@ -30,7 +30,8 @@ export default class VibePOKERServer implements Party.Server {
                     isRevealed: false,
                     results: null,
                     history: [],
-                    roundingPreference: 'down'
+                    roundingPreference: 'down',
+                    lastActivityAt: Date.now()
                 };
                 await this.room.storage.put("room-state", initialRoom);
             }
@@ -41,6 +42,7 @@ export default class VibePOKERServer implements Party.Server {
 
     async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
         try {
+            await this.room.storage.deleteAlarm();
             const url = new URL(ctx.request.url);
             const playerName = url.searchParams.get("name");
             const deckType = url.searchParams.get("deckType") as DeckType | null;
@@ -109,6 +111,7 @@ export default class VibePOKERServer implements Party.Server {
                 if (!room) return;
 
                 let shouldBroadcast = false;
+                room.lastActivityAt = Date.now();
 
                 switch (msg.type) {
                     case "select-card":
@@ -162,11 +165,26 @@ export default class VibePOKERServer implements Party.Server {
                 room.players[0].isHost = true;
             }
 
+            room.lastActivityAt = Date.now();
+
+            if (room.players.length === 0) {
+                // Schedule deletion in 24 hours
+                await txn.setAlarm(Date.now() + 24 * 60 * 60 * 1000);
+            }
+
             await txn.put("room-state", room);
             return room;
         }).then((room) => {
             if (room) this.broadcastRoomState(room as Room);
         });
+    }
+
+    async onAlarm() {
+        const room = await this.room.storage.get<Room>("room-state");
+        if (room && room.players.length === 0) {
+            await this.room.storage.deleteAll();
+            console.log(`Room ${this.room.id} deleted due to inactivity.`);
+        }
     }
 
     private broadcastRoomState(room: Room) {

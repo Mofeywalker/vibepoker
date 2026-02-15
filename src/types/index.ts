@@ -46,6 +46,7 @@ export interface Room {
   isRevealed: boolean;
   results: Results | null;
   history: EstimationHistoryItem[];
+  lastActivityAt?: number;
 }
 
 // Socket event types
