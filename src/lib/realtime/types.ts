@@ -25,4 +25,5 @@ export interface RealtimeClient {
     resetRound(): void;
     revote(): void;
     setRounding(rounding: RoundingPreference): void;
+    transferHost(targetId: string): void;
 }

@@ -27,6 +27,7 @@ export default function RoomPage() {
         acceptEstimation,
         revote,
         setRounding,
+        transferHost,
         playersWithCards
     } = useRoom();
 
@@ -35,6 +36,24 @@ export default function RoomPage() {
     const [copySuccess, setCopySuccess] = useState(false);
     const [isEditingTopic, setIsEditingTopic] = useState(false);
     const [topicInput, setTopicInput] = useState('');
+    const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
+    const prevHostId = useRef<string | null>(null);
+
+    // Watch for host changes to show toast
+    useEffect(() => {
+        if (room?.hostId && prevHostId.current && room.hostId !== prevHostId.current) {
+            const newHost = room.players.find(p => p.id === room.hostId);
+            if (newHost) {
+                setToast({
+                    message: t('hostChanged', { name: newHost.name }),
+                    visible: true
+                });
+                const timer = setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+                return () => clearTimeout(timer);
+            }
+        }
+        prevHostId.current = room?.hostId || null;
+    }, [room?.hostId, room?.players, t]);
 
     // Sync topic input when room updates
     useEffect(() => {
@@ -320,6 +339,8 @@ export default function RoomPage() {
                             currentPlayerId={currentPlayer?.id}
                             isRevealed={room.isRevealed}
                             playersWithCards={playersWithCards}
+                            onTransferHost={transferHost}
+                            canTransferHost={isHost}
                         />
 
                         {/* Card deck (only when not revealed) */}
@@ -360,6 +381,16 @@ export default function RoomPage() {
                     isLoading={isLoading}
                     error={error}
                 />
+            )}
+
+            {/* Simple Toast */}
+            {toast.visible && (
+                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-bounce-in">
+                    <div className="bg-slate-900 dark:bg-violet-600 text-white px-6 py-3 rounded-full shadow-2xl border border-white/10 flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                        <span className="font-medium">{toast.message}</span>
+                    </div>
+                </div>
             )}
         </main>
     );

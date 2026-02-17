@@ -32,7 +32,8 @@
         "votedOf": "{voted}/{total} voted",
         "readyToReveal": "Ready to reveal!",
         "reveal": "Reveal",
-        "newRound": "New Round"
+        "newRound": "New Round",
+        "hostChanged": "{name} is now the host"
     },
     "join": {
         "title": "Join Room",
@@ -44,7 +45,9 @@
     },
     "players": {
         "title": "Players",
-        "you": "(You)"
+        "you": "(You)",
+        "makeHost": "Make Host",
+        "host": "Host"
     },
     "results": {
         "title": "Results",

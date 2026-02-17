@@ -106,4 +106,8 @@ export class PartyKitClient implements RealtimeClient {
     setRounding(rounding: RoundingPreference): void {
         this.send({ type: 'set-rounding', rounding });
     }
+
+    transferHost(targetId: string): void {
+        this.send({ type: 'transfer-host', targetId });
+    }
 }

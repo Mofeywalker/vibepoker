@@ -135,6 +135,9 @@ export default class VibePOKERServer implements Party.Server {
                     case "set-rounding":
                         shouldBroadcast = this.handleSetRounding(room, sender.id, msg.rounding);
                         break;
+                    case "transfer-host":
+                        shouldBroadcast = this.handleTransferHost(room, sender.id, msg.targetId);
+                        break;
                 }
 
                 if (shouldBroadcast) {
@@ -284,6 +287,24 @@ export default class VibePOKERServer implements Party.Server {
         room.isRevealed = false;
         room.results = null;
         room.players.forEach(p => p.selectedCard = null);
+        return true;
+    }
+
+    private handleTransferHost(room: Room, playerId: string, targetId: unknown): boolean {
+        if (room.hostId !== playerId) return false;
+        if (typeof targetId !== 'string') return false;
+        if (playerId === targetId) return false;
+
+        const targetPlayer = room.players.find(p => p.id === targetId);
+        if (!targetPlayer) return false;
+
+        const currentPlayer = room.players.find(p => p.id === playerId);
+        if (currentPlayer) {
+            currentPlayer.isHost = false;
+        }
+
+        room.hostId = targetId;
+        targetPlayer.isHost = true;
         return true;
     }
 }
