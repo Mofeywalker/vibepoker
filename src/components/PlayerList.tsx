@@ -11,15 +11,17 @@ interface PlayerItemProps {
     isCurrentPlayer: boolean;
     hasCard: boolean;
     isRevealed: boolean;
+    onTransferHost?: (playerId: string) => void;
+    canTransferHost?: boolean;
 }
 
-const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed }: PlayerItemProps) => {
+const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTransferHost, canTransferHost }: PlayerItemProps) => {
     const t = useTranslations('players');
 
     return (
         <div
             className={`
-                relative flex flex-col items-center gap-3 p-4 rounded-2xl
+                relative group/player flex flex-col items-center gap-3 p-4 rounded-2xl
                 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border
                 ${isCurrentPlayer
                     ? 'border-violet-500/50 bg-violet-100/50 dark:bg-violet-900/20 shadow-sm'
@@ -29,9 +31,27 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed }: Playe
         >
             {/* Host badge */}
             {player.isHost && (
-                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg">
-                    Host
+                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg z-10">
+                    {t('host')}
                 </div>
+            )}
+
+            {/* Transfer Host Button */}
+            {canTransferHost && !player.isHost && onTransferHost && (
+                <button
+                    onClick={() => onTransferHost(player.id)}
+                    className="
+                        absolute -top-2 -right-2 opacity-0 group-hover/player:opacity-100
+                        bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400
+                        hover:bg-amber-50 dark:hover:bg-amber-900/20
+                        border border-amber-200 dark:border-amber-800
+                        text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm
+                        transition-all duration-200 z-10
+                    "
+                    title={t('makeHost')}
+                >
+                    {t('makeHost')}
+                </button>
             )}
 
             {/* Avatar */}
@@ -91,9 +111,11 @@ interface PlayerListProps {
     currentPlayerId: string | undefined;
     isRevealed: boolean;
     playersWithCards: Set<string>;
+    onTransferHost?: (playerId: string) => void;
+    canTransferHost?: boolean;
 }
 
-function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWithCards }: PlayerListProps) {
+function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWithCards, onTransferHost, canTransferHost }: PlayerListProps) {
     const t = useTranslations('players');
 
     return (
@@ -109,6 +131,8 @@ function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWith
                         isCurrentPlayer={player.id === currentPlayerId}
                         hasCard={playersWithCards.has(player.id)}
                         isRevealed={isRevealed}
+                        onTransferHost={onTransferHost}
+                        canTransferHost={canTransferHost}
                     />
                 ))}
             </div>

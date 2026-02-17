@@ -32,7 +32,8 @@
         "votedOf": "{voted}/{total} gewählt",
         "readyToReveal": "Bereit zum Aufdecken!",
         "reveal": "Aufdecken",
-        "newRound": "Neue Runde"
+        "newRound": "Neue Runde",
+        "hostChanged": "{name} ist jetzt der Host"
     },
     "join": {
         "title": "Raum beitreten",
@@ -44,7 +45,9 @@
     },
     "players": {
         "title": "Spieler",
-        "you": "(Du)"
+        "you": "(Du)",
+        "makeHost": "Zum Host machen",
+        "host": "Host"
     },
     "results": {
         "title": "Ergebnis",

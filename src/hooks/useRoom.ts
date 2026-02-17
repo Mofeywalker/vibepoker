@@ -20,6 +20,7 @@ interface UseRoomReturn {
     acceptEstimation: (value: CardValue) => void;
     revote: () => void;
     setRounding: (rounding: RoundingPreference) => void;
+    transferHost: (playerId: string) => void;
     playersWithCards: Set<string>;
 }
 
@@ -128,6 +129,8 @@ export function useRoom(): UseRoomReturn {
         revote: useCallback(() =>
             clientRef.current?.revote(), []),
         setRounding: useCallback((rounding: RoundingPreference) =>
-            clientRef.current?.setRounding(rounding), [])
+            clientRef.current?.setRounding(rounding), []),
+        transferHost: useCallback((playerId: string) =>
+            clientRef.current?.transferHost(playerId), [])
     };
 }
