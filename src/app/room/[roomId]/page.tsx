@@ -41,19 +41,28 @@ export default function RoomPage() {
 
     // Watch for host changes to show toast
     useEffect(() => {
-        if (room?.hostId && prevHostId.current && room.hostId !== prevHostId.current) {
-            const newHost = room.players.find(p => p.id === room.hostId);
+        const currentHostId = room?.hostId || null;
+        if (currentHostId && prevHostId.current && currentHostId !== prevHostId.current) {
+            const newHost = room?.players.find(p => p.id === currentHostId);
             if (newHost) {
                 setToast({
                     message: t('hostChanged', { name: newHost.name }),
                     visible: true
                 });
-                const timer = setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
-                return () => clearTimeout(timer);
             }
         }
-        prevHostId.current = room?.hostId || null;
+        prevHostId.current = currentHostId;
     }, [room?.hostId, room?.players, t]);
+
+    // Handle toast timeout
+    useEffect(() => {
+        if (toast.visible) {
+            const timer = setTimeout(() => {
+                setToast(prev => ({ ...prev, visible: false }));
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast.visible, toast.message]);
 
     // Sync topic input when room updates
     useEffect(() => {
