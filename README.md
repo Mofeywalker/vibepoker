@@ -13,12 +13,13 @@ A real-time Planning Poker application for agile teams to estimate story points 
 - **Real-time Collaboration** — Instant synchronization across all participants using PartyKit
 - **No Registration Required** — Create or join rooms instantly with just a name
 - **Flexible Deck Types** — Choose from Fibonacci, Scrum, Sequential, Hourly, or T-Shirt sizing
-- **Smart Suggestions** — Automatic calculation of average, median, mode, and deck-aligned suggestions
+- **Smart Suggestions** — Automatic calculation of average, median, mode, and deck-aligned suggestions with configurable rounding
 - **Estimation History** — Track all accepted estimations with topics and timestamps
 - **Internationalization** — Full support for English and German (auto-detects browser language)
 - **Dark Mode** — Beautiful light/dark theme with system preference detection
 - **Responsive Design** — Works seamlessly on desktop, tablet, and mobile devices
-- **Host Controls** — Room creator can reveal cards, accept results, and start new rounds
+- **Host Controls** — Room creator can reveal cards, accept results, start new rounds, and transfer host permissions
+- **Auto-Rejoin** — Automatically rejoin your previous room and restore your session after a refresh
 - **Revote Feature** — Re-estimate the same topic without resetting it
 - **Persistent State** — Room data persists using PartyKit's built-in storage
 - **Edge Deployment** — Runs on Cloudflare Workers for global low-latency access
@@ -77,7 +78,7 @@ NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.username.partykit.dev
 
 ## 🎮 How to Use
 
-1. **Create a Room** — Enter your name and click "Create Room"
+1. **Create a Room** — Enter your name, select a deck type, and click "Create Room"
 2. **Share the Link** — Copy the room URL and share it with your team
 3. **Set a Topic** — The host can set the story/task being estimated
 4. **Vote** — Each participant selects their estimate card
@@ -123,9 +124,12 @@ vibepoker/
 │   ├── app/                 # Next.js app router pages
 │   ├── components/          # React components
 │   ├── hooks/               # Custom React hooks (useRoom)
+│   ├── i18n/                # Internationalization config
 │   ├── lib/
-│   │   └── realtime/        # Real-time abstraction layer
+│   │   ├── realtime/        # Real-time abstraction layer
+│   │   └── poker-logic.ts   # Core business logic
 │   ├── providers/           # Theme and other providers
+│   ├── test/                # Test setup and utilities
 │   ├── types/               # TypeScript type definitions
 │   └── __tests__/           # Component tests
 ├── party/
@@ -187,7 +191,7 @@ This architecture allows for:
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is open source and available under the MIT License.
 
 ## 🤝 Contributing
 
