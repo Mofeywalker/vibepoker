@@ -12,7 +12,6 @@ interface UseRoomReturn {
     error: string | null;
     createRoom: (playerName: string, deckType?: DeckType) => Promise<string>;
     joinRoom: (roomId: string, playerName: string, deckType?: DeckType) => Promise<boolean>;
-    rejoinRoom: (roomId: string, playerName: string, deckType?: DeckType) => Promise<boolean>;
     selectCard: (card: CardValue | null) => void;
     revealCards: () => void;
     resetRound: () => void;
@@ -101,11 +100,6 @@ export function useRoom(): UseRoomReturn {
         }
     }, []);
 
-    const rejoinRoom = useCallback(async (roomId: string, playerName: string, deckType?: DeckType): Promise<boolean> => {
-        // PartyKit handles rejoin the same as join
-        return joinRoom(roomId, playerName, deckType);
-    }, [joinRoom]);
-
     return {
         room,
         currentPlayer,
@@ -115,7 +109,6 @@ export function useRoom(): UseRoomReturn {
         playersWithCards,
         createRoom,
         joinRoom,
-        rejoinRoom,
         selectCard: useCallback((card: CardValue | null) =>
             clientRef.current?.selectCard(card), []),
         updateTopic: useCallback((topic: string) =>

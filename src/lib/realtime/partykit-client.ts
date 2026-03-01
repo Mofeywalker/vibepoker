@@ -7,6 +7,7 @@ export class PartyKitClient implements RealtimeClient {
     private roomUpdateCallback: ((room: Room) => void) | null = null;
     private errorCallback: ((error: string) => void) | null = null;
     private _currentPlayerId: string | null = null;
+    private listeners: { type: string; handler: EventListener }[] = [];
 
     get isConnected(): boolean {
         return this.socket?.readyState === WebSocket.OPEN;
@@ -17,6 +18,8 @@ export class PartyKitClient implements RealtimeClient {
     }
 
     async connect(config: ConnectionConfig): Promise<void> {
+        this.disconnect();
+
         const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST || 'localhost:1999';
         this.socket = new PartySocket({
             host,
@@ -30,39 +33,55 @@ export class PartyKitClient implements RealtimeClient {
         return new Promise((resolve, reject) => {
             if (!this.socket) return reject(new Error('Socket not initialized'));
 
-            this.socket.addEventListener('open', () => {
+            const onOpen = () => {
                 this._currentPlayerId = this.socket!.id;
                 resolve();
-            });
+            };
 
-            this.socket.addEventListener('message', (event) => {
+            const onMessage = (event: MessageEvent) => {
                 try {
                     const msg = JSON.parse(event.data);
-
                     if (msg.type === 'room-state') {
                         this.roomUpdateCallback?.(msg.data);
                     }
                 } catch (error) {
                     console.error('Error parsing message:', error);
                 }
-            });
+            };
 
-            this.socket.addEventListener('error', () => {
+            const onError = () => {
                 this.errorCallback?.('Connection error');
                 reject(new Error('Connection error'));
-            });
+            };
 
-            this.socket.addEventListener('close', (event) => {
+            const onClose = (event: CloseEvent) => {
                 if (event.code === 1008) {
                     this.errorCallback?.(event.reason);
                 }
-            });
+            };
+
+            this.listeners = [
+                { type: 'open', handler: onOpen as EventListener },
+                { type: 'message', handler: onMessage as EventListener },
+                { type: 'error', handler: onError as EventListener },
+                { type: 'close', handler: onClose as EventListener },
+            ];
+
+            for (const { type, handler } of this.listeners) {
+                this.socket.addEventListener(type, handler);
+            }
         });
     }
 
     disconnect(): void {
-        this.socket?.close();
+        if (this.socket) {
+            for (const { type, handler } of this.listeners) {
+                this.socket.removeEventListener(type, handler);
+            }
+            this.socket.close();
+        }
         this.socket = null;
+        this.listeners = [];
         this._currentPlayerId = null;
     }
 

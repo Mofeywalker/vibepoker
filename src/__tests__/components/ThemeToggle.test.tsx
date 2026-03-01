@@ -58,7 +58,7 @@ describe('ThemeToggle', () => {
         const button = screen.getByRole('button');
 
         // Should show "Switch to light" title since it's currently dark
-        expect(button).toHaveAttribute('title', 'Zum Light Mode wechseln');
+        expect(button).toHaveAttribute('title', 'Switch to light mode');
 
         fireEvent.click(button);
 
@@ -79,7 +79,7 @@ describe('ThemeToggle', () => {
         const button = screen.getByRole('button');
 
         // Should show "Switch to dark" title since it's currently light
-        expect(button).toHaveAttribute('title', 'Zum Dark Mode wechseln');
+        expect(button).toHaveAttribute('title', 'Switch to dark mode');
 
         fireEvent.click(button);
 

@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, HistoryPanel } from '@/components';
-import { DECKS } from '@/types';
+import { DECKS, type DeckType } from '@/types';
 
 export default function RoomPage() {
     const params = useParams();
@@ -19,7 +19,6 @@ export default function RoomPage() {
         isLoading,
         error,
         joinRoom,
-        rejoinRoom,
         selectCard,
         revealCards,
         resetRound,
@@ -52,7 +51,7 @@ export default function RoomPage() {
             }
         }
         prevHostId.current = currentHostId;
-    }, [room?.hostId, room?.players, t]);
+    }, [room?.hostId, room?.players, t]); // eslint-disable-line react-hooks/exhaustive-deps -- room?.players needed to resolve host name
 
     // Handle toast timeout
     useEffect(() => {
@@ -88,11 +87,11 @@ export default function RoomPage() {
 
         // Check localStorage for saved player name (for rejoining after refresh)
         const savedPlayerName = localStorage.getItem(`vibepoker-player-${roomId}`);
-        const savedDeckType = localStorage.getItem(`vibepoker-deck-${roomId}`) as any;
+        const savedDeckType = localStorage.getItem(`vibepoker-deck-${roomId}`) as DeckType | null;
 
         if (savedPlayerName) {
             // Try to rejoin with saved name
-            rejoinRoom(roomId, savedPlayerName, savedDeckType).then(success => {
+            joinRoom(roomId, savedPlayerName, savedDeckType ?? undefined).then(success => {
                 if (success) {
                     setHasJoined(true);
                 } else {
@@ -111,7 +110,7 @@ export default function RoomPage() {
         if (!room && !savedPlayerName) {
             setShowJoinModal(true);
         }
-    }, [room, hasJoined, isLoading, roomId, rejoinRoom]);
+    }, [room, hasJoined, isLoading, roomId, joinRoom]);
 
     const handleJoin = useCallback(async (name: string) => {
         const success = await joinRoom(roomId, name);

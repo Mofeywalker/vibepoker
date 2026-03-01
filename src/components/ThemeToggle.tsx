@@ -2,10 +2,12 @@
 
 import * as React from 'react';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 
 export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = React.useState(false);
+    const t = useTranslations('theme');
 
     React.useEffect(() => {
         setMounted(true);
@@ -21,17 +23,17 @@ export function ThemeToggle() {
         <button
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
             className="
-        p-2 rounded-lg 
-        bg-white/50 dark:bg-slate-800/50 
-        hover:bg-white dark:hover:bg-slate-700 
-        text-slate-600 dark:text-slate-400 
-        hover:text-slate-900 dark:hover:text-white 
-        border border-slate-200 dark:border-slate-700 
+        p-2 rounded-lg
+        bg-white/50 dark:bg-slate-800/50
+        hover:bg-white dark:hover:bg-slate-700
+        text-slate-600 dark:text-slate-400
+        hover:text-slate-900 dark:hover:text-white
+        border border-slate-200 dark:border-slate-700
         transition-all duration-200
         backdrop-blur-sm
       "
-            aria-label="Theme wechseln"
-            title={isDark ? 'Zum Light Mode wechseln' : 'Zum Dark Mode wechseln'}
+            aria-label={t('toggle')}
+            title={isDark ? t('switchToLight') : t('switchToDark')}
         >
             {isDark ? (
                 // Sun Icon

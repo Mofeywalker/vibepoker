@@ -272,20 +272,19 @@ export default class VibePOKERServer implements Party.Server {
     }
 
     private handleResetRound(room: Room, playerId: string): boolean {
-        if (room.hostId !== playerId) return false;
-
-        room.isRevealed = false;
-        room.results = null;
-        room.topic = null;
-        room.players.forEach(p => p.selectedCard = null);
-        return true;
+        return this.clearRound(room, playerId, true);
     }
 
     private handleRevote(room: Room, playerId: string): boolean {
+        return this.clearRound(room, playerId, false);
+    }
+
+    private clearRound(room: Room, playerId: string, clearTopic: boolean): boolean {
         if (room.hostId !== playerId) return false;
 
         room.isRevealed = false;
         room.results = null;
+        if (clearTopic) room.topic = null;
         room.players.forEach(p => p.selectedCard = null);
         return true;
     }

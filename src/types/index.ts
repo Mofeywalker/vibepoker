@@ -9,7 +9,6 @@ export const DECKS = {
 
 export type DeckType = keyof typeof DECKS;
 export type CardValue = string;
-export const CARD_VALUES = DECKS.scrum; // Default for backward compatibility/imports
 
 export type RoundingPreference = 'up' | 'down';
 
@@ -49,26 +48,3 @@ export interface Room {
   lastActivityAt?: number;
 }
 
-// Socket event types
-export interface ServerToClientEvents {
-  'room-state': (room: Room) => void;
-  'player-joined': (player: Player) => void;
-  'player-left': (playerId: string) => void;
-  'card-selected': (playerId: string, hasCard: boolean) => void;
-  'cards-revealed': (room: Room) => void;
-  'round-reset': () => void;
-  'error': (message: string) => void;
-}
-
-export interface ClientToServerEvents {
-  'create-room': (playerName: string, callback: (roomId: string) => void) => void;
-  'join-room': (roomId: string, playerName: string, callback: (success: boolean, error?: string) => void) => void;
-  'rejoin-room': (roomId: string, playerName: string, callback: (success: boolean) => void) => void;
-  'update-topic': (roomId: string, topic: string) => void;
-  'select-card': (roomId: string, card: CardValue | null) => void;
-  'reveal-cards': (roomId: string) => void;
-  'reset-round': (roomId: string) => void;
-  'revote': (roomId: string) => void;
-  'request-room-state': () => void;
-  'accept-estimation': (roomId: string, value: CardValue) => void;
-}

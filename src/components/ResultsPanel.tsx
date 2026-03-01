@@ -3,7 +3,7 @@
 
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { CARD_VALUES, type Results, type CardValue, type RoundingPreference } from '@/types';
+import { type Results, type CardValue, type RoundingPreference } from '@/types';
 
 interface ResultsPanelProps {
     results: Results;

@@ -70,6 +70,11 @@
     "cardDeck": {
         "selectEstimate": "Wähle deine Schätzung"
     },
+    "theme": {
+        "toggle": "Theme wechseln",
+        "switchToLight": "Zum Light Mode wechseln",
+        "switchToDark": "Zum Dark Mode wechseln"
+    },
     "metadata": {
         "title": "VibePOKER – Planning Poker für Teams",
         "description": "Schätze Story Points gemeinsam im Team mit Echtzeit-Planning-Poker. Keine Anmeldung erforderlich."
