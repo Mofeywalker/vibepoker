@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateCardValue, normalizeCardValue, getInitials, getAvatarColor } from '../../lib/poker-logic';
+import { validateCardValue, normalizeCardValue, getInitials, getAvatarColor, calculateResults } from '../../lib/poker-logic';
 import { DECKS } from '../../types';
 
 describe('poker-logic normalization', () => {
@@ -92,4 +92,71 @@ describe('getAvatarColor', () => {
     });
 });
 
+describe('calculateResults – suggestion rounding', () => {
+    function makePlayer(id: string, card: string) {
+        return { id, name: id, selectedCard: card, isHost: false };
+    }
+
+    // Reported bug: 5×5 + 1×3 → average 4.666 → nearest is 5, not 3
+    it('rounds down to nearest card, not strict floor (reported bug)', () => {
+        const players = [
+            makePlayer('a', '5'), makePlayer('b', '5'), makePlayer('c', '5'),
+            makePlayer('d', '5'), makePlayer('e', '5'), makePlayer('f', '3'),
+        ];
+        const result = calculateResults(players, 'scrum', 'down');
+        expect(result.suggestion).toBe(5);
+    });
+
+    it('rounds up to nearest card, not strict ceiling', () => {
+        // 1×5 + 5×3 → average 3.333 → nearest is 3
+        const players = [
+            makePlayer('a', '5'), makePlayer('b', '3'), makePlayer('c', '3'),
+            makePlayer('d', '3'), makePlayer('e', '3'), makePlayer('f', '3'),
+        ];
+        const result = calculateResults(players, 'scrum', 'up');
+        expect(result.suggestion).toBe(3);
+    });
+
+    it('returns exact deck value when average lands on it', () => {
+        const players = [makePlayer('a', '5'), makePlayer('b', '5'), makePlayer('c', '5')];
+        const result = calculateResults(players, 'scrum', 'down');
+        expect(result.suggestion).toBe(5);
+    });
+
+    it('tie-breaks with rounding=down when average is equidistant', () => {
+        // scrum deck: 3 and 5 → midpoint is 4 → equidistant → 'down' picks 3
+        const players = [makePlayer('a', '3'), makePlayer('b', '5')];
+        const result = calculateResults(players, 'scrum', 'down');
+        expect(result.suggestion).toBe(3);
+    });
+
+    it('tie-breaks with rounding=up when average is equidistant', () => {
+        // same midpoint 4 → 'up' picks 5
+        const players = [makePlayer('a', '3'), makePlayer('b', '5')];
+        const result = calculateResults(players, 'scrum', 'up');
+        expect(result.suggestion).toBe(5);
+    });
+
+    it('handles T-shirt deck – rounds to nearest, not strict floor', () => {
+        // XL=8, XXL=13 → average of 2×XL + 1×XXL = 29/3 ≈ 9.67 → nearer to XL(8 vs 13)? dist 1.67 vs 3.33 → XL
+        const players = [
+            makePlayer('a', 'XL'), makePlayer('b', 'XL'), makePlayer('c', 'XXL'),
+        ];
+        const result = calculateResults(players, 'tshirt', 'down');
+        expect(result.suggestion).toBe('XL');
+    });
+
+    it('average below all deck values returns smallest card', () => {
+        // Only ½ votes – average 0.5 which is actually on the deck
+        const players = [makePlayer('a', '½'), makePlayer('b', '½')];
+        const result = calculateResults(players, 'scrum', 'down');
+        expect(result.suggestion).toBe('½');
+    });
+
+    it('average above all deck values returns largest card', () => {
+        const players = [makePlayer('a', '100'), makePlayer('b', '100')];
+        const result = calculateResults(players, 'scrum', 'up');
+        expect(result.suggestion).toBe(100);
+    });
+});
 

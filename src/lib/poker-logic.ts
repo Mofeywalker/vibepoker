@@ -88,6 +88,35 @@ export function validateCardValue(value: unknown, deckType: DeckType = 'scrum'):
     return (matchedCard as CardValue) || null;
 }
 
+/**
+ * Returns the nearest value in a sorted numeric deck to `average`.
+ * The `rounding` preference is only used as a tie-breaker when the average
+ * falls exactly halfway between two adjacent deck values.
+ */
+function roundToNearestDeckValue(average: number, sortedValues: number[], rounding: RoundingPreference): number {
+    if (sortedValues.length === 0) return average;
+    if (average <= sortedValues[0]) return sortedValues[0];
+    if (average >= sortedValues[sortedValues.length - 1]) return sortedValues[sortedValues.length - 1];
+
+    let floorVal = sortedValues[0];
+    let ceilVal = sortedValues[sortedValues.length - 1];
+
+    for (const v of sortedValues) {
+        if (v <= average) floorVal = v;
+        else { ceilVal = v; break; }
+    }
+
+    if (floorVal === ceilVal) return floorVal;
+
+    const distDown = average - floorVal;
+    const distUp = ceilVal - average;
+
+    if (distDown < distUp) return floorVal;
+    if (distUp < distDown) return ceilVal;
+    // Exact tie: use rounding preference
+    return rounding === 'up' ? ceilVal : floorVal;
+}
+
 // Helper to find closest or rounded T-shirt size
 function findTshirtSize(value: number, deckValues: readonly string[], rounding: RoundingPreference = 'down'): string {
     const numericDeck = deckValues
@@ -97,13 +126,8 @@ function findTshirtSize(value: number, deckValues: readonly string[], rounding: 
 
     if (numericDeck.length === 0) return deckValues[0];
 
-    if (rounding === 'up') {
-        const found = numericDeck.find(item => item.val >= value);
-        return found ? found.size : numericDeck[numericDeck.length - 1].size;
-    } else {
-        const found = [...numericDeck].reverse().find(item => item.val <= value);
-        return found ? found.size : numericDeck[0].size;
-    }
+    const nearest = roundToNearestDeckValue(value, numericDeck.map(i => i.val), rounding);
+    return numericDeck.find(i => i.val === nearest)!.size;
 }
 
 // Result Calculation
@@ -168,13 +192,7 @@ export function calculateResults(players: Player[], deckType: DeckType = 'scrum'
             .sort((a, b) => a - b);
 
         if (numericDeckValues.length > 0) {
-            if (rounding === 'up') {
-                const found = numericDeckValues.find(v => v >= numericAverage);
-                suggestion = found !== undefined ? found : numericDeckValues[numericDeckValues.length - 1];
-            } else {
-                const found = [...numericDeckValues].reverse().find(v => v <= numericAverage);
-                suggestion = found !== undefined ? found : numericDeckValues[0];
-            }
+            suggestion = roundToNearestDeckValue(numericAverage, numericDeckValues, rounding);
 
             // Convert back to string representation if it was '½'
             if (suggestion === 0.5) suggestion = '½';
