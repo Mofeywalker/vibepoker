@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@/test/utils';
 import { HistoryPanel } from '@/components/HistoryPanel';
+import type { EstimationHistoryItem } from '@/types';
 
 describe('HistoryPanel', () => {
-    const mockHistory = [
-        { topic: 'Feature A', value: '5' as any, timestamp: 123 },
-        { topic: 'Bug Fix B', value: '3' as any, timestamp: 456 },
-        { topic: 'Refactoring C', value: '8' as any, timestamp: 789 }
+    const mockHistory: EstimationHistoryItem[] = [
+        { topic: 'Feature A', value: '5', timestamp: 123 },
+        { topic: 'Bug Fix B', value: '3', timestamp: 456 },
+        { topic: 'Refactoring C', value: '8', timestamp: 789 }
     ];
 
     it('does not render when history is empty', () => {

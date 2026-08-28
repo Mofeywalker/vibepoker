@@ -10,6 +10,10 @@ export const DECKS = {
 export type DeckType = keyof typeof DECKS;
 export type CardValue = string;
 
+export function isDeckType(value: unknown): value is DeckType {
+  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(DECKS, value);
+}
+
 export type RoundingPreference = 'up' | 'down';
 
 export interface Player {
@@ -47,4 +51,3 @@ export interface Room {
   history: EstimationHistoryItem[];
   lastActivityAt?: number;
 }
-

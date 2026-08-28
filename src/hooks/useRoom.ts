@@ -25,10 +25,10 @@ interface UseRoomReturn {
 
 export function useRoom(): UseRoomReturn {
     const [room, setRoom] = useState<Room | null>(null);
+    const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const clientRef = useRef<PartyKitClient | null>(null);
-    const currentRoomIdRef = useRef<string | null>(null);
 
     useEffect(() => {
         clientRef.current = new PartyKitClient();
@@ -45,12 +45,11 @@ export function useRoom(): UseRoomReturn {
 
         return () => {
             clientRef.current?.disconnect();
-            setIsLoading(false);
         };
     }, []);
 
     const currentPlayer = room?.players.find(
-        p => p.id === clientRef.current?.currentPlayerId
+        p => p.id === currentPlayerId
     ) || null;
 
     const playersWithCards = useMemo(() => {
@@ -66,15 +65,17 @@ export function useRoom(): UseRoomReturn {
     const createRoom = useCallback(async (playerName: string, deckType: DeckType = 'scrum'): Promise<string> => {
         if (!clientRef.current) throw new Error('Client not initialized');
 
-        // Generate room ID (8 characters like before)
-        const roomId = Math.random().toString(36).substring(2, 10);
-        currentRoomIdRef.current = roomId;
+        // Generate a cryptographically secure room ID (~82 bits of entropy)
+        const bytes = crypto.getRandomValues(new Uint8Array(16));
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        const roomId = Array.from(bytes, b => alphabet[b % 36]).join('');
 
         setIsLoading(true);
         setError(null);
+        setCurrentPlayerId(null);
 
         try {
-            await clientRef.current.connect({ roomId, playerName, deckType });
+            setCurrentPlayerId(await clientRef.current.connect({ roomId, playerName, deckType }));
             return roomId;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create room');
@@ -86,12 +87,12 @@ export function useRoom(): UseRoomReturn {
     const joinRoom = useCallback(async (roomId: string, playerName: string, deckType?: DeckType): Promise<boolean> => {
         if (!clientRef.current) return false;
 
-        currentRoomIdRef.current = roomId;
         setIsLoading(true);
         setError(null);
+        setCurrentPlayerId(null);
 
         try {
-            await clientRef.current.connect({ roomId, playerName, deckType });
+            setCurrentPlayerId(await clientRef.current.connect({ roomId, playerName, deckType }));
             return true;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to join room');

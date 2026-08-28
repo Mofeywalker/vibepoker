@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { Card, ThemeToggle } from '@/components';
-import { DECKS, type DeckType } from '@/types';
+import type { DeckType } from '@/types';
 
 export default function HomePage() {
   const router = useRouter();
@@ -25,8 +25,6 @@ export default function HomePage() {
     setIsCreating(true);
     try {
       const roomId = await createRoom(creatorName.trim(), selectedDeck);
-      // Save to sessionStorage so the room page knows we're already a member
-      sessionStorage.setItem(`vibepoker-joined-${roomId}`, 'true');
       // Save to localStorage so the room page knows we're already a member and can auto-join
       localStorage.setItem(`vibepoker-player-${roomId}`, creatorName.trim());
       localStorage.setItem(`vibepoker-deck-${roomId}`, selectedDeck);

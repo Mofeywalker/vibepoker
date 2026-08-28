@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@/test/utils';
 import { ResultsPanel } from '@/components/ResultsPanel';
-import { DECKS } from '@/types';
+import { DECKS, type Results } from '@/types';
 
 describe('ResultsPanel', () => {
-    const mockResults = {
+    const mockResults: Results = {
         average: 4.5,
         median: 4.0,
-        mode: 3,
+        mode: '3',
         suggestion: 5,
         breakdown: [
             { value: '3', count: 2 },
@@ -17,7 +17,7 @@ describe('ResultsPanel', () => {
     };
 
     const defaultProps = {
-        results: mockResults as any,
+        results: mockResults,
         isHost: false,
         validCards: DECKS.scrum,
         onAccept: vi.fn(),
@@ -75,14 +75,14 @@ describe('ResultsPanel', () => {
 
     it('shows summary popup when result is accepted', () => {
         const acceptedResults = { ...mockResults, acceptedValue: '5' };
-        render(<ResultsPanel {...defaultProps} results={acceptedResults as any} />);
+        render(<ResultsPanel {...defaultProps} results={acceptedResults} />);
 
         expect(screen.getByText('Result Accepted')).toBeInTheDocument();
     });
 
     it('shows start new round button for host when result is accepted', () => {
         const acceptedResults = { ...mockResults, acceptedValue: '5' };
-        render(<ResultsPanel {...defaultProps} results={acceptedResults as any} isHost={true} />);
+        render(<ResultsPanel {...defaultProps} results={acceptedResults} isHost={true} />);
 
         expect(screen.getByText('Start New Round')).toBeInTheDocument();
     });
@@ -90,7 +90,7 @@ describe('ResultsPanel', () => {
     it('calls onStartNewRound when start button is clicked', () => {
         const onStartNewRound = vi.fn();
         const acceptedResults = { ...mockResults, acceptedValue: '5' };
-        render(<ResultsPanel {...defaultProps} results={acceptedResults as any} isHost={true} onStartNewRound={onStartNewRound} />);
+        render(<ResultsPanel {...defaultProps} results={acceptedResults} isHost={true} onStartNewRound={onStartNewRound} />);
 
         fireEvent.click(screen.getByText('Start New Round'));
         expect(onStartNewRound).toHaveBeenCalled();

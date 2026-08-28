@@ -10,17 +10,21 @@ vi.mock('next-themes', () => ({
 
 describe('ThemeToggle', () => {
     const setTheme = vi.fn();
+    const mockTheme = (resolvedTheme: 'light' | 'dark', theme: string = resolvedTheme) => {
+        vi.mocked(useTheme).mockReturnValue({
+            theme,
+            resolvedTheme,
+            setTheme,
+            themes: ['light', 'dark', 'system'],
+        });
+    };
 
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
     it('toggles from light to dark', () => {
-        (useTheme as any).mockReturnValue({
-            theme: 'light',
-            resolvedTheme: 'light',
-            setTheme,
-        });
+        mockTheme('light');
 
         render(<ThemeToggle />);
 
@@ -31,11 +35,7 @@ describe('ThemeToggle', () => {
     });
 
     it('toggles from dark to light', () => {
-        (useTheme as any).mockReturnValue({
-            theme: 'dark',
-            resolvedTheme: 'dark',
-            setTheme,
-        });
+        mockTheme('dark');
 
         render(<ThemeToggle />);
 
@@ -47,11 +47,7 @@ describe('ThemeToggle', () => {
 
     it('toggles to light when theme is "system" but resolved theme is "dark"', () => {
         // When theme is 'system' and resolvedTheme is 'dark'
-        (useTheme as any).mockReturnValue({
-            theme: 'system',
-            resolvedTheme: 'dark',
-            setTheme,
-        });
+        mockTheme('dark', 'system');
 
         render(<ThemeToggle />);
 
@@ -68,11 +64,7 @@ describe('ThemeToggle', () => {
 
     it('toggles to dark when theme is "system" but resolved theme is "light"', () => {
         // When theme is 'system' and resolvedTheme is 'light'
-        (useTheme as any).mockReturnValue({
-            theme: 'system',
-            resolvedTheme: 'light',
-            setTheme,
-        });
+        mockTheme('light', 'system');
 
         render(<ThemeToggle />);
 

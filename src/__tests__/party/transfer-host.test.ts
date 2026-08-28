@@ -1,23 +1,9 @@
 
-import { describe, it, expect, vi } from 'vitest';
-import VibePOKERServer from '../../../party/vibepoker';
-import { Room, Player } from '../../types';
+import { describe, it, expect } from 'vitest';
+import { transferHost } from '../../../party/vibepoker';
+import type { Room, Player } from '../../types';
 
 describe('VibePOKERServer - handleTransferHost', () => {
-    const mockRoom: any = {
-        storage: {
-            get: vi.fn(),
-            put: vi.fn(),
-            transaction: vi.fn(),
-            deleteAlarm: vi.fn(),
-            setAlarm: vi.fn(),
-        },
-        id: 'test-room',
-        broadcast: vi.fn(),
-    };
-
-    const server = new VibePOKERServer(mockRoom);
-
     it('should correctly transfer host role', () => {
         const players: Player[] = [
             { id: 'host-id', name: 'Host', isHost: true, selectedCard: null },
@@ -34,8 +20,7 @@ describe('VibePOKERServer - handleTransferHost', () => {
             roundingPreference: 'down'
         };
 
-        // Accessing private method for testing purposes
-        const result = (server as any).handleTransferHost(room, 'host-id', 'target-id');
+        const result = transferHost(room, 'host-id', 'target-id');
 
         expect(result).toBe(true);
         expect(room.hostId).toBe('target-id');
@@ -60,7 +45,7 @@ describe('VibePOKERServer - handleTransferHost', () => {
             roundingPreference: 'down'
         };
 
-        const result = (server as any).handleTransferHost(room, 'other-id', 'target-id');
+        const result = transferHost(room, 'other-id', 'target-id');
 
         expect(result).toBe(false);
         expect(room.hostId).toBe('host-id');
@@ -81,7 +66,7 @@ describe('VibePOKERServer - handleTransferHost', () => {
             roundingPreference: 'down'
         };
 
-        const result = (server as any).handleTransferHost(room, 'host-id', 'non-existent-id');
+        const result = transferHost(room, 'host-id', 'non-existent-id');
 
         expect(result).toBe(false);
         expect(room.hostId).toBe('host-id');
@@ -102,7 +87,7 @@ describe('VibePOKERServer - handleTransferHost', () => {
             roundingPreference: 'down'
         };
 
-        const result = (server as any).handleTransferHost(room, 'host-id', 'host-id');
+        const result = transferHost(room, 'host-id', 'host-id');
 
         expect(result).toBe(false);
         expect(room.hostId).toBe('host-id');

@@ -1,5 +1,5 @@
 import type * as Party from "partykit/server";
-import { type DeckType, type Player, type Room, type EstimationHistoryItem } from "../src/types";
+import { isDeckType, type Player, type Room, type EstimationHistoryItem } from "../src/types";
 import {
     calculateResults,
     validatePlayerName,
@@ -13,6 +13,20 @@ const MAX_PLAYERS_PER_ROOM = 50;
 enum CloseCode {
     POLICY_VIOLATION = 1008,
     INTERNAL_ERROR = 1011
+}
+
+export function transferHost(room: Room, playerId: string, targetId: unknown): boolean {
+    if (room.hostId !== playerId || typeof targetId !== 'string' || playerId === targetId) return false;
+
+    const targetPlayer = room.players.find(p => p.id === targetId);
+    if (!targetPlayer) return false;
+
+    const currentPlayer = room.players.find(p => p.id === playerId);
+    if (currentPlayer) currentPlayer.isHost = false;
+
+    room.hostId = targetId;
+    targetPlayer.isHost = true;
+    return true;
 }
 
 export default class VibePOKERServer implements Party.Server {
@@ -45,7 +59,8 @@ export default class VibePOKERServer implements Party.Server {
             await this.room.storage.deleteAlarm();
             const url = new URL(ctx.request.url);
             const playerName = url.searchParams.get("name");
-            const deckType = url.searchParams.get("deckType") as DeckType | null;
+            const requestedDeckType = url.searchParams.get("deckType");
+            const deckType = isDeckType(requestedDeckType) ? requestedDeckType : undefined;
 
             if (!playerName) {
                 connection.close(CloseCode.POLICY_VIOLATION, "NAME_REQUIRED");
@@ -290,20 +305,6 @@ export default class VibePOKERServer implements Party.Server {
     }
 
     private handleTransferHost(room: Room, playerId: string, targetId: unknown): boolean {
-        if (room.hostId !== playerId) return false;
-        if (typeof targetId !== 'string') return false;
-        if (playerId === targetId) return false;
-
-        const targetPlayer = room.players.find(p => p.id === targetId);
-        if (!targetPlayer) return false;
-
-        const currentPlayer = room.players.find(p => p.id === playerId);
-        if (currentPlayer) {
-            currentPlayer.isHost = false;
-        }
-
-        room.hostId = targetId;
-        targetPlayer.isHost = true;
-        return true;
+        return transferHost(room, playerId, targetId);
     }
 }

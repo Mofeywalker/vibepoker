@@ -169,7 +169,7 @@ export function calculateResults(players: Player[], deckType: DeckType = 'scrum'
     // Median
     const sorted = [...numericValues].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    let numericMedian = sorted.length % 2 !== 0
+    const numericMedian = sorted.length % 2 !== 0
         ? sorted[mid]
         : (sorted[mid - 1] + sorted[mid]) / 2;
 

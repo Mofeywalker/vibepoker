@@ -111,7 +111,7 @@ NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.username.partykit.dev
 npm test
 
 # Run tests in watch mode
-npm run test:watch
+npm test -- --watch
 ```
 
 Run unit tests for components and logic using Vitest.
@@ -126,9 +126,8 @@ vibepoker/
 │   ├── hooks/               # Custom React hooks (useRoom)
 │   ├── i18n/                # Internationalization config
 │   ├── lib/
-│   │   ├── realtime/        # Real-time abstraction layer
+│   │   ├── realtime/        # PartyKit client
 │   │   └── poker-logic.ts   # Core business logic
-│   ├── providers/           # Theme and other providers
 │   ├── test/                # Test setup and utilities
 │   ├── types/               # TypeScript type definitions
 │   └── __tests__/           # Component tests
@@ -177,16 +176,14 @@ Remember to update `party/vibepoker.ts` if you introduce non-numeric decks that 
 
 ## 🏛️ Architecture
 
-VibePOKER uses a clean abstraction layer for real-time communication:
+VibePOKER uses PartyKit for real-time communication:
 
 ```
-Next.js Client → RealtimeClient Interface → PartyKitClient → PartyKit Server
+Next.js Client → PartyKitClient → PartyKit Server
 ```
 
 This architecture allows for:
-- **Platform Independence** — Easy to switch real-time providers
 - **Type Safety** — Fully typed event system
-- **Testability** — Mock the real-time layer for testing
 - **Vercel Compatibility** — PartyKit runs on Cloudflare Workers
 
 ## 📝 License
@@ -205,7 +202,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - ✅ Full Vercel deployment support
 - ✅ Persistent state using PartyKit storage
 - ✅ Edge deployment on Cloudflare Workers
-- ✅ Clean real-time abstraction layer
+- ✅ Direct, typed PartyKit integration
 - ✅ Improved type safety and error handling
 
 ## 📞 Support

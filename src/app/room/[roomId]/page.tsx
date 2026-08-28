@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
@@ -31,12 +32,12 @@ export default function RoomPage() {
     } = useRoom();
 
     const [showJoinModal, setShowJoinModal] = useState(false);
-    const [hasJoined, setHasJoined] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
     const [isEditingTopic, setIsEditingTopic] = useState(false);
     const [topicInput, setTopicInput] = useState('');
     const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
     const prevHostId = useRef<string | null>(null);
+    const attemptedAutoJoin = useRef(false);
 
     // Watch for host changes to show toast
     useEffect(() => {
@@ -44,6 +45,8 @@ export default function RoomPage() {
         if (currentHostId && prevHostId.current && currentHostId !== prevHostId.current) {
             const newHost = room?.players.find(p => p.id === currentHostId);
             if (newHost) {
+                // The toast is a transient reaction to an external room update.
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setToast({
                     message: t('hostChanged', { name: newHost.name }),
                     visible: true
@@ -51,7 +54,7 @@ export default function RoomPage() {
             }
         }
         prevHostId.current = currentHostId;
-    }, [room?.hostId, room?.players, t]); // eslint-disable-line react-hooks/exhaustive-deps -- room?.players needed to resolve host name
+    }, [room?.hostId, room?.players, t]);
 
     // Handle toast timeout
     useEffect(() => {
@@ -63,13 +66,6 @@ export default function RoomPage() {
         }
     }, [toast.visible, toast.message]);
 
-    // Sync topic input when room updates
-    useEffect(() => {
-        if (room?.topic) {
-            setTopicInput(room.topic);
-        }
-    }, [room?.topic]);
-
     const handleSaveTopic = () => {
         updateTopic(topicInput);
         setIsEditingTopic(false);
@@ -77,11 +73,10 @@ export default function RoomPage() {
 
     // Check if user needs to join
     useEffect(() => {
-        if (hasJoined || isLoading) return;
+        if (isLoading) return;
 
         // Check if we already have room state (happens when navigating from create)
         if (room && room.id === roomId) {
-            setHasJoined(true);
             return;
         }
 
@@ -90,17 +85,25 @@ export default function RoomPage() {
         const savedDeckType = localStorage.getItem(`vibepoker-deck-${roomId}`) as DeckType | null;
 
         if (savedPlayerName) {
-            // Try to rejoin with saved name
-            joinRoom(roomId, savedPlayerName, savedDeckType ?? undefined).then(success => {
-                if (success) {
-                    setHasJoined(true);
-                } else {
-                    // Rejoin failed, clear saved data and show modal
-                    localStorage.removeItem(`vibepoker-player-${roomId}`);
+            if (attemptedAutoJoin.current) {
+                if (error) {
+                    if (error !== 'Connection error') {
+                        localStorage.removeItem(`vibepoker-player-${roomId}`);
+                        localStorage.removeItem(`vibepoker-deck-${roomId}`);
+                    }
+                    // A policy close can arrive after the socket's open event.
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
                     setShowJoinModal(true);
                 }
+                return;
+            }
+
+            // Try to rejoin with saved name
+            joinRoom(roomId, savedPlayerName, savedDeckType ?? undefined).then(success => {
+                attemptedAutoJoin.current = true;
+                if (!success) setShowJoinModal(true);
             }).catch(() => {
-                localStorage.removeItem(`vibepoker-player-${roomId}`);
+                attemptedAutoJoin.current = true;
                 setShowJoinModal(true);
             });
             return;
@@ -110,12 +113,11 @@ export default function RoomPage() {
         if (!room && !savedPlayerName) {
             setShowJoinModal(true);
         }
-    }, [room, hasJoined, isLoading, roomId, joinRoom]);
+    }, [room, isLoading, error, roomId, joinRoom]);
 
     const handleJoin = useCallback(async (name: string) => {
         const success = await joinRoom(roomId, name);
         if (success) {
-            setHasJoined(true);
             setShowJoinModal(false);
         }
     }, [joinRoom, roomId]);
@@ -144,10 +146,10 @@ export default function RoomPage() {
             <header className="border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <a href="/" className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-violet-500 dark:hover:text-violet-400 transition-colors">
+                        <Link href="/" className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-violet-500 dark:hover:text-violet-400 transition-colors">
                             <span className="text-2xl">🃏</span>
                             <span className="font-bold text-xl hidden sm:inline">VibePOKER</span>
-                        </a>
+                        </Link>
                         <div className="h-6 w-px bg-slate-300 dark:bg-slate-700" />
                         <div className="flex items-center gap-2">
                             <span className="text-slate-700 dark:text-slate-400 text-sm hidden sm:inline">{t('room')}:</span>
@@ -383,7 +385,7 @@ export default function RoomPage() {
             </div>
 
             {/* Join Modal */}
-            {showJoinModal && (
+            {showJoinModal && !room && (
                 <JoinModal
                     onJoin={handleJoin}
                     isLoading={isLoading}

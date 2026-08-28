@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { validateCardValue, normalizeCardValue, getInitials, getAvatarColor, calculateResults } from '../../lib/poker-logic';
-import { DECKS } from '../../types';
+import { DECKS, isDeckType } from '../../types';
+
+describe('isDeckType', () => {
+    it('accepts configured decks and rejects other values', () => {
+        expect(isDeckType('scrum')).toBe(true);
+        expect(isDeckType('constructor')).toBe(false);
+        expect(isDeckType(null)).toBe(false);
+    });
+});
 
 describe('poker-logic normalization', () => {
     it('normalizeCardValue should remove variation selector from mug', () => {
@@ -93,7 +101,7 @@ describe('getAvatarColor', () => {
 });
 
 describe('calculateResults – suggestion rounding', () => {
-    function makePlayer(id: string, card: string) {
+    function makePlayer(id: string, card: string | null) {
         return { id, name: id, selectedCard: card, isHost: false };
     }
 
@@ -146,6 +154,27 @@ describe('calculateResults – suggestion rounding', () => {
         expect(result.suggestion).toBe('XL');
     });
 
+    it('uses the rounding preference to break T-shirt deck ties', () => {
+        const players = [makePlayer('a', 'M'), makePlayer('b', 'L')];
+        expect(calculateResults(players, 'tshirt').suggestion).toBe('M');
+        expect(calculateResults(players, 'tshirt', 'down').suggestion).toBe('M');
+        expect(calculateResults(players, 'tshirt', 'up').suggestion).toBe('L');
+    });
+
+    it('returns T-shirt sizes for averages and ignores non-numeric cards', () => {
+        const players = [makePlayer('a', 'S'), makePlayer('b', '?'), makePlayer('c', '☕')];
+        const result = calculateResults(players, 'tshirt');
+        expect(result.average).toBe('S');
+        expect(result.median).toBe('S');
+    });
+
+    it('returns empty numeric results when nobody played a numeric card', () => {
+        const result = calculateResults([makePlayer('a', '?'), makePlayer('b', '☕')], 'tshirt');
+        expect(result.average).toBeNull();
+        expect(result.median).toBeNull();
+        expect(result.suggestion).toBeNull();
+    });
+
     it('average below all deck values returns smallest card', () => {
         // Only ½ votes – average 0.5 which is actually on the deck
         const players = [makePlayer('a', '½'), makePlayer('b', '½')];
@@ -158,5 +187,13 @@ describe('calculateResults – suggestion rounding', () => {
         const result = calculateResults(players, 'scrum', 'up');
         expect(result.suggestion).toBe(100);
     });
-});
 
+    it('rounds an average of 7.8 to 8', () => {
+        const players = [
+            makePlayer('a', '8'), makePlayer('b', '8'), makePlayer('c', '5'),
+            makePlayer('d', '5'), makePlayer('e', '13'),
+        ];
+        const result = calculateResults(players, 'scrum', 'down');
+        expect(result.suggestion).toBe(8);
+    });
+});

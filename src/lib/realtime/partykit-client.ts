@@ -1,23 +1,19 @@
 import PartySocket from 'partysocket';
-import type { RealtimeClient, ConnectionConfig } from './types';
 import type { Room, CardValue, DeckType, RoundingPreference } from '@/types';
 
-export class PartyKitClient implements RealtimeClient {
+interface ConnectionConfig {
+    roomId: string;
+    playerName: string;
+    deckType?: DeckType;
+}
+
+export class PartyKitClient {
     private socket: PartySocket | null = null;
     private roomUpdateCallback: ((room: Room) => void) | null = null;
     private errorCallback: ((error: string) => void) | null = null;
-    private _currentPlayerId: string | null = null;
     private listeners: { type: string; handler: EventListener }[] = [];
 
-    get isConnected(): boolean {
-        return this.socket?.readyState === WebSocket.OPEN;
-    }
-
-    get currentPlayerId(): string | null {
-        return this._currentPlayerId;
-    }
-
-    async connect(config: ConnectionConfig): Promise<void> {
+    async connect(config: ConnectionConfig): Promise<string> {
         this.disconnect();
 
         const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST || 'localhost:1999';
@@ -34,8 +30,7 @@ export class PartyKitClient implements RealtimeClient {
             if (!this.socket) return reject(new Error('Socket not initialized'));
 
             const onOpen = () => {
-                this._currentPlayerId = this.socket!.id;
-                resolve();
+                resolve(this.socket!.id);
             };
 
             const onMessage = (event: MessageEvent) => {
@@ -57,6 +52,8 @@ export class PartyKitClient implements RealtimeClient {
             const onClose = (event: CloseEvent) => {
                 if (event.code === 1008) {
                     this.errorCallback?.(event.reason);
+                } else if (event.code !== 1000) {
+                    this.errorCallback?.('Connection error');
                 }
             };
 
@@ -82,7 +79,6 @@ export class PartyKitClient implements RealtimeClient {
         }
         this.socket = null;
         this.listeners = [];
-        this._currentPlayerId = null;
     }
 
     onRoomUpdate(callback: (room: Room) => void): void {
@@ -94,7 +90,7 @@ export class PartyKitClient implements RealtimeClient {
     }
 
     private send(message: object): void {
-        if (!this.socket || !this.isConnected) return;
+        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return;
         this.socket.send(JSON.stringify(message));
     }
 
