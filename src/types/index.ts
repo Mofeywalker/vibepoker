@@ -21,6 +21,7 @@ export interface Player {
   name: string;
   selectedCard: CardValue | null;
   isHost: boolean;
+  disconnectedAt?: number;
 }
 
 export interface Results {

@@ -9,6 +9,8 @@ import {
 } from "../src/lib/poker-logic";
 
 const MAX_PLAYERS_PER_ROOM = 50;
+export const RECONNECT_GRACE_MS = 30_000;
+const EMPTY_ROOM_TTL_MS = 24 * 60 * 60 * 1000;
 
 enum CloseCode {
     POLICY_VIOLATION = 1008,
@@ -26,6 +28,46 @@ export function transferHost(room: Room, playerId: string, targetId: unknown): b
 
     room.hostId = targetId;
     targetPlayer.isHost = true;
+    return true;
+}
+
+export function markPlayerDisconnected(room: Room, playerId: string, disconnectedAt: number): boolean {
+    const player = room.players.find(p => p.id === playerId);
+    if (!player || player.disconnectedAt !== undefined) return false;
+
+    player.disconnectedAt = disconnectedAt;
+    return true;
+}
+
+export function restorePlayer(room: Room, playerId: string, playerName: string): boolean {
+    const player = room.players.find(p => p.id === playerId);
+    if (!player || player.name.toLowerCase() !== playerName.toLowerCase()) return false;
+
+    delete player.disconnectedAt;
+    if (!room.hostId) {
+        room.hostId = playerId;
+        player.isHost = true;
+    }
+    return true;
+}
+
+export function expireDisconnectedPlayers(room: Room, now: number): boolean {
+    const expiredIds = new Set(
+        room.players
+            .filter(p => p.disconnectedAt !== undefined && p.disconnectedAt + RECONNECT_GRACE_MS <= now)
+            .map(p => p.id)
+    );
+    if (expiredIds.size === 0) return false;
+
+    const hostExpired = expiredIds.has(room.hostId);
+    room.players = room.players.filter(p => !expiredIds.has(p.id));
+
+    if (hostExpired) {
+        const nextHost = room.players.find(p => p.disconnectedAt === undefined);
+        room.hostId = nextHost?.id ?? "";
+        room.players.forEach(p => p.isHost = p.id === room.hostId);
+    }
+
     return true;
 }
 
@@ -56,7 +98,6 @@ export default class VibePOKERServer implements Party.Server {
 
     async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
         try {
-            await this.room.storage.deleteAlarm();
             const url = new URL(ctx.request.url);
             const playerName = url.searchParams.get("name");
             const requestedDeckType = url.searchParams.get("deckType");
@@ -78,6 +119,19 @@ export default class VibePOKERServer implements Party.Server {
                 const room = await txn.get<Room>("room-state");
                 if (!room) return;
 
+                const existingPlayer = room.players.find(p => p.id === connection.id);
+                if (existingPlayer) {
+                    if (!restorePlayer(room, connection.id, validName)) {
+                        connection.close(CloseCode.POLICY_VIOLATION, "IDENTITY_MISMATCH");
+                        return;
+                    }
+
+                    room.lastActivityAt = Date.now();
+                    await txn.put("room-state", room);
+                    await this.scheduleNextAlarm(txn, room);
+                    return room;
+                }
+
                 if (room.players.length >= MAX_PLAYERS_PER_ROOM) {
                     connection.close(CloseCode.POLICY_VIOLATION, "ROOM_FULL");
                     return;
@@ -92,7 +146,7 @@ export default class VibePOKERServer implements Party.Server {
                     id: connection.id,
                     name: validName,
                     selectedCard: null,
-                    isHost: room.players.length === 0
+                    isHost: !room.hostId
                 };
 
                 if (player.isHost) {
@@ -106,6 +160,7 @@ export default class VibePOKERServer implements Party.Server {
 
                 room.players.push(player);
                 await txn.put("room-state", room);
+                await this.scheduleNextAlarm(txn, room);
                 return room;
             }).then((room) => {
                 if (room) this.broadcastRoomState(room as Room);
@@ -169,28 +224,26 @@ export default class VibePOKERServer implements Party.Server {
     }
 
     async onClose(connection: Party.Connection) {
+        await this.handleDisconnect(connection);
+    }
+
+    async onError(connection: Party.Connection) {
+        await this.handleDisconnect(connection);
+    }
+
+    private async handleDisconnect(connection: Party.Connection) {
+        const activeConnection = this.room.getConnection(connection.id);
+        if (activeConnection && activeConnection !== connection) return;
+
         await this.room.storage.transaction(async (txn) => {
             const room = await txn.get<Room>("room-state");
             if (!room) return;
 
-            const initialCount = room.players.length;
-            room.players = room.players.filter(p => p.id !== connection.id);
-
-            if (room.players.length === initialCount) return; // Player wasn't there
-
-            if (room.hostId === connection.id && room.players.length > 0) {
-                room.hostId = room.players[0].id;
-                room.players[0].isHost = true;
-            }
+            if (!markPlayerDisconnected(room, connection.id, Date.now())) return;
 
             room.lastActivityAt = Date.now();
-
-            if (room.players.length === 0) {
-                // Schedule deletion in 24 hours
-                await txn.setAlarm(Date.now() + 24 * 60 * 60 * 1000);
-            }
-
             await txn.put("room-state", room);
+            await this.scheduleNextAlarm(txn, room);
             return room;
         }).then((room) => {
             if (room) this.broadcastRoomState(room as Room);
@@ -198,15 +251,49 @@ export default class VibePOKERServer implements Party.Server {
     }
 
     async onAlarm() {
-        const room = await this.room.storage.get<Room>("room-state");
-        if (room && room.players.length === 0) {
-            await this.room.storage.deleteAll();
-            console.log(`Room ${this.room.id} deleted due to inactivity.`);
-        }
+        await this.room.storage.transaction(async (txn) => {
+            const room = await txn.get<Room>("room-state");
+            if (!room) return;
+
+            if (room.players.length === 0) {
+                await txn.delete("room-state");
+                await txn.deleteAlarm();
+                console.log(`Room ${room.id} deleted due to inactivity.`);
+                return;
+            }
+
+            if (!expireDisconnectedPlayers(room, Date.now())) {
+                await this.scheduleNextAlarm(txn, room);
+                return;
+            }
+
+            room.lastActivityAt = Date.now();
+            await txn.put("room-state", room);
+            await this.scheduleNextAlarm(txn, room);
+            return room;
+        }).then((room) => {
+            if (room) this.broadcastRoomState(room as Room);
+        });
     }
 
     private broadcastRoomState(room: Room) {
         this.room.broadcast(JSON.stringify({ type: "room-state", data: room }));
+    }
+
+    private async scheduleNextAlarm(
+        storage: Pick<Party.Storage, "setAlarm" | "deleteAlarm">,
+        room: Room
+    ) {
+        const disconnectDeadlines = room.players
+            .flatMap(p => p.disconnectedAt === undefined ? [] : p.disconnectedAt + RECONNECT_GRACE_MS);
+
+        if (disconnectDeadlines.length > 0) {
+            await storage.setAlarm(Math.min(...disconnectDeadlines));
+        } else if (room.players.length === 0) {
+            await storage.setAlarm(Date.now() + EMPTY_ROOM_TTL_MS);
+        } else {
+            await storage.deleteAlarm();
+        }
     }
 
     private handleSelectCard(room: Room, playerId: string, card: unknown): boolean {

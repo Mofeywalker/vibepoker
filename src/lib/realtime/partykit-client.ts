@@ -17,7 +17,15 @@ export class PartyKitClient {
         this.disconnect();
 
         const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST || 'localhost:1999';
+        const playerIdKey = `vibepoker-player-id-${config.roomId}`;
+        let playerId = localStorage.getItem(playerIdKey);
+        if (!playerId) {
+            playerId = crypto.randomUUID();
+            localStorage.setItem(playerIdKey, playerId);
+        }
+
         this.socket = new PartySocket({
+            id: playerId,
             host,
             room: config.roomId,
             query: {
