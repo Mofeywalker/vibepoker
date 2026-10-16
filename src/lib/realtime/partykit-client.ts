@@ -5,6 +5,7 @@ import {
     setStorageItem,
     getPlayerIdStorageKey,
     getPlayerStorageKey,
+    getPlayerTokenStorageKey,
     getDeckStorageKey,
     clearRoomSession
 } from '@/lib/storage';
@@ -27,9 +28,11 @@ export class PartyKitClient {
         const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST || 'localhost:1999';
         const playerIdKey = getPlayerIdStorageKey(config.roomId);
         const playerNameKey = getPlayerStorageKey(config.roomId);
+        const playerTokenKey = getPlayerTokenStorageKey(config.roomId);
 
         const savedPlayerName = getStorageItem(playerNameKey);
         let playerId = getStorageItem(playerIdKey);
+        let playerToken = getStorageItem(playerTokenKey);
 
         const isNewIdentity = Boolean(
             savedPlayerName &&
@@ -42,13 +45,19 @@ export class PartyKitClient {
             setStorageItem(playerIdKey, playerId);
         }
 
+        if (!playerToken || isNewIdentity) {
+            playerToken = crypto.randomUUID();
+            setStorageItem(playerTokenKey, playerToken);
+        }
+
         this.socket = new PartySocket({
             id: playerId,
             host,
             room: config.roomId,
             query: {
                 name: config.playerName,
-                deckType: config.deckType
+                deckType: config.deckType,
+                token: playerToken
             }
         });
 

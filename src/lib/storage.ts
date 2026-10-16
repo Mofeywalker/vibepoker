@@ -43,6 +43,10 @@ export function getPlayerIdStorageKey(roomId: string): string {
     return `vibepoker-player-id-${roomId}`;
 }
 
+export function getPlayerTokenStorageKey(roomId: string): string {
+    return `vibepoker-player-token-${roomId}`;
+}
+
 export function getDeckStorageKey(roomId: string): string {
     return `vibepoker-deck-${roomId}`;
 }
@@ -50,5 +54,6 @@ export function getDeckStorageKey(roomId: string): string {
 export function clearRoomSession(roomId: string): void {
     removeStorageItem(getPlayerStorageKey(roomId));
     removeStorageItem(getPlayerIdStorageKey(roomId));
+    removeStorageItem(getPlayerTokenStorageKey(roomId));
     removeStorageItem(getDeckStorageKey(roomId));
 }

@@ -1,6 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { validateCardValue, normalizeCardValue, getInitials, getAvatarColor, calculateResults } from '../../lib/poker-logic';
-import { DECKS, isDeckType } from '../../types';
+import {
+    validateCardValue,
+    normalizeCardValue,
+    getInitials,
+    getAvatarColor,
+    calculateResults,
+    validatePlayerName,
+    validateTopic,
+    generateRoomId,
+    sanitizeRoomForPlayer,
+    restorePlayer
+} from '../../lib/poker-logic';
+import { DECKS, isDeckType, type Room } from '../../types';
 
 describe('isDeckType', () => {
     it('accepts configured decks and rejects other values', () => {
@@ -195,5 +206,188 @@ describe('calculateResults – suggestion rounding', () => {
         ];
         const result = calculateResults(players, 'scrum', 'down');
         expect(result.suggestion).toBe(8);
+    });
+});
+
+describe('Security – validatePlayerName & validateTopic', () => {
+    it('rejects non-string values', () => {
+        expect(validatePlayerName(null)).toBeNull();
+        expect(validatePlayerName(123)).toBeNull();
+        expect(validatePlayerName({})).toBeNull();
+    });
+
+    it('rejects empty or whitespace-only names', () => {
+        expect(validatePlayerName('')).toBeNull();
+        expect(validatePlayerName('   ')).toBeNull();
+    });
+
+    it('rejects names that become empty after stripping dangerous characters', () => {
+        expect(validatePlayerName('<>')).toBeNull();
+        expect(validatePlayerName('< >')).toBeNull();
+        expect(validatePlayerName('"\'')).toBeNull();
+        expect(validatePlayerName('&"\'')).toBeNull();
+    });
+
+    it('strips zero-width and invisible Unicode characters', () => {
+        // Zero-width space U+200B, zero-width non-joiner U+200C
+        expect(validatePlayerName('\u200B\u200C')).toBeNull();
+        expect(validatePlayerName('Alice\u200B')).toBe('Alice');
+    });
+
+    it('strips bidirectional override characters (BiDi spoofing)', () => {
+        // RLO U+202E
+        expect(validatePlayerName('Alice\u202EBob')).toBe('AliceBob');
+    });
+
+    it('enforces maximum length', () => {
+        const longName = 'A'.repeat(51);
+        expect(validatePlayerName(longName)).toBeNull();
+        const validName = 'A'.repeat(50);
+        expect(validatePlayerName(validName)).toBe(validName);
+    });
+
+    it('sanitizes topics properly', () => {
+        expect(validateTopic('<script>alert(1)</script>')).toBe('scriptalert(1)/script');
+        expect(validateTopic('  JIRA-123 & Q&A  ')).toBe('JIRA-123  QA');
+        expect(validateTopic(null)).toBe('');
+        expect(validateTopic('A'.repeat(300)).length).toBeLessThanOrEqual(200);
+    });
+});
+
+describe('Security – generateRoomId', () => {
+    it('generates a 16-character alphanumeric room ID', () => {
+        const id = generateRoomId();
+        expect(id).toHaveLength(16);
+        expect(id).toMatch(/^[a-z0-9]{16}$/);
+    });
+
+    it('generates distinct IDs across multiple calls', () => {
+        const ids = new Set(Array.from({ length: 50 }, () => generateRoomId()));
+        expect(ids.size).toBe(50);
+    });
+});
+
+describe('Security – sanitizeRoomForPlayer (SEC-01 & SEC-02)', () => {
+    function createTestRoom(revealed: boolean): Room {
+        return {
+            id: 'test-room',
+            hostId: 'host-id',
+            topic: 'Sprint Planning',
+            deckType: 'scrum',
+            isRevealed: revealed,
+            results: null,
+            history: [],
+            players: [
+                {
+                    id: 'host-id',
+                    name: 'Alice',
+                    selectedCard: '5',
+                    isHost: true,
+                    token: 'secret-token-alice'
+                },
+                {
+                    id: 'player-2-id',
+                    name: 'Bob',
+                    selectedCard: '8',
+                    isHost: false,
+                    token: 'secret-token-bob'
+                },
+                {
+                    id: 'player-3-id',
+                    name: 'Charlie',
+                    selectedCard: null,
+                    isHost: false,
+                    token: 'secret-token-charlie'
+                }
+            ]
+        };
+    }
+
+    it('masks other players cards before cards are revealed', () => {
+        const room = createTestRoom(false);
+        const bobView = sanitizeRoomForPlayer(room, 'player-2-id');
+
+        // Bob should see his own chosen card
+        const bob = bobView.players.find(p => p.id === 'player-2-id');
+        expect(bob?.selectedCard).toBe('8');
+
+        // Bob should NOT see Alice's card (masked as 'hidden')
+        const alice = bobView.players.find(p => p.id === 'host-id');
+        expect(alice?.selectedCard).toBe('hidden');
+
+        // Charlie hasn't voted, so still null
+        const charlie = bobView.players.find(p => p.id === 'player-3-id');
+        expect(charlie?.selectedCard).toBeNull();
+    });
+
+    it('reveals all cards when isRevealed is true', () => {
+        const room = createTestRoom(true);
+        const bobView = sanitizeRoomForPlayer(room, 'player-2-id');
+
+        expect(bobView.players.find(p => p.id === 'host-id')?.selectedCard).toBe('5');
+        expect(bobView.players.find(p => p.id === 'player-2-id')?.selectedCard).toBe('8');
+        expect(bobView.players.find(p => p.id === 'player-3-id')?.selectedCard).toBeNull();
+    });
+
+    it('always strips secret session tokens from all players in broadcast', () => {
+        const room = createTestRoom(false);
+        const view = sanitizeRoomForPlayer(room, 'host-id');
+
+        for (const player of view.players) {
+            expect(player.token).toBeUndefined();
+        }
+    });
+});
+
+describe('Security – restorePlayer token verification', () => {
+    it('restores a player when matching token is supplied', () => {
+        const room: Room = {
+            id: 'test-room',
+            hostId: 'p1',
+            players: [
+                { id: 'p1', name: 'Alice', isHost: true, selectedCard: null, token: 'token-123', disconnectedAt: 1000 }
+            ],
+            topic: null,
+            isRevealed: false,
+            results: null,
+            history: []
+        };
+
+        expect(restorePlayer(room, 'p1', 'Alice', 'token-123')).toBe(true);
+        expect(room.players[0].disconnectedAt).toBeUndefined();
+    });
+
+    it('rejects reconnect when token does not match (impersonation attempt)', () => {
+        const room: Room = {
+            id: 'test-room',
+            hostId: 'p1',
+            players: [
+                { id: 'p1', name: 'Alice', isHost: true, selectedCard: null, token: 'token-123', disconnectedAt: 1000 }
+            ],
+            topic: null,
+            isRevealed: false,
+            results: null,
+            history: []
+        };
+
+        expect(restorePlayer(room, 'p1', 'Alice', 'wrong-token')).toBe(false);
+        expect(room.players[0].disconnectedAt).toBe(1000);
+    });
+
+    it('assigns token to legacy player if not yet set', () => {
+        const room: Room = {
+            id: 'test-room',
+            hostId: 'p1',
+            players: [
+                { id: 'p1', name: 'Alice', isHost: true, selectedCard: null, disconnectedAt: 1000 }
+            ],
+            topic: null,
+            isRevealed: false,
+            results: null,
+            history: []
+        };
+
+        expect(restorePlayer(room, 'p1', 'Alice', 'new-token')).toBe(true);
+        expect(room.players[0].token).toBe('new-token');
     });
 });

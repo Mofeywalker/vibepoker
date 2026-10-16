@@ -200,4 +200,47 @@ describe('VibePOKERServer - reconnect grace period', () => {
 
         expect(transaction).not.toHaveBeenCalled();
     });
+
+    it('safely handles disconnect when multiple connections exist via getConnections', async () => {
+        const oldConnection = { id: 'host-id', readyState: 3 };
+        const newConnection = { id: 'host-id', readyState: 1 };
+        const transaction = vi.fn();
+        const ctx = {
+            storage: { transaction }
+        };
+        const server = new VibePOKERServer(ctx as never, {} as never);
+        vi.spyOn(server, 'getConnections').mockReturnValue([oldConnection, newConnection] as never);
+
+        await server.onClose(oldConnection as never);
+
+        expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('ignores oversized messages without starting a transaction', async () => {
+        const sender = { id: 'player-id' };
+        const transaction = vi.fn();
+        const ctx = {
+            storage: { transaction }
+        };
+        const server = new VibePOKERServer(ctx as never, {} as never);
+        const oversizedMessage = JSON.stringify({ type: 'update-topic', topic: 'A'.repeat(2500) });
+
+        await server.onMessage(sender as never, oversizedMessage);
+
+        expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('ignores unknown message types without starting a transaction', async () => {
+        const sender = { id: 'player-id' };
+        const transaction = vi.fn();
+        const ctx = {
+            storage: { transaction }
+        };
+        const server = new VibePOKERServer(ctx as never, {} as never);
+        const invalidMessage = JSON.stringify({ type: 'malicious-action', data: 123 });
+
+        await server.onMessage(sender as never, invalidMessage);
+
+        expect(transaction).not.toHaveBeenCalled();
+    });
 });

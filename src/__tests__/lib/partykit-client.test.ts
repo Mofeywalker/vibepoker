@@ -35,7 +35,7 @@ vi.mock('partysocket', () => ({
 }));
 
 import { PartyKitClient } from '@/lib/realtime/partykit-client';
-import { getPlayerIdStorageKey, getPlayerStorageKey, getStorageItem } from '@/lib/storage';
+import { getPlayerIdStorageKey, getPlayerStorageKey, getPlayerTokenStorageKey, getStorageItem } from '@/lib/storage';
 
 describe('PartyKitClient player identity', () => {
     beforeEach(() => {
@@ -44,7 +44,7 @@ describe('PartyKitClient player identity', () => {
         socketOptions.length = 0;
     });
 
-    it('reuses the room-scoped player ID across client instances when name matches', async () => {
+    it('reuses the room-scoped player ID and token across client instances when name matches', async () => {
         const firstId = await new PartyKitClient().connect({
             roomId: 'room-a',
             playerName: 'Host'
@@ -56,6 +56,10 @@ describe('PartyKitClient player identity', () => {
 
         expect(secondId).toBe(firstId);
         expect(socketOptions.map(options => options.id)).toEqual([firstId, firstId]);
+        const token = getStorageItem(getPlayerTokenStorageKey('room-a'));
+        expect(token).toBeTruthy();
+        expect(socketOptions[0].query?.token).toBe(token);
+        expect(socketOptions[1].query?.token).toBe(token);
     });
 
     it('generates a new player ID when the player name changes for the same room', async () => {
@@ -97,5 +101,6 @@ describe('PartyKitClient player identity', () => {
         expect(errorCallback).toHaveBeenCalledWith('IDENTITY_MISMATCH');
         expect(getStorageItem(getPlayerIdStorageKey('room-a'))).toBeNull();
         expect(getStorageItem(getPlayerStorageKey('room-a'))).toBeNull();
+        expect(getStorageItem(getPlayerTokenStorageKey('room-a'))).toBeNull();
     });
 });

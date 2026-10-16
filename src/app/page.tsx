@@ -33,8 +33,8 @@ export default function HomePage() {
   const handleJoinRoom = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     const trimmedId = joinRoomId.trim();
-    if (!trimmedId) return;
-    router.push(`/room/${trimmedId}`);
+    if (!trimmedId || !/^[a-zA-Z0-9_-]{1,64}$/.test(trimmedId)) return;
+    router.push(`/room/${encodeURIComponent(trimmedId)}`);
   }, [joinRoomId, router]);
 
   return (

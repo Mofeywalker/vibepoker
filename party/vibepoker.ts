@@ -11,7 +11,8 @@ import {
     transferHost,
     markPlayerDisconnected,
     restorePlayer,
-    expireDisconnectedPlayers
+    expireDisconnectedPlayers,
+    sanitizeRoomForPlayer
 } from "../src/lib/poker-logic";
 
 const MAX_PLAYERS_PER_ROOM = 50;
@@ -56,6 +57,7 @@ export class VibePOKERServer extends Server<Env> {
             const url = new URL(ctx.request.url);
             const playerName = url.searchParams.get("name");
             const requestedDeckType = url.searchParams.get("deckType");
+            const token = url.searchParams.get("token") || undefined;
             const deckType = isDeckType(requestedDeckType) ? requestedDeckType : undefined;
 
             if (!playerName) {
@@ -69,6 +71,18 @@ export class VibePOKERServer extends Server<Env> {
                 return;
             }
 
+            // Close any existing stale connections for this ID to prevent duplicate sockets
+            const existingSockets = this.getActiveConnections(connection.id);
+            for (const ws of existingSockets) {
+                if (ws !== connection) {
+                    try {
+                        ws.close(1000, "REPLACED");
+                    } catch {
+                        // ignore
+                    }
+                }
+            }
+
             // Use transaction to prevent race conditions during join
             await this.ctx.storage.transaction(async (txn) => {
                 const room = await txn.get<Room>("room-state");
@@ -76,7 +90,7 @@ export class VibePOKERServer extends Server<Env> {
 
                 const existingPlayer = room.players.find(p => p.id === connection.id);
                 if (existingPlayer) {
-                    if (!restorePlayer(room, connection.id, validName)) {
+                    if (!restorePlayer(room, connection.id, validName, token)) {
                         connection.close(CloseCode.POLICY_VIOLATION, "IDENTITY_MISMATCH");
                         return;
                     }
@@ -101,7 +115,8 @@ export class VibePOKERServer extends Server<Env> {
                     id: connection.id,
                     name: validName,
                     selectedCard: null,
-                    isHost: !room.hostId
+                    isHost: !room.hostId,
+                    token: token
                 };
 
                 if (player.isHost) {
@@ -129,7 +144,30 @@ export class VibePOKERServer extends Server<Env> {
 
     async onMessage(sender: Connection, message: string) {
         try {
+            if (typeof message !== "string" || message.length > 2048) {
+                return;
+            }
+
             const msg = JSON.parse(message);
+            if (!msg || typeof msg !== "object" || typeof msg.type !== "string") {
+                return;
+            }
+
+            const validMessageTypes = new Set([
+                "select-card",
+                "update-topic",
+                "reveal-cards",
+                "accept-estimation",
+                "reset-round",
+                "revote",
+                "set-rounding",
+                "transfer-host"
+            ]);
+
+            if (!validMessageTypes.has(msg.type)) {
+                return;
+            }
+
             // We use transaction for all state updates to ensure consistency
             await this.ctx.storage.transaction(async (txn) => {
                 const room = await txn.get<Room>("room-state");
@@ -186,9 +224,22 @@ export class VibePOKERServer extends Server<Env> {
         await this.handleDisconnect(connection);
     }
 
+    private getActiveConnections(id: string): Connection[] {
+        try {
+            return Array.from(this.getConnections(id));
+        } catch {
+            try {
+                const single = this.getConnection(id);
+                return single ? [single] : [];
+            } catch {
+                return [];
+            }
+        }
+    }
+
     private async handleDisconnect(connection: Connection) {
-        const activeConnection = this.getConnection(connection.id);
-        if (activeConnection && activeConnection !== connection) return;
+        const activeConnections = this.getActiveConnections(connection.id);
+        if (activeConnections.some(c => c !== connection && (c.readyState === undefined || c.readyState === WebSocket.OPEN))) return;
 
         await this.ctx.storage.transaction(async (txn) => {
             const room = await txn.get<Room>("room-state");
@@ -232,7 +283,19 @@ export class VibePOKERServer extends Server<Env> {
     }
 
     private broadcastRoomState(room: Room) {
-        this.broadcast(JSON.stringify({ type: "room-state", data: room }));
+        try {
+            for (const conn of this.getConnections()) {
+                try {
+                    const sanitized = sanitizeRoomForPlayer(room, conn.id);
+                    conn.send(JSON.stringify({ type: "room-state", data: sanitized }));
+                } catch {
+                    // Ignore transient send failures on closing connections
+                }
+            }
+        } catch {
+            // Fallback for tests mocking broadcast
+            this.broadcast(JSON.stringify({ type: "room-state", data: room }));
+        }
     }
 
     private async scheduleNextAlarm(
@@ -354,7 +417,36 @@ export class VibePOKERServer extends Server<Env> {
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         return (
-            (await routePartykitRequest(request, env)) ||
+            (await routePartykitRequest(request, env, {
+                onBeforeConnect: async (req, lobby) => {
+                    // 1. Validate room ID format to prevent arbitrary DO initialization
+                    if (!lobby.name || !/^[a-zA-Z0-9_-]{4,64}$/.test(lobby.name)) {
+                        return new Response("Invalid room ID", { status: 400 });
+                    }
+
+                    // 2. Validate _pk connection ID length to prevent tag overflow crash
+                    const url = new URL(req.url);
+                    const pk = url.searchParams.get("_pk");
+                    if (pk && pk.length > 64) {
+                        return new Response("Invalid connection ID", { status: 400 });
+                    }
+
+                    // 3. Origin validation if Origin header is provided
+                    const origin = req.headers.get("Origin");
+                    if (origin) {
+                        try {
+                            const originUrl = new URL(origin);
+                            if (!['http:', 'https:'].includes(originUrl.protocol)) {
+                                return new Response("Forbidden", { status: 403 });
+                            }
+                        } catch {
+                            return new Response("Forbidden", { status: 403 });
+                        }
+                    }
+
+                    return req;
+                }
+            })) ||
             new Response("Not Found", { status: 404 })
         );
     }

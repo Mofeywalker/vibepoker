@@ -28,11 +28,15 @@ export function markPlayerDisconnected(room: Room, playerId: string, disconnecte
     return true;
 }
 
-export function restorePlayer(room: Room, playerId: string, playerName: string): boolean {
+export function restorePlayer(room: Room, playerId: string, playerName: string, token?: string): boolean {
     const player = room.players.find(p => p.id === playerId);
     if (!player || player.name.toLowerCase() !== playerName.toLowerCase()) return false;
+    if (player.token && token && player.token !== token) return false;
 
     delete player.disconnectedAt;
+    if (token && !player.token) {
+        player.token = token;
+    }
     if (!room.hostId) {
         room.hostId = playerId;
         player.isHost = true;
@@ -64,12 +68,17 @@ const TSHIRT_VALUES: Record<string, number> = {
     'XS': 1, 'S': 2, 'M': 3, 'L': 5, 'XL': 8, 'XXL': 13
 };
 
+const DANGEROUS_OR_INVISIBLE_REGEX = /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF<>&"']/g;
+
 // Validation functions
 export function validatePlayerName(name: unknown): string | null {
     if (typeof name !== 'string') return null;
-    const trimmed = name.trim();
-    if (trimmed.length === 0 || trimmed.length > MAX_NAME_LENGTH) return null;
-    return trimmed.replace(/[<>&"']/g, '');
+    const sanitized = name
+        .normalize('NFC')
+        .replace(DANGEROUS_OR_INVISIBLE_REGEX, '')
+        .trim();
+    if (sanitized.length === 0 || sanitized.length > MAX_NAME_LENGTH) return null;
+    return sanitized;
 }
 
 export function getInitials(name: string): string {
@@ -102,13 +111,46 @@ export function getAvatarColor(name: string, id: string): string {
 
 export function validateTopic(topic: unknown): string {
     if (typeof topic !== 'string') return '';
-    return topic.trim().slice(0, MAX_TOPIC_LENGTH).replace(/[<>&"']/g, '');
+    return topic
+        .normalize('NFC')
+        .replace(DANGEROUS_OR_INVISIBLE_REGEX, '')
+        .trim()
+        .slice(0, MAX_TOPIC_LENGTH);
 }
 
 export function generateRoomId(): string {
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
     const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    return Array.from(bytes, b => alphabet[b % 36]).join('');
+    const result: string[] = [];
+    while (result.length < 16) {
+        const bytes = crypto.getRandomValues(new Uint8Array(32));
+        for (const b of bytes) {
+            // 252 is largest multiple of 36 <= 256 (36 * 7 = 252) to eliminate modulo bias
+            if (b < 252 && result.length < 16) {
+                result.push(alphabet[b % 36]);
+            }
+        }
+    }
+    return result.join('');
+}
+
+export function sanitizeRoomForPlayer(room: Room, recipientId: string): Room {
+    const isRevealed = room.isRevealed;
+    return {
+        ...room,
+        players: room.players.map(p => {
+            const isSelf = p.id === recipientId;
+            let card = p.selectedCard;
+            if (!isRevealed && !isSelf && card !== null) {
+                card = 'hidden';
+            }
+            // Strip secret session token from all broadcasted players
+            const { token: _token, ...sanitizedPlayer } = p;
+            return {
+                ...sanitizedPlayer,
+                selectedCard: card
+            };
+        })
+    };
 }
 
 /**
