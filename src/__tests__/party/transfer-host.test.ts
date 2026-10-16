@@ -1,13 +1,13 @@
 
 import { describe, it, expect, vi } from 'vitest';
+import { VibePOKERServer } from '../../../party/vibepoker';
 import {
-    VibePOKERServer,
     expireDisconnectedPlayers,
     markPlayerDisconnected,
     RECONNECT_GRACE_MS,
     restorePlayer,
     transferHost
-} from '../../../party/vibepoker';
+} from '@/lib/poker-logic';
 import type { Room, Player } from '../../types';
 
 function createRoom(players: Player[], hostId: string): Room {

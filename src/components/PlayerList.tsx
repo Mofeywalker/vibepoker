@@ -19,60 +19,63 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
     const t = useTranslations('players');
 
     return (
-        <div
+        <li
             className={`
-                relative group/player flex flex-col items-center gap-3 p-4 rounded-2xl
-                bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border
+                relative group/player flex flex-col items-center gap-3 p-4 rounded-xl
+                border transition-all duration-150
                 ${isCurrentPlayer
-                    ? 'border-violet-500/50 bg-violet-100/50 dark:bg-violet-900/20 shadow-sm'
-                    : 'border-slate-200 dark:border-slate-700/50'}
-                transition-all duration-300
+                    ? 'bg-zinc-50 dark:bg-zinc-900 border-indigo-400 dark:border-indigo-600/70 shadow-xs'
+                    : 'bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 shadow-2xs'}
             `}
         >
             {/* Host badge */}
             {player.isHost && (
-                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg z-10">
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full z-10 tracking-wider">
                     {t('host')}
-                </div>
+                </span>
             )}
 
-            {/* Transfer Host Button */}
+            {/* Transfer Host Button - accessible on hover AND keyboard focus */}
             {canTransferHost && !player.isHost && onTransferHost && (
                 <button
+                    type="button"
                     onClick={() => onTransferHost(player.id)}
                     className="
-                        absolute -top-2 -right-2 opacity-0 group-hover/player:opacity-100
-                        bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400
-                        hover:bg-amber-50 dark:hover:bg-amber-900/20
-                        border border-amber-200 dark:border-amber-800
-                        text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm
-                        transition-all duration-200 z-10
+                        absolute -top-2.5 right-2 opacity-0
+                        group-hover/player:opacity-100 focus-visible:opacity-100
+                        bg-white dark:bg-zinc-900 text-amber-700 dark:text-amber-400
+                        hover:bg-amber-50 dark:hover:bg-amber-950/40
+                        border border-amber-300 dark:border-amber-700/60
+                        text-[10px] font-medium px-2 py-0.5 rounded-md shadow-2xs
+                        transition-opacity duration-150 z-10 cursor-pointer
                     "
-                    title={t('makeHost')}
+                    aria-label={`${t('makeHost')}: ${player.name}`}
                 >
                     {t('makeHost')}
                 </button>
             )}
 
             {/* Avatar */}
-            <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
+            <div
+                aria-hidden="true"
+                className="w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-xs border border-white/20 select-none"
                 style={{ background: getAvatarColor(player.name, player.id) }}
             >
                 {getInitials(player.name)}
             </div>
 
             {/* Name */}
-            <span className={`
-                text-sm font-medium truncate max-w-full
-                ${isCurrentPlayer ? 'text-violet-800 dark:text-violet-300' : 'text-slate-900 dark:text-slate-300'}
-            `}>
-                {player.name}
-                {isCurrentPlayer && ` ${t('you')}`}
-            </span>
+            <div className="flex items-center justify-center max-w-full text-center">
+                <span className={`
+                    text-xs font-medium truncate
+                    ${isCurrentPlayer ? 'text-indigo-950 dark:text-indigo-200 font-semibold' : 'text-zinc-900 dark:text-zinc-200'}
+                `}>
+                    {player.name}{isCurrentPlayer && ` ${t('you')}`}
+                </span>
+            </div>
 
             {/* Card status */}
-            <div className="mt-1">
+            <div className="mt-auto pt-1">
                 {isRevealed && player.selectedCard ? (
                     <Card
                         value={player.selectedCard}
@@ -80,14 +83,12 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
                         size="sm"
                     />
                 ) : isCurrentPlayer && player.selectedCard ? (
-                    <div className="relative group">
-                        <Card
-                            value={player.selectedCard}
-                            isRevealed={false}
-                            isSelected={true}
-                            size="sm"
-                        />
-                    </div>
+                    <Card
+                        value={player.selectedCard}
+                        isRevealed={false}
+                        isSelected={true}
+                        size="sm"
+                    />
                 ) : hasCard ? (
                     <Card
                         value="?"
@@ -95,12 +96,15 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
                         size="sm"
                     />
                 ) : (
-                    <div className="w-12 h-16 rounded-lg border-2 border-dashed border-slate-400 dark:border-slate-600 flex items-center justify-center">
-                        <span className="text-slate-500 dark:text-slate-500 text-xs">—</span>
+                    <div
+                        className="w-12 h-16 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center bg-zinc-50/50 dark:bg-zinc-900/30"
+                        aria-label="No estimate chosen"
+                    >
+                        <span className="text-zinc-400 dark:text-zinc-600 text-xs font-mono select-none">—</span>
                     </div>
                 )}
             </div>
-        </div>
+        </li>
     );
 });
 
@@ -119,11 +123,13 @@ function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWith
     const t = useTranslations('players');
 
     return (
-        <div className="w-full">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-300 mb-4">
-                {t('title')} ({players.length})
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        <section className="w-full" aria-labelledby="player-list-heading">
+            <div className="flex items-center justify-between mb-4">
+                <h2 id="player-list-heading" className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                    {t('title')} ({players.length})
+                </h2>
+            </div>
+            <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 list-none p-0 m-0">
                 {players.map((player) => (
                     <PlayerItem
                         key={player.id}
@@ -135,8 +141,8 @@ function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWith
                         canTransferHost={canTransferHost}
                     />
                 ))}
-            </div>
-        </div>
+            </ul>
+        </section>
     );
 }
 

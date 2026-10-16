@@ -6,70 +6,20 @@ import {
     validatePlayerName,
     validateTopic,
     validateCardValue,
-    MAX_HISTORY_ITEMS
+    MAX_HISTORY_ITEMS,
+    RECONNECT_GRACE_MS,
+    transferHost,
+    markPlayerDisconnected,
+    restorePlayer,
+    expireDisconnectedPlayers
 } from "../src/lib/poker-logic";
 
 const MAX_PLAYERS_PER_ROOM = 50;
-export const RECONNECT_GRACE_MS = 30_000;
 const EMPTY_ROOM_TTL_MS = 24 * 60 * 60 * 1000;
 
 enum CloseCode {
     POLICY_VIOLATION = 1008,
     INTERNAL_ERROR = 1011
-}
-
-export function transferHost(room: Room, playerId: string, targetId: unknown): boolean {
-    if (room.hostId !== playerId || typeof targetId !== 'string' || playerId === targetId) return false;
-
-    const targetPlayer = room.players.find(p => p.id === targetId);
-    if (!targetPlayer) return false;
-
-    const currentPlayer = room.players.find(p => p.id === playerId);
-    if (currentPlayer) currentPlayer.isHost = false;
-
-    room.hostId = targetId;
-    targetPlayer.isHost = true;
-    return true;
-}
-
-export function markPlayerDisconnected(room: Room, playerId: string, disconnectedAt: number): boolean {
-    const player = room.players.find(p => p.id === playerId);
-    if (!player || player.disconnectedAt !== undefined) return false;
-
-    player.disconnectedAt = disconnectedAt;
-    return true;
-}
-
-export function restorePlayer(room: Room, playerId: string, playerName: string): boolean {
-    const player = room.players.find(p => p.id === playerId);
-    if (!player || player.name.toLowerCase() !== playerName.toLowerCase()) return false;
-
-    delete player.disconnectedAt;
-    if (!room.hostId) {
-        room.hostId = playerId;
-        player.isHost = true;
-    }
-    return true;
-}
-
-export function expireDisconnectedPlayers(room: Room, now: number): boolean {
-    const expiredIds = new Set(
-        room.players
-            .filter(p => p.disconnectedAt !== undefined && p.disconnectedAt + RECONNECT_GRACE_MS <= now)
-            .map(p => p.id)
-    );
-    if (expiredIds.size === 0) return false;
-
-    const hostExpired = expiredIds.has(room.hostId);
-    room.players = room.players.filter(p => !expiredIds.has(p.id));
-
-    if (hostExpired) {
-        const nextHost = room.players.find(p => p.disconnectedAt === undefined);
-        room.hostId = nextHost?.id ?? "";
-        room.players.forEach(p => p.isHost = p.id === room.hostId);
-    }
-
-    return true;
 }
 
 export type Env = {

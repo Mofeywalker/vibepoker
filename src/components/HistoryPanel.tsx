@@ -17,26 +17,32 @@ function HistoryPanelComponent({ history }: HistoryPanelProps) {
     }
 
     return (
-        <div className="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden">
-            {/* Header - Always visible */}
+        <section
+            aria-labelledby="history-heading"
+            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xs overflow-hidden"
+        >
+            {/* Header / Disclosure Trigger */}
             <button
+                type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                aria-expanded={isOpen}
+                aria-controls="history-table-content"
+                className="w-full px-5 py-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer text-left"
             >
                 <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white text-lg">
-                        📜
-                    </span>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    <span className="w-2 h-2 rounded-full bg-zinc-400 dark:bg-zinc-600" aria-hidden="true" />
+                    <h2 id="history-heading" className="text-sm font-bold text-zinc-950 dark:text-zinc-50">
                         {t('history')}
-                    </h3>
-                    <span className="px-2 py-1 text-xs font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full">
+                    </h2>
+                    <span className="px-2 py-0.5 text-xs font-mono font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60 rounded-full tabular-nums">
                         {history.length}
                     </span>
                 </div>
                 <svg
-                    className={`w-5 h-5 text-slate-600 dark:text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''
-                        }`}
+                    aria-hidden="true"
+                    className={`w-4 h-4 text-zinc-500 dark:text-zinc-400 transition-transform duration-150 ${
+                        isOpen ? 'rotate-180' : ''
+                    }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -45,25 +51,28 @@ function HistoryPanelComponent({ history }: HistoryPanelProps) {
                 </svg>
             </button>
 
-            {/* Content - Collapsible */}
+            {/* Content - Collapsible with ARIA and semantic table */}
             {isOpen && (
-                <div className="px-6 pb-6 border-t border-slate-200 dark:border-slate-700">
-                    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 mt-4">
+                <div id="history-table-content" className="px-5 pb-5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800 mt-2">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 uppercase text-xs font-semibold">
+                            <caption className="visually-hidden">
+                                {t('history')}
+                            </caption>
+                            <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 uppercase text-[10px] font-mono font-semibold tracking-wider">
                                 <tr>
-                                    <th className="px-4 py-3">{t('topic')}</th>
-                                    <th className="px-4 py-3 text-right">{t('estimate')}</th>
+                                    <th scope="col" className="px-4 py-2.5">{t('topic')}</th>
+                                    <th scope="col" className="px-4 py-2.5 text-right">{t('estimate')}</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white/50 dark:bg-slate-800/20">
+                            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                                 {history.map((item, index) => (
-                                    <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                        <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">
+                                    <tr key={index} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/30 transition-colors">
+                                        <td className="px-4 py-2.5 text-zinc-900 dark:text-zinc-100 font-medium">
                                             {item.topic}
                                         </td>
-                                        <td className="px-4 py-3 text-right">
-                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 font-bold">
+                                        <td className="px-4 py-2.5 text-right">
+                                            <span className="inline-flex items-center justify-center min-w-7 h-7 px-2 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 text-zinc-900 dark:text-zinc-100 font-mono font-bold text-xs tabular-nums">
                                                 {item.value}
                                             </span>
                                         </td>
@@ -74,7 +83,7 @@ function HistoryPanelComponent({ history }: HistoryPanelProps) {
                     </div>
                 </div>
             )}
-        </div>
+        </section>
     );
 }
 

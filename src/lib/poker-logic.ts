@@ -1,9 +1,64 @@
-import { DECKS, type DeckType, type CardValue, type Player, type Results, type RoundingPreference } from '@/types';
+import { DECKS, type DeckType, type CardValue, type Player, type Room, type Results, type RoundingPreference } from '@/types';
 
 // Constants
 export const MAX_NAME_LENGTH = 50;
 export const MAX_TOPIC_LENGTH = 200;
 export const MAX_HISTORY_ITEMS = 50;
+export const RECONNECT_GRACE_MS = 30_000;
+
+export function transferHost(room: Room, playerId: string, targetId: unknown): boolean {
+    if (room.hostId !== playerId || typeof targetId !== 'string' || playerId === targetId) return false;
+
+    const targetPlayer = room.players.find(p => p.id === targetId);
+    if (!targetPlayer) return false;
+
+    const currentPlayer = room.players.find(p => p.id === playerId);
+    if (currentPlayer) currentPlayer.isHost = false;
+
+    room.hostId = targetId;
+    targetPlayer.isHost = true;
+    return true;
+}
+
+export function markPlayerDisconnected(room: Room, playerId: string, disconnectedAt: number): boolean {
+    const player = room.players.find(p => p.id === playerId);
+    if (!player || player.disconnectedAt !== undefined) return false;
+
+    player.disconnectedAt = disconnectedAt;
+    return true;
+}
+
+export function restorePlayer(room: Room, playerId: string, playerName: string): boolean {
+    const player = room.players.find(p => p.id === playerId);
+    if (!player || player.name.toLowerCase() !== playerName.toLowerCase()) return false;
+
+    delete player.disconnectedAt;
+    if (!room.hostId) {
+        room.hostId = playerId;
+        player.isHost = true;
+    }
+    return true;
+}
+
+export function expireDisconnectedPlayers(room: Room, now: number): boolean {
+    const expiredIds = new Set(
+        room.players
+            .filter(p => p.disconnectedAt !== undefined && p.disconnectedAt + RECONNECT_GRACE_MS <= now)
+            .map(p => p.id)
+    );
+    if (expiredIds.size === 0) return false;
+
+    const hostExpired = expiredIds.has(room.hostId);
+    room.players = room.players.filter(p => !expiredIds.has(p.id));
+
+    if (hostExpired) {
+        const nextHost = room.players.find(p => p.disconnectedAt === undefined);
+        room.hostId = nextHost?.id ?? "";
+        room.players.forEach(p => p.isHost = p.id === room.hostId);
+    }
+
+    return true;
+}
 
 const TSHIRT_VALUES: Record<string, number> = {
     'XS': 1, 'S': 2, 'M': 3, 'L': 5, 'XL': 8, 'XXL': 13

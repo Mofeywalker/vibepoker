@@ -23,51 +23,48 @@ function CardComponent({
     disabled = false
 }: CardProps) {
     const sizeClasses = {
-        sm: 'w-12 h-16 text-lg',
-        md: 'w-16 h-24 text-2xl',
-        lg: 'w-20 h-28 text-3xl'
+        sm: 'w-12 h-16 text-base rounded-lg',
+        md: 'w-16 h-24 text-2xl rounded-xl',
+        lg: 'w-20 h-28 text-3xl rounded-xl'
     };
 
     const baseClasses = `
-    relative rounded-xl font-bold 
-    transition-all duration-300 ease-out
-    ${sizeClasses[size]}
-    ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-  `;
+        relative font-bold tabular-nums select-none
+        transition-all duration-150 ease-out
+        ${sizeClasses[size]}
+        ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+    `;
 
     const frontClasses = `
-    ${baseClasses}
-    bg-gradient-to-br from-white to-slate-100 dark:from-slate-800 dark:to-slate-900
-    border-2 ${isSelected ? 'border-violet-500 shadow-lg shadow-violet-500/30' : 'border-slate-200 dark:border-slate-700'}
-    hover:border-violet-400 hover:shadow-lg hover:shadow-violet-500/20
-    hover:scale-105 hover:-translate-y-1
-    flex items-center justify-center
-    text-slate-900 dark:text-white
-  `;
+        ${baseClasses}
+        ${isSelected
+            ? 'bg-indigo-50/90 dark:bg-indigo-950/60 border-2 border-indigo-600 dark:border-indigo-400 text-indigo-950 dark:text-indigo-100 -translate-y-1.5 shadow-md ring-2 ring-indigo-500/20 dark:ring-indigo-400/20'
+            : 'bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-2xs hover:border-zinc-400 dark:hover:border-zinc-500 hover:-translate-y-0.5 hover:shadow-sm'}
+        flex items-center justify-center
+    `;
 
     const backClasses = `
-    ${baseClasses}
-    bg-gradient-to-br from-violet-600 to-purple-700
-    border-2 border-violet-500
-    flex items-center justify-center
-    overflow-hidden
-  `;
+        ${baseClasses}
+        card-back-pattern
+        border border-zinc-700 dark:border-zinc-600
+        flex items-center justify-center
+        overflow-hidden shadow-2xs
+    `;
 
     const revealedClasses = `
-    ${baseClasses}
-    bg-gradient-to-br from-emerald-600 to-teal-700
-    border-2 border-emerald-400
-    flex items-center justify-center
-    text-white
-    shadow-lg shadow-emerald-500/30
-  `;
+        ${baseClasses}
+        bg-white dark:bg-zinc-900
+        border-2 border-emerald-600 dark:border-emerald-500
+        flex items-center justify-center
+        text-zinc-950 dark:text-zinc-50
+        shadow-xs
+    `;
 
     if (isBack && !isRevealed) {
         return (
-            <div className={backClasses}>
-                {/* Pattern for card back */}
-                <div className="absolute inset-2 rounded-lg border border-violet-400/30 flex items-center justify-center">
-                    <div className="w-6 h-6 rounded-full bg-violet-400/20 animate-pulse" />
+            <div className={backClasses} aria-hidden="true">
+                <div className="absolute inset-1.5 rounded-md border border-zinc-600/50 flex items-center justify-center">
+                    <div className="w-2.5 h-2.5 rotate-45 border border-zinc-400/60 bg-zinc-800" />
                 </div>
             </div>
         );
@@ -76,22 +73,51 @@ function CardComponent({
     if (isRevealed) {
         return (
             <div className={revealedClasses}>
-                <span className="drop-shadow-lg emoji-text">{value}</span>
+                {size !== 'sm' && (
+                    <span aria-hidden="true" className="absolute top-1.5 left-2 text-[10px] font-mono font-semibold text-emerald-700 dark:text-emerald-400 leading-none">
+                        {value}
+                    </span>
+                )}
+                <span className="emoji-text tracking-tight">{value}</span>
+                {size !== 'sm' && (
+                    <span aria-hidden="true" className="absolute bottom-1.5 right-2 text-[10px] font-mono font-semibold text-emerald-700 dark:text-emerald-400 leading-none rotate-180">
+                        {value}
+                    </span>
+                )}
             </div>
         );
     }
 
     return (
         <button
+            type="button"
             onClick={onClick}
             disabled={disabled}
+            aria-pressed={isSelected}
             className={frontClasses}
         >
-            <span className={`drop-shadow-lg emoji-text ${isSelected ? 'scale-110' : ''}`}>
+            {size !== 'sm' && (
+                <>
+                    <span
+                        aria-hidden="true"
+                        data-corner={value}
+                        className="absolute top-1.5 left-2 text-[10px] font-mono font-medium leading-none before:content-[attr(data-corner)] text-zinc-400 dark:text-zinc-500"
+                    />
+                    <span
+                        aria-hidden="true"
+                        data-corner={value}
+                        className="absolute bottom-1.5 right-2 text-[10px] font-mono font-medium leading-none rotate-180 before:content-[attr(data-corner)] text-zinc-400 dark:text-zinc-500"
+                    />
+                </>
+            )}
+            <span className="emoji-text tracking-tight">
                 {value}
             </span>
             {isSelected && (
-                <div className="absolute inset-0 rounded-xl bg-violet-500/10 animate-pulse pointer-events-none" />
+                <span
+                    aria-hidden="true"
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-400 ring-2 ring-white dark:ring-zinc-950"
+                />
             )}
         </button>
     );

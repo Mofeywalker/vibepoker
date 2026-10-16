@@ -32,11 +32,11 @@ function CardDeckComponent({ selectedCard, onSelectCard, values, disabled = fals
     };
 
     return (
-        <div className="w-full">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-300 mb-4 text-center">
+        <div className="w-full" role="group" aria-labelledby="card-deck-heading">
+            <h2 id="card-deck-heading" className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-4 text-center">
                 {t('selectEstimate')}
-            </h3>
-            <div className="flex flex-wrap justify-center gap-3">
+            </h2>
+            <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3">
                 {values.map((value, i) => (
                     <Card
                         key={value}

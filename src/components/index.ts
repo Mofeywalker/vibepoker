@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic';
 
+export { Logo } from './Logo';
 export { Card } from './Card';
 export { CardDeck } from './CardDeck';
 export { PlayerList } from './PlayerList';

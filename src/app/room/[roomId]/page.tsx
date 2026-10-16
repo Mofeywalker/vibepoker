@@ -45,7 +45,6 @@ export default function RoomPage() {
         if (currentHostId && prevHostId.current && currentHostId !== prevHostId.current) {
             const newHost = room?.players.find(p => p.id === currentHostId);
             if (newHost) {
-                // The toast is a transient reaction to an external room update.
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setToast({
                     message: t('hostChanged', { name: newHost.name }),
@@ -75,12 +74,10 @@ export default function RoomPage() {
     useEffect(() => {
         if (isLoading) return;
 
-        // Check if we already have room state (happens when navigating from create)
         if (room && room.id === roomId) {
             return;
         }
 
-        // Check localStorage for saved player name (for rejoining after refresh)
         const savedPlayerName = localStorage.getItem(`vibepoker-player-${roomId}`);
         const savedDeckType = localStorage.getItem(`vibepoker-deck-${roomId}`) as DeckType | null;
 
@@ -91,14 +88,12 @@ export default function RoomPage() {
                         localStorage.removeItem(`vibepoker-player-${roomId}`);
                         localStorage.removeItem(`vibepoker-deck-${roomId}`);
                     }
-                    // A policy close can arrive after the socket's open event.
                     // eslint-disable-next-line react-hooks/set-state-in-effect
                     setShowJoinModal(true);
                 }
                 return;
             }
 
-            // Try to rejoin with saved name
             joinRoom(roomId, savedPlayerName, savedDeckType ?? undefined).then(success => {
                 attemptedAutoJoin.current = true;
                 if (!success) setShowJoinModal(true);
@@ -109,7 +104,6 @@ export default function RoomPage() {
             return;
         }
 
-        // Show join modal for new visitors
         if (!room && !savedPlayerName) {
             setShowJoinModal(true);
         }
@@ -132,55 +126,63 @@ export default function RoomPage() {
         }
     };
 
-    // Count how many players have voted
     const votedCount = playersWithCards.size;
     const totalPlayers = room?.players.length || 0;
     const allVoted = votedCount === totalPlayers && totalPlayers > 0;
 
     const deckValues = room?.deckType && DECKS[room.deckType] ? DECKS[room.deckType] : DECKS.scrum;
 
-
-
     return (
         <main className="min-h-screen flex flex-col">
-            <header className="border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href="/" className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-violet-500 dark:hover:text-violet-400 transition-colors">
-                            <span className="text-2xl">🃏</span>
-                            <span className="font-bold text-xl hidden sm:inline">VibePOKER</span>
+            {/* Top Navigation Bar */}
+            <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Link
+                            href="/"
+                            className="flex items-center gap-2 text-zinc-950 dark:text-zinc-50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            aria-label="VibePoker Home"
+                        >
+                            <svg aria-hidden="true" className="w-5 h-5 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="3" y="5" width="12" height="16" rx="2" strokeWidth="1.75" />
+                                <rect x="9" y="3" width="12" height="16" rx="2" strokeWidth="1.75" />
+                            </svg>
+                            <span className="font-bold text-base tracking-tight hidden sm:inline">VibePOKER</span>
                         </Link>
-                        <div className="h-6 w-px bg-slate-300 dark:bg-slate-700" />
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-700 dark:text-slate-400 text-sm hidden sm:inline">{t('room')}:</span>
-                            <code className="px-3 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-violet-700 dark:text-violet-400 font-mono text-sm">
+
+                        <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" aria-hidden="true" />
+
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-zinc-500 text-xs hidden sm:inline font-mono">{t('room')}:</span>
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-mono text-xs text-zinc-900 dark:text-zinc-100 font-semibold tabular-nums">
                                 {roomId}
-                            </code>
+                            </span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <ThemeToggle />
                         <button
+                            type="button"
                             onClick={handleCopyLink}
                             className="
-                  flex items-center gap-2 px-4 py-2 rounded-xl
-                  bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700
-                  text-slate-900 dark:text-white text-sm font-medium
-                  transition-all duration-200
-                "
+                                inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold
+                                bg-zinc-950 hover:bg-zinc-800 text-white
+                                dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950
+                                shadow-2xs transition-colors duration-150 cursor-pointer min-h-10
+                            "
                         >
                             {copySuccess ? (
                                 <>
-                                    <svg className="w-4 h-4 text-emerald-500 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg aria-hidden="true" className="w-4 h-4 text-emerald-400 dark:text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <span className="text-emerald-500 dark:text-emerald-400">{t('copied')}</span>
+                                    <span>{t('copied')}</span>
                                 </>
                             ) : (
                                 <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                    <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                                     </svg>
                                     <span className="hidden sm:inline">{t('shareLink')}</span>
                                 </>
@@ -190,61 +192,88 @@ export default function RoomPage() {
                 </div>
             </header>
 
-            {/* Main content */}
-            <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+            {/* Main Content Workspace */}
+            <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                 {room ? (
-                    <div className="space-y-8">
-                        {/* Topic Section */}
+                    <div className="space-y-6 sm:space-y-8">
+                        {/* Topic Header */}
                         <div className="flex items-center justify-center min-h-[3rem]">
                             {isEditingTopic && isHost ? (
                                 <div className="flex items-center gap-2 w-full max-w-xl animate-zoom-in">
+                                    <label htmlFor="topic-input" className="visually-hidden">
+                                        {t('topicPlaceholder')}
+                                    </label>
                                     <input
+                                        id="topic-input"
                                         type="text"
                                         value={topicInput}
                                         onChange={(e) => setTopicInput(e.target.value)}
                                         placeholder={t('topicPlaceholder')}
-                                        className="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all shadow-sm"
+                                        className="
+                                            flex-1 bg-white dark:bg-zinc-900
+                                            border border-zinc-300 dark:border-zinc-700
+                                            rounded-lg px-3.5 py-2 text-sm
+                                            text-zinc-950 dark:text-zinc-50
+                                            placeholder-zinc-400 dark:placeholder-zinc-500
+                                            shadow-2xs
+                                        "
                                         autoFocus
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSaveTopic()}
+                                        onKeyDown={(e) => {
+                                            if (!e.nativeEvent.isComposing && e.key === 'Enter') {
+                                                handleSaveTopic();
+                                            }
+                                        }}
                                     />
                                     <button
+                                        type="button"
                                         onClick={handleSaveTopic}
-                                        className="p-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/30 transition-colors"
+                                        className="p-2 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/30 transition-colors cursor-pointer"
                                         title={t('save')}
+                                        aria-label={t('save')}
                                     >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
                                     </button>
                                     <button
+                                        type="button"
                                         onClick={() => {
                                             setIsEditingTopic(false);
                                             setTopicInput(room.topic || '');
                                         }}
-                                        className="p-2 bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/80 rounded-lg border border-slate-300 dark:border-slate-600 transition-colors"
+                                        className="p-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer"
                                         title={t('cancel')}
+                                        aria-label={t('cancel')}
                                     >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
                             ) : (
-                                <div className="group relative flex items-center justify-center gap-3">
-                                    <h2 className={`text-2xl md:text-3xl font-bold text-center ${room.topic ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-500 italic'}`}>
+                                <div className="flex items-center justify-center gap-2 max-w-2xl text-center">
+                                    <h1 className={`text-xl sm:text-2xl font-bold tracking-tight ${room.topic ? 'text-zinc-950 dark:text-zinc-50' : 'text-zinc-400 dark:text-zinc-500 italic'}`}>
                                         {room.topic || t('noTopicSet')}
-                                    </h2>
+                                    </h1>
                                     {isHost && (
                                         <button
+                                            type="button"
                                             onClick={() => {
                                                 setTopicInput(room.topic || '');
                                                 setIsEditingTopic(true);
                                             }}
-                                            className="opacity-0 group-hover:opacity-100 p-2 text-violet-400 hover:text-violet-300 transition-opacity bg-violet-500/10 rounded-lg"
+                                            className="
+                                                p-1.5 text-zinc-500 dark:text-zinc-400
+                                                hover:text-zinc-950 dark:hover:text-zinc-50
+                                                hover:bg-zinc-100 dark:hover:bg-zinc-800
+                                                rounded-md transition-colors cursor-pointer
+                                                focus-visible:opacity-100
+                                            "
+                                            aria-label={t('editTopic')}
                                             title={t('editTopic')}
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </button>
                                     )}
@@ -252,72 +281,77 @@ export default function RoomPage() {
                             )}
                         </div>
 
-                        {/* Status bar */}
-                        <div className="flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className={`
-                  flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
-                  ${room.isRevealed
-                                        ? 'bg-emerald-100/50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/50 dark:border-emerald-500/30'
-                                        : allVoted
-                                            ? 'bg-violet-100 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/50 dark:border-violet-500/30 animate-pulse'
-                                            : 'bg-slate-200 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600'}
-                `}>
+                        {/* Status Bar & Host Actions */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-zinc-200 dark:border-zinc-800 py-3">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    role="status"
+                                    aria-live="polite"
+                                    className={`
+                                        inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-medium
+                                        ${room.isRevealed
+                                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
+                                            : allVoted
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold'
+                                                : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60'}
+                                    `}
+                                >
+                                    <span
+                                        aria-hidden="true"
+                                        className={`w-2 h-2 rounded-full ${
+                                            room.isRevealed ? 'bg-emerald-500' : allVoted ? 'bg-indigo-500' : 'bg-zinc-400 dark:bg-zinc-500'
+                                        }`}
+                                    />
                                     {room.isRevealed ? (
-                                        <>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            <span>{t('cardsRevealed')}</span>
-                                        </>
+                                        <span>{t('cardsRevealed')}</span>
                                     ) : (
-                                        <>
-                                            <span>{t('votedOf', { voted: votedCount, total: totalPlayers })}</span>
-                                            {allVoted && <span>• {t('readyToReveal')}</span>}
-                                        </>
+                                        <span>
+                                            {t('votedOf', { voted: votedCount, total: totalPlayers })}
+                                            {allVoted && ` • ${t('readyToReveal')}`}
+                                        </span>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Host controls */}
+                            {/* Host Primary Controls */}
                             {isHost && (
-                                <div className="flex gap-3">
+                                <div className="flex gap-2">
                                     {!room.isRevealed ? (
                                         <button
+                                            type="button"
                                             onClick={revealCards}
                                             disabled={votedCount === 0}
                                             className="
-                        flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold
-                        bg-gradient-to-r from-emerald-600 to-teal-600
-                        hover:from-emerald-500 hover:to-teal-500
-                        disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed
-                        text-white shadow-lg shadow-emerald-500/30
-                        hover:shadow-xl hover:shadow-emerald-500/40
-                        transition-all duration-200
-                      "
+                                                inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs
+                                                bg-zinc-950 hover:bg-zinc-800 text-white
+                                                dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950
+                                                disabled:bg-zinc-200 disabled:text-zinc-400
+                                                dark:disabled:bg-zinc-800 dark:disabled:text-zinc-600
+                                                disabled:cursor-not-allowed
+                                                shadow-xs transition-colors cursor-pointer
+                                            "
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
-                                            {t('reveal')}
+                                            <span>{t('reveal')}</span>
                                         </button>
                                     ) : (
                                         <button
+                                            type="button"
                                             onClick={resetRound}
                                             className="
-                        flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold
-                        bg-gradient-to-r from-violet-600 to-purple-600
-                        hover:from-violet-500 hover:to-purple-500
-                        text-white shadow-lg shadow-violet-500/30
-                        hover:shadow-xl hover:shadow-violet-500/40
-                        transition-all duration-200
-                      "
+                                                inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs
+                                                bg-zinc-950 hover:bg-zinc-800 text-white
+                                                dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950
+                                                shadow-xs transition-colors cursor-pointer
+                                            "
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                             </svg>
-                                            {t('newRound')}
+                                            <span>{t('newRound')}</span>
                                         </button>
                                     )}
                                 </div>
@@ -338,12 +372,12 @@ export default function RoomPage() {
                             />
                         )}
 
-                        {/* History panel (always visible if there's history) */}
+                        {/* History panel (collapsible table) */}
                         {room.history && room.history.length > 0 && (
                             <HistoryPanel history={room.history} />
                         )}
 
-                        {/* Players */}
+                        {/* Players List Grid */}
                         <PlayerList
                             players={room.players}
                             currentPlayerId={currentPlayer?.id}
@@ -353,9 +387,9 @@ export default function RoomPage() {
                             canTransferHost={isHost}
                         />
 
-                        {/* Card deck (only when not revealed) */}
+                        {/* Card deck (docked bottom card when not revealed) */}
                         {!room.isRevealed && (
-                            <div className="glass-strong rounded-2xl p-6">
+                            <div className="surface-panel rounded-2xl p-6">
                                 <CardDeck
                                     selectedCard={currentPlayer?.selectedCard || null}
                                     onSelectCard={selectCard}
@@ -369,22 +403,22 @@ export default function RoomPage() {
                     <div className="flex items-center justify-center min-h-[400px]">
                         <div className="text-center">
                             {isLoading ? (
-                                <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/30">
-                                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-mono">
+                                    <svg aria-hidden="true" className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                     <span>{t('loadingRoom')}</span>
                                 </div>
                             ) : (
-                                <div className="text-slate-400">{t('waitingToJoin')}</div>
+                                <div className="text-zinc-500 text-sm">{t('waitingToJoin')}</div>
                             )}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Join Modal */}
+            {/* Join Modal Overlay */}
             {showJoinModal && !room && (
                 <JoinModal
                     onJoin={handleJoin}
@@ -393,12 +427,16 @@ export default function RoomPage() {
                 />
             )}
 
-            {/* Simple Toast */}
+            {/* Accessible Toast Notification */}
             {toast.visible && (
-                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-bounce-in">
-                    <div className="bg-slate-900 dark:bg-violet-600 text-white px-6 py-3 rounded-full shadow-2xl border border-white/10 flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                        <span className="font-medium">{toast.message}</span>
+                <div
+                    role="status"
+                    aria-live="polite"
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-bounce-in"
+                >
+                    <div className="bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 px-4 py-2.5 rounded-xl shadow-lg border border-zinc-800 dark:border-zinc-200 flex items-center gap-2.5 text-xs font-medium">
+                        <span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" />
+                        <span>{toast.message}</span>
                     </div>
                 </div>
             )}
