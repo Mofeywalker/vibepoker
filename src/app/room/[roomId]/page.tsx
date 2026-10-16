@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
-import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, HistoryPanel } from '@/components';
+import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, HistoryPanel, Logo } from '@/components';
 import { DECKS, type DeckType } from '@/types';
 
 export default function RoomPage() {
@@ -133,58 +133,57 @@ export default function RoomPage() {
     const deckValues = room?.deckType && DECKS[room.deckType] ? DECKS[room.deckType] : DECKS.scrum;
 
     return (
-        <main className="min-h-screen flex flex-col">
-            {/* Top Navigation Bar */}
-            <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+        <main className="min-h-dvh flex flex-col">
+            {/* Top Navigation Bar — Clean Apple / Vercel Header */}
+            <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
                         <Link
                             href="/"
-                            className="flex items-center gap-2 text-zinc-950 dark:text-zinc-50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            className="flex items-center gap-2.5 text-zinc-950 dark:text-zinc-50 hover:opacity-75 transition-opacity shrink-0"
                             aria-label="VibePoker Home"
                         >
-                            <svg aria-hidden="true" className="w-5 h-5 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <rect x="3" y="5" width="12" height="16" rx="2" strokeWidth="1.75" />
-                                <rect x="9" y="3" width="12" height="16" rx="2" strokeWidth="1.75" />
-                            </svg>
-                            <span className="font-bold text-base tracking-tight hidden sm:inline">VibePOKER</span>
+                            <Logo className="w-6 h-6" />
+                            <span className="font-extrabold text-base sm:text-lg tracking-tight hidden sm:inline">
+                                VibePOKER
+                            </span>
                         </Link>
 
-                        <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" aria-hidden="true" />
+                        <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-800 shrink-0" aria-hidden="true" />
 
-                        <div className="flex items-center gap-1.5">
-                            <span className="text-zinc-500 text-xs hidden sm:inline font-mono">{t('room')}:</span>
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-mono text-xs text-zinc-900 dark:text-zinc-100 font-semibold tabular-nums">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-zinc-500 dark:text-zinc-400 text-xs font-medium hidden sm:inline">{t('room')}:</span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-mono text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 font-semibold tabular-nums truncate">
                                 {roomId}
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5 shrink-0">
                         <ThemeToggle />
                         <button
                             type="button"
                             onClick={handleCopyLink}
                             className="
-                                inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold
+                                inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold
                                 bg-zinc-950 hover:bg-zinc-800 text-white
                                 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950
-                                shadow-2xs transition-colors duration-150 cursor-pointer min-h-10
+                                shadow-xs active:scale-[0.98] transition-all duration-150 cursor-pointer min-h-10 sm:min-h-11
                             "
                         >
                             {copySuccess ? (
                                 <>
-                                    <svg aria-hidden="true" className="w-4 h-4 text-emerald-400 dark:text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    <svg aria-hidden="true" className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.25} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <span>{t('copied')}</span>
+                                    <span className="text-trim">{t('copied')}</span>
                                 </>
                             ) : (
                                 <>
-                                    <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg aria-hidden="true" className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                                     </svg>
-                                    <span className="hidden sm:inline">{t('shareLink')}</span>
+                                    <span className="hidden sm:inline text-trim">{t('shareLink')}</span>
                                 </>
                             )}
                         </button>
@@ -197,7 +196,7 @@ export default function RoomPage() {
                 {room ? (
                     <div className="space-y-6 sm:space-y-8">
                         {/* Topic Header */}
-                        <div className="flex items-center justify-center min-h-[3rem]">
+                        <div className="flex items-center justify-center min-h-[3.25rem]">
                             {isEditingTopic && isHost ? (
                                 <div className="flex items-center gap-2 w-full max-w-xl animate-zoom-in">
                                     <label htmlFor="topic-input" className="visually-hidden">
@@ -210,9 +209,9 @@ export default function RoomPage() {
                                         onChange={(e) => setTopicInput(e.target.value)}
                                         placeholder={t('topicPlaceholder')}
                                         className="
-                                            flex-1 bg-white dark:bg-zinc-900
+                                            flex-1 min-h-11 bg-white dark:bg-zinc-900
                                             border border-zinc-300 dark:border-zinc-700
-                                            rounded-lg px-3.5 py-2 text-sm
+                                            rounded-xl px-4 py-2.5 text-base sm:text-sm
                                             text-zinc-950 dark:text-zinc-50
                                             placeholder-zinc-400 dark:placeholder-zinc-500
                                             shadow-2xs
@@ -227,12 +226,12 @@ export default function RoomPage() {
                                     <button
                                         type="button"
                                         onClick={handleSaveTopic}
-                                        className="p-2 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/30 transition-colors cursor-pointer"
+                                        className="min-w-11 min-h-11 inline-flex items-center justify-center p-2.5 bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-xl transition-colors cursor-pointer"
                                         title={t('save')}
                                         aria-label={t('save')}
                                     >
-                                        <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.25} d="M5 13l4 4L19 7" />
                                         </svg>
                                     </button>
                                     <button
@@ -241,18 +240,18 @@ export default function RoomPage() {
                                             setIsEditingTopic(false);
                                             setTopicInput(room.topic || '');
                                         }}
-                                        className="p-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer"
+                                        className="min-w-11 min-h-11 inline-flex items-center justify-center p-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl border border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer"
                                         title={t('cancel')}
                                         aria-label={t('cancel')}
                                     >
-                                        <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-center gap-2 max-w-2xl text-center">
-                                    <h1 className={`text-xl sm:text-2xl font-bold tracking-tight ${room.topic ? 'text-zinc-950 dark:text-zinc-50' : 'text-zinc-400 dark:text-zinc-500 italic'}`}>
+                                <div className="flex items-center justify-center gap-2.5 max-w-2xl text-center">
+                                    <h1 className={`text-[clamp(1.375rem,2.5vw+0.75rem,2rem)] font-bold tracking-tight leading-snug ${room.topic ? 'text-zinc-950 dark:text-zinc-50' : 'text-zinc-400 dark:text-zinc-500 italic'}`}>
                                         {room.topic || t('noTopicSet')}
                                     </h1>
                                     {isHost && (
@@ -263,16 +262,17 @@ export default function RoomPage() {
                                                 setIsEditingTopic(true);
                                             }}
                                             className="
-                                                p-1.5 text-zinc-500 dark:text-zinc-400
+                                                inline-flex items-center justify-center min-w-9 min-h-9 p-2
+                                                text-zinc-500 dark:text-zinc-400
                                                 hover:text-zinc-950 dark:hover:text-zinc-50
-                                                hover:bg-zinc-100 dark:hover:bg-zinc-800
-                                                rounded-md transition-colors cursor-pointer
-                                                focus-visible:opacity-100
+                                                hover:bg-zinc-200/70 dark:hover:bg-zinc-800
+                                                rounded-xl transition-colors cursor-pointer
+                                                focus-visible:opacity-100 shrink-0
                                             "
                                             aria-label={t('editTopic')}
                                             title={t('editTopic')}
                                         >
-                                            <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg aria-hidden="true" className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </button>
@@ -281,31 +281,34 @@ export default function RoomPage() {
                             )}
                         </div>
 
-                        {/* Status Bar & Host Actions */}
-                        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-zinc-200 dark:border-zinc-800 py-3">
+                        {/* Status Bar & Host Actions — Monochrome Vercel Status Pill */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-zinc-200 dark:border-zinc-800 py-3.5">
                             <div className="flex items-center gap-3">
                                 <div
                                     role="status"
                                     aria-live="polite"
                                     className={`
-                                        inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-medium
-                                        ${room.isRevealed
-                                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
-                                            : allVoted
-                                                ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-semibold'
-                                                : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60'}
+                                        inline-flex items-center gap-2.5 px-3.5 py-2 rounded-full text-xs sm:text-sm
+                                        bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs
+                                        ${room.isRevealed || allVoted
+                                            ? 'text-zinc-950 dark:text-zinc-50 font-semibold'
+                                            : 'text-zinc-600 dark:text-zinc-400 font-medium'}
                                     `}
                                 >
                                     <span
                                         aria-hidden="true"
                                         className={`w-2 h-2 rounded-full ${
-                                            room.isRevealed ? 'bg-emerald-500' : allVoted ? 'bg-indigo-500' : 'bg-zinc-400 dark:bg-zinc-500'
+                                            room.isRevealed
+                                                ? 'bg-emerald-500'
+                                                : allVoted
+                                                    ? 'bg-blue-600 dark:bg-blue-400'
+                                                    : 'bg-zinc-400 dark:bg-zinc-600'
                                         }`}
                                     />
                                     {room.isRevealed ? (
-                                        <span>{t('cardsRevealed')}</span>
+                                        <span className="text-trim">{t('cardsRevealed')}</span>
                                     ) : (
-                                        <span>
+                                        <span className="tabular-nums text-trim">
                                             {t('votedOf', { voted: votedCount, total: totalPlayers })}
                                             {allVoted && ` • ${t('readyToReveal')}`}
                                         </span>
@@ -315,43 +318,43 @@ export default function RoomPage() {
 
                             {/* Host Primary Controls */}
                             {isHost && (
-                                <div className="flex gap-2">
+                                <div className="flex gap-2.5">
                                     {!room.isRevealed ? (
                                         <button
                                             type="button"
                                             onClick={revealCards}
                                             disabled={votedCount === 0}
                                             className="
-                                                inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs
+                                                inline-flex items-center justify-center gap-2 min-h-10 sm:min-h-11 px-4 sm:px-5 py-2 rounded-xl font-semibold text-xs sm:text-sm
                                                 bg-zinc-950 hover:bg-zinc-800 text-white
                                                 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950
                                                 disabled:bg-zinc-200 disabled:text-zinc-400
                                                 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-600
                                                 disabled:cursor-not-allowed
-                                                shadow-xs transition-colors cursor-pointer
+                                                shadow-xs active:scale-[0.98] transition-all cursor-pointer
                                             "
                                         >
-                                            <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg aria-hidden="true" className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
-                                            <span>{t('reveal')}</span>
+                                            <span className="text-trim">{t('reveal')}</span>
                                         </button>
                                     ) : (
                                         <button
                                             type="button"
                                             onClick={resetRound}
                                             className="
-                                                inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs
+                                                inline-flex items-center justify-center gap-2 min-h-10 sm:min-h-11 px-4 sm:px-5 py-2 rounded-xl font-semibold text-xs sm:text-sm
                                                 bg-zinc-950 hover:bg-zinc-800 text-white
                                                 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950
-                                                shadow-xs transition-colors cursor-pointer
+                                                shadow-xs active:scale-[0.98] transition-all cursor-pointer
                                             "
                                         >
-                                            <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg aria-hidden="true" className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                             </svg>
-                                            <span>{t('newRound')}</span>
+                                            <span className="text-trim">{t('newRound')}</span>
                                         </button>
                                     )}
                                 </div>
@@ -387,9 +390,9 @@ export default function RoomPage() {
                             canTransferHost={isHost}
                         />
 
-                        {/* Card deck (docked bottom card when not revealed) */}
+                        {/* Card deck */}
                         {!room.isRevealed && (
-                            <div className="surface-panel rounded-2xl p-6">
+                            <div className="surface-panel rounded-3xl p-5 sm:p-7">
                                 <CardDeck
                                     selectedCard={currentPlayer?.selectedCard || null}
                                     onSelectCard={selectCard}
@@ -403,15 +406,15 @@ export default function RoomPage() {
                     <div className="flex items-center justify-center min-h-[400px]">
                         <div className="text-center">
                             {isLoading ? (
-                                <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-mono">
-                                    <svg aria-hidden="true" className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full surface-panel text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-medium">
+                                    <svg aria-hidden="true" className="animate-spin h-4.5 w-4.5 text-zinc-950 dark:text-zinc-100" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                     <span>{t('loadingRoom')}</span>
                                 </div>
                             ) : (
-                                <div className="text-zinc-500 text-sm">{t('waitingToJoin')}</div>
+                                <div className="text-zinc-500 text-sm sm:text-base">{t('waitingToJoin')}</div>
                             )}
                         </div>
                     </div>
@@ -434,8 +437,8 @@ export default function RoomPage() {
                     aria-live="polite"
                     className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-bounce-in"
                 >
-                    <div className="bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 px-4 py-2.5 rounded-xl shadow-lg border border-zinc-800 dark:border-zinc-200 flex items-center gap-2.5 text-xs font-medium">
-                        <span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" />
+                    <div className="bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 px-4 py-3 rounded-2xl shadow-xl border border-zinc-800 dark:border-zinc-200 flex items-center gap-2.5 text-xs sm:text-sm font-medium">
+                        <span className="w-2 h-2 rounded-full bg-white dark:bg-zinc-950" aria-hidden="true" />
                         <span>{toast.message}</span>
                     </div>
                 </div>

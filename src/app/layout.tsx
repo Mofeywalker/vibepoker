@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   title: "VibePOKER – Planning Poker für Teams",
   description: "Schätze Story Points gemeinsam im Team mit Echtzeit-Planning-Poker. Keine Anmeldung erforderlich.",
   keywords: ["Planning Poker", "Scrum", "Agile", "Story Points", "Team Estimation"],
+  other: {
+    "text-scale": "scale",
+  },
 };
 
 export default async function RootLayout({
@@ -39,7 +42,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-main min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-main min-h-dvh`}
       >
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider

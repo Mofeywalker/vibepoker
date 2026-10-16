@@ -4,22 +4,24 @@
 
 :root {
   color-scheme: light dark;
-  accent-color: #4f46e5;
+  accent-color: #09090b;
 
-  /* Light Mode Defaults — Crisp Editorial Utility */
+  /* Light Mode Defaults — Apple / Vercel Geist Monochrome */
   --background: #fafafa;
   --foreground: #09090b;
-  --surface: #ffffff;
+  --surface: rgba(255, 255, 255, 0.88);
+  --surface-solid: #ffffff;
   --surface-elevated: #ffffff;
   --surface-muted: #f4f4f5;
   --border-color: #e4e4e7;
   --border-strong: #a1a1aa;
+  --specular-highlight: rgba(255, 255, 255, 0.9);
 
-  --grid-dot: rgba(24, 24, 27, 0.07);
+  --grid-dot: rgba(24, 24, 27, 0.05);
 
   /* Scrollbar tokens */
-  --scrollbar-track: #f4f4f5;
-  --scrollbar-thumb: #71717a;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(113, 113, 122, 0.4);
 
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
@@ -27,21 +29,23 @@
 
 .dark {
   color-scheme: dark;
-  accent-color: #818cf8;
+  accent-color: #fafafa;
 
-  /* Dark Mode Overrides — Crisp Editorial Utility */
+  /* Dark Mode Overrides — Apple / Vercel Geist Dark */
   --background: #09090b;
   --foreground: #fafafa;
-  --surface: #121215;
+  --surface: rgba(18, 18, 21, 0.85);
+  --surface-solid: #121215;
   --surface-elevated: #18181b;
   --surface-muted: #18181b;
   --border-color: #27272a;
   --border-strong: #52525b;
+  --specular-highlight: rgba(255, 255, 255, 0.06);
 
-  --grid-dot: rgba(250, 250, 250, 0.06);
+  --grid-dot: rgba(250, 250, 250, 0.045);
 
-  --scrollbar-track: #18181b;
-  --scrollbar-thumb: #71717a;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(161, 161, 170, 0.35);
 }
 
 html:not(.dark) {
@@ -58,11 +62,13 @@ html:not(.dark) {
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
   line-height: 1.5;
   text-align: start;
   overflow-wrap: break-word;
-  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Typography & Legibility per Modern Web Guidance */
@@ -74,51 +80,84 @@ p, blockquote, li {
   text-wrap: pretty;
 }
 
-/* Architectural dot-matrix background with subtle top radial illumination */
+/* Precise optical vertical alignment per Modern Web Guidance (precise-text-alignment) */
+.text-trim {
+  text-box: trim-both cap alphabetic;
+}
+
+/* Balanced flex row wrapping per Modern Web Guidance (css-layout) */
+.flex-balance {
+  display: flex;
+  flex-wrap: wrap;
+  flex-wrap: balance;
+}
+
+/* Clean architectural dot-matrix background — zero colored glows */
 .bg-gradient-main {
   background-color: var(--background);
-  background-image:
-    radial-gradient(ellipse 80% 45% at 50% -10%, rgba(99, 102, 241, 0.08), transparent 70%),
-    radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
-  background-size: 100% 100%, 24px 24px;
-  background-position: 0 0, 0 0;
+  background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
 }
 
-/* Elevated structural card surface */
-.surface-panel {
-  background-color: var(--surface);
-  border: 1px solid var(--border-color);
-  box-shadow:
-    0 1px 2px 0 rgba(0, 0, 0, 0.04),
-    0 4px 12px -2px rgba(0, 0, 0, 0.03);
-}
-
-/* Legacy class alias for backwards compatibility */
+/* Apple / Vercel elevated structural surface */
+.surface-panel,
 .glass-strong {
   background-color: var(--surface);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid var(--border-color);
   box-shadow:
-    0 1px 2px 0 rgba(0, 0, 0, 0.04),
-    0 4px 12px -2px rgba(0, 0, 0, 0.03);
+    inset 0 1px 0 0 var(--specular-highlight),
+    0 1px 2px 0 rgba(0, 0, 0, 0.03),
+    0 8px 24px -6px rgba(0, 0, 0, 0.04);
 }
 
-/* Playing card back crosshatch pattern using CSS gradients */
+.dark .surface-panel,
+.dark .glass-strong {
+  box-shadow:
+    inset 0 1px 0 0 var(--specular-highlight),
+    0 2px 4px 0 rgba(0, 0, 0, 0.3),
+    0 12px 28px -6px rgba(0, 0, 0, 0.45);
+}
+
+/* Physical tactile playing card elevation */
+.card-surface {
+  box-shadow:
+    0 1px 2px 0 rgba(0, 0, 0, 0.04),
+    0 4px 10px -2px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.card-surface-selected {
+  box-shadow:
+    0 10px 24px -4px rgba(0, 0, 0, 0.16),
+    0 4px 8px -2px rgba(0, 0, 0, 0.08);
+}
+
+.dark .card-surface-selected {
+  box-shadow:
+    0 12px 28px -4px rgba(0, 0, 0, 0.6),
+    0 4px 10px -2px rgba(0, 0, 0, 0.4);
+}
+
+/* Playing card back crosshatch pattern — pure monochrome */
 .card-back-pattern {
   background-color: #18181b;
   background-image:
     repeating-linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.06) 0,
-      rgba(255, 255, 255, 0.06) 1px,
-      transparent 0,
-      transparent 8px
+      rgba(255, 255, 255, 0.055) 0 1px,
+      transparent 0 7px
     ),
     repeating-linear-gradient(
       -45deg,
-      rgba(255, 255, 255, 0.06) 0,
-      rgba(255, 255, 255, 0.06) 1px,
-      transparent 0,
-      transparent 8px
+      rgba(255, 255, 255, 0.055) 0 1px,
+      transparent 0 7px
     );
 }
 
@@ -135,14 +174,14 @@ p, blockquote, li {
   white-space: nowrap !important;
 }
 
-/* High-contrast focus ring per Modern Web Guidance */
+/* High-contrast Apple-style focus ring */
 :where(a:any-link, button, input, select, textarea, summary):focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid #0071e3;
   outline-offset: 2px;
 }
 
 .dark :where(a:any-link, button, input, select, textarea, summary):focus-visible {
-  outline-color: #818cf8;
+  outline-color: #38bdf8;
 }
 
 /* Animations & Motion Preferences */
@@ -155,16 +194,16 @@ p, blockquote, li {
 @keyframes zoom-in {
   from {
     opacity: 0;
-    transform: scale(0.98);
+    transform: scale(0.98) translateY(3px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 
 .animate-zoom-in {
-  animation: zoom-in 0.16s ease-out forwards;
+  animation: zoom-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes bounce-in {
@@ -179,7 +218,7 @@ p, blockquote, li {
 }
 
 .animate-bounce-in {
-  animation: bounce-in 0.2s ease-out forwards;
+  animation: bounce-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -193,10 +232,23 @@ p, blockquote, li {
   }
 }
 
+/* Contrast reinforcement when user requests higher contrast */
+@media (prefers-contrast: more) {
+  :root {
+    --border-color: #71717a;
+    --border-strong: #27272a;
+  }
+  .dark {
+    --border-color: #a1a1aa;
+    --border-strong: #e4e4e7;
+  }
+}
+
 /* Forced Colors (High Contrast Mode) Support */
 @media (forced-colors: active) {
   .surface-panel,
-  .glass-strong {
+  .glass-strong,
+  .card-surface {
     border: 1px solid CanvasText;
   }
 }
@@ -218,14 +270,14 @@ p, blockquote, li {
   }
 }
 
-/* Selection styling */
+/* Subtle Apple-style selection highlight */
 ::selection {
-  background: rgba(79, 70, 229, 0.25);
+  background: rgba(0, 113, 227, 0.15);
   color: inherit;
 }
 
 .dark ::selection {
-  background: rgba(129, 140, 248, 0.3);
+  background: rgba(56, 189, 248, 0.22);
   color: inherit;
 }
 

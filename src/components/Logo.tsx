@@ -3,24 +3,43 @@ interface LogoProps {
 }
 
 /**
- * Brand mark: two overlapping estimation cards with geometric line art.
+ * Brand mark: two overlapping estimation cards with clean monochrome geometric line art.
  * Inherits color from the surrounding text via `currentColor`.
  */
-export function Logo({ className = 'w-5 h-5' }: LogoProps) {
+export function Logo({ className = 'w-6 h-6' }: LogoProps) {
     return (
         <svg
             aria-hidden="true"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth={1.5}
+            strokeWidth={1.75}
             strokeLinecap="round"
             strokeLinejoin="round"
             className={className}
         >
-            <rect x="3" y="4.8" width="9.4" height="14.4" rx="2" transform="rotate(-9 7.7 12)" />
-            <rect x="11.6" y="4.8" width="9.4" height="14.4" rx="2" transform="rotate(9 16.3 12)" />
-            <path d="M16.3 9.6l1.7 2.4-1.7 2.4-1.7-2.4z" />
+            <rect
+                x="2.75"
+                y="4.5"
+                width="10.5"
+                height="15"
+                rx="2.25"
+                transform="rotate(-8 8 12)"
+                className="opacity-45"
+            />
+            <rect
+                x="10.25"
+                y="4"
+                width="11"
+                height="15.5"
+                rx="2.25"
+                transform="rotate(6 15.75 11.75)"
+                className="fill-white dark:fill-zinc-900"
+            />
+            <path
+                d="M15.75 9.25l1.85 2.5-1.85 2.5-1.85-2.5z"
+                strokeWidth={1.6}
+            />
         </svg>
     );
 }

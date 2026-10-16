@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Player } from '@/types';
 import { Card } from './Card';
-import { getInitials, getAvatarColor } from '@/lib/poker-logic';
+import { getInitials } from '@/lib/poker-logic';
 
 interface PlayerItemProps {
     player: Player;
@@ -21,54 +21,60 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
     return (
         <li
             className={`
-                relative group/player flex flex-col items-center gap-3 p-4 rounded-xl
+                relative group/player flex flex-col items-center gap-3 p-4 sm:p-5 rounded-2xl
                 border transition-all duration-150
                 ${isCurrentPlayer
-                    ? 'bg-zinc-50 dark:bg-zinc-900 border-indigo-400 dark:border-indigo-600/70 shadow-xs'
-                    : 'bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 shadow-2xs'}
+                    ? 'bg-white dark:bg-zinc-900 border-blue-500/50 dark:border-blue-400/40 ring-2 ring-blue-500/8 dark:ring-blue-400/10 shadow-xs'
+                    : 'bg-white/80 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 shadow-2xs'}
             `}
         >
-            {/* Host badge */}
+            {/* Host badge — clean monochrome pill */}
             {player.isHost && (
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full z-10 tracking-wider">
-                    {t('host')}
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 border border-zinc-950 dark:border-zinc-100 text-[0.6875rem] font-semibold uppercase px-2.5 py-0.5 rounded-full z-10 tracking-wider shadow-2xs">
+                    <span className="text-trim">{t('host')}</span>
                 </span>
             )}
 
-            {/* Transfer Host Button - accessible on hover AND keyboard focus */}
+            {/* Transfer Host Button - accessible on touch devices, hover, AND keyboard focus */}
             {canTransferHost && !player.isHost && onTransferHost && (
                 <button
                     type="button"
                     onClick={() => onTransferHost(player.id)}
                     className="
-                        absolute -top-2.5 right-2 opacity-0
-                        group-hover/player:opacity-100 focus-visible:opacity-100
-                        bg-white dark:bg-zinc-900 text-amber-700 dark:text-amber-400
-                        hover:bg-amber-50 dark:hover:bg-amber-950/40
-                        border border-amber-300 dark:border-amber-700/60
-                        text-[10px] font-medium px-2 py-0.5 rounded-md shadow-2xs
-                        transition-opacity duration-150 z-10 cursor-pointer
+                        absolute -top-3 right-2
+                        opacity-100 sm:opacity-0
+                        sm:group-hover/player:opacity-100 focus-visible:opacity-100
+                        inline-flex items-center gap-1 min-h-7
+                        bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300
+                        hover:bg-zinc-950 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-950
+                        border border-zinc-300 dark:border-zinc-700
+                        text-xs font-medium px-2.5 py-1 rounded-full shadow-xs
+                        transition-all duration-150 z-10 cursor-pointer active:scale-95
                     "
                     aria-label={`${t('makeHost')}: ${player.name}`}
                 >
-                    {t('makeHost')}
+                    <span className="text-trim">{t('makeHost')}</span>
                 </button>
             )}
 
-            {/* Avatar */}
+            {/* Monochrome Apple / Vercel Avatar (zero rainbow gradients) */}
             <div
                 aria-hidden="true"
-                className="w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-xs border border-white/20 select-none"
-                style={{ background: getAvatarColor(player.name, player.id) }}
+                className={`
+                    w-11 h-11 rounded-full flex items-center justify-center font-mono font-semibold text-sm select-none
+                    ${isCurrentPlayer
+                        ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950'
+                        : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700'}
+                `}
             >
                 {getInitials(player.name)}
             </div>
 
             {/* Name */}
-            <div className="flex items-center justify-center max-w-full text-center">
+            <div className="flex items-center justify-center max-w-full text-center min-w-0">
                 <span className={`
-                    text-xs font-medium truncate
-                    ${isCurrentPlayer ? 'text-indigo-950 dark:text-indigo-200 font-semibold' : 'text-zinc-900 dark:text-zinc-200'}
+                    text-sm tracking-tight truncate
+                    ${isCurrentPlayer ? 'text-zinc-950 dark:text-zinc-50 font-bold' : 'text-zinc-800 dark:text-zinc-200 font-medium'}
                 `}>
                     {player.name}{isCurrentPlayer && ` ${t('you')}`}
                 </span>
@@ -97,10 +103,10 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
                     />
                 ) : (
                     <div
-                        className="w-12 h-16 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center bg-zinc-50/50 dark:bg-zinc-900/30"
+                        className="w-14 h-20 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center bg-zinc-50/50 dark:bg-zinc-900/30"
                         aria-label="No estimate chosen"
                     >
-                        <span className="text-zinc-400 dark:text-zinc-600 text-xs font-mono select-none">—</span>
+                        <span className="text-zinc-400 dark:text-zinc-600 text-sm font-mono select-none">—</span>
                     </div>
                 )}
             </div>
@@ -123,13 +129,18 @@ function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWith
     const t = useTranslations('players');
 
     return (
-        <section className="w-full" aria-labelledby="player-list-heading">
+        <section className="w-full @container" aria-labelledby="player-list-heading">
             <div className="flex items-center justify-between mb-4">
-                <h2 id="player-list-heading" className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                    {t('title')} ({players.length})
-                </h2>
+                <div className="flex items-center gap-2">
+                    <svg aria-hidden="true" className="w-4 h-4 text-zinc-500 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <h2 id="player-list-heading" className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-trim">
+                        {t('title')} ({players.length})
+                    </h2>
+                </div>
             </div>
-            <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 list-none p-0 m-0">
+            <ul className="grid grid-cols-2 @sm:grid-cols-3 @2xl:grid-cols-4 @5xl:grid-cols-6 gap-3.5 sm:gap-4 list-none p-0 m-0">
                 {players.map((player) => (
                     <PlayerItem
                         key={player.id}
