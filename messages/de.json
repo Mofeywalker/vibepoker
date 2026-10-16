@@ -41,7 +41,14 @@
         "yourName": "Dein Name",
         "namePlaceholder": "z.B. Max Mustermann",
         "joining": "Beitritt...",
-        "join": "Beitreten"
+        "join": "Beitreten",
+        "errors": {
+            "nameTaken": "Dieser Name ist in diesem Raum bereits vergeben.",
+            "roomFull": "Dieser Raum ist bereits voll.",
+            "invalidName": "Ungültiger Name. Bitte verwende einen anderen Namen.",
+            "identityMismatch": "Sitzungskonflikt. Die Sitzung wurde zurückgesetzt – bitte trete erneut bei.",
+            "connectionError": "Verbindungsfehler. Bitte versuche es erneut."
+        }
     },
     "players": {
         "title": "Spieler",

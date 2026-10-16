@@ -41,7 +41,14 @@
         "yourName": "Your Name",
         "namePlaceholder": "e.g. John Doe",
         "joining": "Joining...",
-        "join": "Join"
+        "join": "Join",
+        "errors": {
+            "nameTaken": "This name is already taken in this room.",
+            "roomFull": "This room is full.",
+            "invalidName": "Invalid name. Please use another name.",
+            "identityMismatch": "Session conflict. Session was reset – please try joining again.",
+            "connectionError": "Connection error. Please try again."
+        }
     },
     "players": {
         "title": "Players",

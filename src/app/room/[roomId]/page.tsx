@@ -7,6 +7,13 @@ import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, HistoryPanel, Logo } from '@/components';
 import { DECKS, type DeckType } from '@/types';
+import {
+    getStorageItem,
+    setStorageItem,
+    getPlayerStorageKey,
+    getDeckStorageKey,
+    clearRoomSession
+} from '@/lib/storage';
 
 export default function RoomPage() {
     const params = useParams();
@@ -78,15 +85,14 @@ export default function RoomPage() {
             return;
         }
 
-        const savedPlayerName = localStorage.getItem(`vibepoker-player-${roomId}`);
-        const savedDeckType = localStorage.getItem(`vibepoker-deck-${roomId}`) as DeckType | null;
+        const savedPlayerName = getStorageItem(getPlayerStorageKey(roomId));
+        const savedDeckType = getStorageItem(getDeckStorageKey(roomId)) as DeckType | null;
 
         if (savedPlayerName) {
             if (attemptedAutoJoin.current) {
                 if (error) {
                     if (error !== 'Connection error') {
-                        localStorage.removeItem(`vibepoker-player-${roomId}`);
-                        localStorage.removeItem(`vibepoker-deck-${roomId}`);
+                        clearRoomSession(roomId);
                     }
                     // eslint-disable-next-line react-hooks/set-state-in-effect
                     setShowJoinModal(true);
@@ -96,9 +102,13 @@ export default function RoomPage() {
 
             joinRoom(roomId, savedPlayerName, savedDeckType ?? undefined).then(success => {
                 attemptedAutoJoin.current = true;
-                if (!success) setShowJoinModal(true);
+                if (!success) {
+                    clearRoomSession(roomId);
+                    setShowJoinModal(true);
+                }
             }).catch(() => {
                 attemptedAutoJoin.current = true;
+                clearRoomSession(roomId);
                 setShowJoinModal(true);
             });
             return;
@@ -110,8 +120,10 @@ export default function RoomPage() {
     }, [room, isLoading, error, roomId, joinRoom]);
 
     const handleJoin = useCallback(async (name: string) => {
-        const success = await joinRoom(roomId, name);
+        const trimmedName = name.trim();
+        const success = await joinRoom(roomId, trimmedName);
         if (success) {
+            setStorageItem(getPlayerStorageKey(roomId), trimmedName);
             setShowJoinModal(false);
         }
     }, [joinRoom, roomId]);

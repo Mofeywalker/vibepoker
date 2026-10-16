@@ -1,5 +1,13 @@
 import PartySocket from 'partysocket';
 import type { Room, CardValue, DeckType, RoundingPreference } from '@/types';
+import {
+    getStorageItem,
+    setStorageItem,
+    getPlayerIdStorageKey,
+    getPlayerStorageKey,
+    getDeckStorageKey,
+    clearRoomSession
+} from '@/lib/storage';
 
 interface ConnectionConfig {
     roomId: string;
@@ -17,11 +25,21 @@ export class PartyKitClient {
         this.disconnect();
 
         const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST || 'localhost:1999';
-        const playerIdKey = `vibepoker-player-id-${config.roomId}`;
-        let playerId = localStorage.getItem(playerIdKey);
-        if (!playerId) {
+        const playerIdKey = getPlayerIdStorageKey(config.roomId);
+        const playerNameKey = getPlayerStorageKey(config.roomId);
+
+        const savedPlayerName = getStorageItem(playerNameKey);
+        let playerId = getStorageItem(playerIdKey);
+
+        const isNewIdentity = Boolean(
+            savedPlayerName &&
+            config.playerName &&
+            savedPlayerName.trim().toLowerCase() !== config.playerName.trim().toLowerCase()
+        );
+
+        if (!playerId || isNewIdentity) {
             playerId = crypto.randomUUID();
-            localStorage.setItem(playerIdKey, playerId);
+            setStorageItem(playerIdKey, playerId);
         }
 
         this.socket = new PartySocket({
@@ -38,6 +56,10 @@ export class PartyKitClient {
             if (!this.socket) return reject(new Error('Socket not initialized'));
 
             const onOpen = () => {
+                setStorageItem(playerNameKey, config.playerName.trim());
+                if (config.deckType) {
+                    setStorageItem(getDeckStorageKey(config.roomId), config.deckType);
+                }
                 resolve(this.socket!.id);
             };
 
@@ -59,9 +81,14 @@ export class PartyKitClient {
 
             const onClose = (event: CloseEvent) => {
                 if (event.code === 1008) {
+                    if (event.reason === 'IDENTITY_MISMATCH') {
+                        clearRoomSession(config.roomId);
+                    }
                     this.errorCallback?.(event.reason);
+                    reject(new Error(event.reason || 'Policy violation'));
                 } else if (event.code !== 1000) {
                     this.errorCallback?.('Connection error');
+                    reject(new Error('Connection error'));
                 }
             };
 

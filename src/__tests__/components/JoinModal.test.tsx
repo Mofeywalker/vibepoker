@@ -37,6 +37,16 @@ describe('JoinModal', () => {
         expect(screen.getByText('Name taken')).toBeInTheDocument();
     });
 
+    it('displays friendly message for IDENTITY_MISMATCH', () => {
+        render(<JoinModal onJoin={() => { }} error="IDENTITY_MISMATCH" />);
+        expect(screen.getByText('Session conflict. Session was reset – please try joining again.')).toBeInTheDocument();
+    });
+
+    it('displays friendly message for NAME_TAKEN', () => {
+        render(<JoinModal onJoin={() => { }} error="NAME_TAKEN" />);
+        expect(screen.getByText('This name is already taken in this room.')).toBeInTheDocument();
+    });
+
     it('shows loading state', () => {
         render(<JoinModal onJoin={() => { }} isLoading={true} />);
         expect(screen.getByText('Joining...')).toBeInTheDocument();

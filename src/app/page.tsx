@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
 import { ThemeToggle, Logo } from '@/components';
 import type { DeckType } from '@/types';
+import { setStorageItem, getPlayerStorageKey, getDeckStorageKey } from '@/lib/storage';
 
 export default function HomePage() {
   const router = useRouter();
@@ -24,9 +25,10 @@ export default function HomePage() {
 
     setIsCreating(true);
     try {
-      const roomId = await createRoom(creatorName.trim(), selectedDeck);
-      localStorage.setItem(`vibepoker-player-${roomId}`, creatorName.trim());
-      localStorage.setItem(`vibepoker-deck-${roomId}`, selectedDeck);
+      const trimmedName = creatorName.trim();
+      const roomId = await createRoom(trimmedName, selectedDeck);
+      setStorageItem(getPlayerStorageKey(roomId), trimmedName);
+      setStorageItem(getDeckStorageKey(roomId), selectedDeck);
       router.push(`/room/${roomId}`);
     } catch (error) {
       console.error('Failed to create room:', error);
