@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
 
-export function ThemeToggle() {
+export const ThemeToggle = React.memo(function ThemeToggle() {
     const { setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = React.useState(false);
     const t = useTranslations('theme');
@@ -48,4 +48,6 @@ export function ThemeToggle() {
             )}
         </button>
     );
-}
+});
+
+ThemeToggle.displayName = 'ThemeToggle';

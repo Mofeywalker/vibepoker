@@ -105,6 +105,12 @@ export function validateTopic(topic: unknown): string {
     return topic.trim().slice(0, MAX_TOPIC_LENGTH).replace(/[<>&"']/g, '');
 }
 
+export function generateRoomId(): string {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    return Array.from(bytes, b => alphabet[b % 36]).join('');
+}
+
 /**
  * Normalizes a card value by removing emoji variation selectors
  * and performing standard Unicode normalization.
@@ -122,6 +128,15 @@ export function normalizeCardValue(value: string): string {
     return normalized;
 }
 
+// Precomputed normalized lookup maps for instant O(1) card validation
+const NORMALIZED_DECKS: Record<DeckType, Map<string, CardValue>> = {
+    scrum: new Map((DECKS.scrum as readonly string[]).map(card => [normalizeCardValue(card), card])),
+    fibonacci: new Map((DECKS.fibonacci as readonly string[]).map(card => [normalizeCardValue(card), card])),
+    sequential: new Map((DECKS.sequential as readonly string[]).map(card => [normalizeCardValue(card), card])),
+    hourly: new Map((DECKS.hourly as readonly string[]).map(card => [normalizeCardValue(card), card])),
+    tshirt: new Map((DECKS.tshirt as readonly string[]).map(card => [normalizeCardValue(card), card])),
+};
+
 export function validateCardValue(value: unknown, deckType: DeckType = 'scrum'): CardValue | null {
     let strValue: string;
     if (typeof value === 'string') {
@@ -133,14 +148,8 @@ export function validateCardValue(value: unknown, deckType: DeckType = 'scrum'):
     }
 
     const normalizedValue = normalizeCardValue(strValue);
-    const validCards = DECKS[deckType] || DECKS.scrum;
-
-    // Find a matching card in the deck using normalized comparison
-    const matchedCard = (validCards as readonly string[]).find(
-        card => normalizeCardValue(card) === normalizedValue
-    );
-
-    return (matchedCard as CardValue) || null;
+    const deckMap = NORMALIZED_DECKS[deckType] || NORMALIZED_DECKS.scrum;
+    return deckMap.get(normalizedValue) || null;
 }
 
 /**

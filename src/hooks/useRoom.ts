@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { PartyKitClient } from '@/lib/realtime/partykit-client';
 import type { Room, Player, CardValue, DeckType, RoundingPreference } from '@/types';
+import { generateRoomId } from '@/lib/poker-logic';
 
 interface UseRoomReturn {
     room: Room | null;
@@ -31,20 +32,22 @@ export function useRoom(): UseRoomReturn {
     const clientRef = useRef<PartyKitClient | null>(null);
 
     useEffect(() => {
-        clientRef.current = new PartyKitClient();
+        const client = new PartyKitClient();
+        clientRef.current = client;
 
-        clientRef.current.onRoomUpdate((newRoom) => {
+        client.onRoomUpdate((newRoom) => {
             setRoom(newRoom);
             setIsLoading(false);
         });
 
-        clientRef.current.onError((errorMsg) => {
+        client.onError((errorMsg) => {
             setError(errorMsg);
             setIsLoading(false);
         });
 
         return () => {
-            clientRef.current?.disconnect();
+            client.disconnect();
+            clientRef.current = null;
         };
     }, []);
 
@@ -60,15 +63,12 @@ export function useRoom(): UseRoomReturn {
             }
         });
         return withCards;
-    }, [room?.players]);
+    }, [room]);
 
     const createRoom = useCallback(async (playerName: string, deckType: DeckType = 'scrum'): Promise<string> => {
         if (!clientRef.current) throw new Error('Client not initialized');
 
-        // Generate a cryptographically secure room ID (~82 bits of entropy)
-        const bytes = crypto.getRandomValues(new Uint8Array(16));
-        const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        const roomId = Array.from(bytes, b => alphabet[b % 36]).join('');
+        const roomId = generateRoomId();
 
         setIsLoading(true);
         setError(null);
@@ -101,6 +101,38 @@ export function useRoom(): UseRoomReturn {
         }
     }, []);
 
+    const selectCard = useCallback((card: CardValue | null) => {
+        clientRef.current?.selectCard(card);
+    }, []);
+
+    const updateTopic = useCallback((topic: string) => {
+        clientRef.current?.updateTopic(topic);
+    }, []);
+
+    const revealCards = useCallback(() => {
+        clientRef.current?.revealCards();
+    }, []);
+
+    const acceptEstimation = useCallback((value: CardValue) => {
+        clientRef.current?.acceptEstimation(value);
+    }, []);
+
+    const resetRound = useCallback(() => {
+        clientRef.current?.resetRound();
+    }, []);
+
+    const revote = useCallback(() => {
+        clientRef.current?.revote();
+    }, []);
+
+    const setRounding = useCallback((rounding: RoundingPreference) => {
+        clientRef.current?.setRounding(rounding);
+    }, []);
+
+    const transferHost = useCallback((playerId: string) => {
+        clientRef.current?.transferHost(playerId);
+    }, []);
+
     return {
         room,
         currentPlayer,
@@ -110,21 +142,13 @@ export function useRoom(): UseRoomReturn {
         playersWithCards,
         createRoom,
         joinRoom,
-        selectCard: useCallback((card: CardValue | null) =>
-            clientRef.current?.selectCard(card), []),
-        updateTopic: useCallback((topic: string) =>
-            clientRef.current?.updateTopic(topic), []),
-        revealCards: useCallback(() =>
-            clientRef.current?.revealCards(), []),
-        acceptEstimation: useCallback((value: CardValue) =>
-            clientRef.current?.acceptEstimation(value), []),
-        resetRound: useCallback(() =>
-            clientRef.current?.resetRound(), []),
-        revote: useCallback(() =>
-            clientRef.current?.revote(), []),
-        setRounding: useCallback((rounding: RoundingPreference) =>
-            clientRef.current?.setRounding(rounding), []),
-        transferHost: useCallback((playerId: string) =>
-            clientRef.current?.transferHost(playerId), [])
+        selectCard,
+        updateTopic,
+        revealCards,
+        acceptEstimation,
+        resetRound,
+        revote,
+        setRounding,
+        transferHost,
     };
 }

@@ -1,16 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useRoom } from '@/hooks/useRoom';
 import { ThemeToggle, Logo } from '@/components';
 import type { DeckType } from '@/types';
+import { generateRoomId } from '@/lib/poker-logic';
 import { setStorageItem, getPlayerStorageKey, getDeckStorageKey } from '@/lib/storage';
 
 export default function HomePage() {
   const router = useRouter();
-  const { createRoom } = useRoom();
   const t = useTranslations('home');
 
   const [joinRoomId, setJoinRoomId] = useState('');
@@ -19,28 +18,24 @@ export default function HomePage() {
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const handleCreateRoom = async (e: React.FormEvent) => {
+  const handleCreateRoom = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (!creatorName.trim()) return;
+    const trimmedName = creatorName.trim();
+    if (!trimmedName) return;
 
     setIsCreating(true);
-    try {
-      const trimmedName = creatorName.trim();
-      const roomId = await createRoom(trimmedName, selectedDeck);
-      setStorageItem(getPlayerStorageKey(roomId), trimmedName);
-      setStorageItem(getDeckStorageKey(roomId), selectedDeck);
-      router.push(`/room/${roomId}`);
-    } catch (error) {
-      console.error('Failed to create room:', error);
-      setIsCreating(false);
-    }
-  };
+    const roomId = generateRoomId();
+    setStorageItem(getPlayerStorageKey(roomId), trimmedName);
+    setStorageItem(getDeckStorageKey(roomId), selectedDeck);
+    router.push(`/room/${roomId}`);
+  }, [creatorName, selectedDeck, router]);
 
-  const handleJoinRoom = (e: React.FormEvent) => {
+  const handleJoinRoom = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (!joinRoomId.trim()) return;
-    router.push(`/room/${joinRoomId.trim()}`);
-  };
+    const trimmedId = joinRoomId.trim();
+    if (!trimmedId) return;
+    router.push(`/room/${trimmedId}`);
+  }, [joinRoomId, router]);
 
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center px-4 py-12 sm:p-6 relative">

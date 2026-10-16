@@ -117,6 +117,8 @@ p, blockquote, li {
 
 /* Physical tactile playing card elevation */
 .card-surface {
+  transform: translateZ(0);
+  will-change: transform;
   box-shadow:
     0 1px 2px 0 rgba(0, 0, 0, 0.04),
     0 4px 10px -2px rgba(0, 0, 0, 0.04);

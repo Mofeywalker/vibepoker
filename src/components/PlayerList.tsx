@@ -15,8 +15,24 @@ interface PlayerItemProps {
     canTransferHost?: boolean;
 }
 
+function arePlayerItemPropsEqual(prev: PlayerItemProps, next: PlayerItemProps): boolean {
+    return (
+        prev.player.id === next.player.id &&
+        prev.player.name === next.player.name &&
+        prev.player.isHost === next.player.isHost &&
+        prev.player.selectedCard === next.player.selectedCard &&
+        prev.player.disconnectedAt === next.player.disconnectedAt &&
+        prev.isCurrentPlayer === next.isCurrentPlayer &&
+        prev.hasCard === next.hasCard &&
+        prev.isRevealed === next.isRevealed &&
+        prev.canTransferHost === next.canTransferHost &&
+        prev.onTransferHost === next.onTransferHost
+    );
+}
+
 const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTransferHost, canTransferHost }: PlayerItemProps) => {
     const t = useTranslations('players');
+    const initials = getInitials(player.name);
 
     return (
         <li
@@ -67,7 +83,7 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
                         : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700'}
                 `}
             >
-                {getInitials(player.name)}
+                {initials}
             </div>
 
             {/* Name */}
@@ -112,7 +128,7 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
             </div>
         </li>
     );
-});
+}, arePlayerItemPropsEqual);
 
 PlayerItem.displayName = 'PlayerItem';
 

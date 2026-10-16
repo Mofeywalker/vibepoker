@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { type CardValue } from '@/types';
 import { normalizeCardValue } from '@/lib/poker-logic';
@@ -11,6 +11,36 @@ interface CardDeckProps {
     disabled?: boolean;
 }
 
+interface CardDeckItemProps {
+    value: string;
+    isSelected: boolean;
+    disabled: boolean;
+    onSelect: (value: CardValue, normalizedValue: string) => void;
+    normalizedValue: string;
+}
+
+const CardDeckItem = memo(function CardDeckItem({
+    value,
+    isSelected,
+    disabled,
+    onSelect,
+    normalizedValue
+}: CardDeckItemProps) {
+    const handleClick = useCallback(() => {
+        onSelect(value, normalizedValue);
+    }, [onSelect, value, normalizedValue]);
+
+    return (
+        <Card
+            value={value}
+            isSelected={isSelected}
+            onClick={handleClick}
+            disabled={disabled}
+            size="md"
+        />
+    );
+});
+
 function CardDeckComponent({ selectedCard, onSelectCard, values, disabled = false }: CardDeckProps) {
     const t = useTranslations('cardDeck');
 
@@ -21,7 +51,7 @@ function CardDeckComponent({ selectedCard, onSelectCard, values, disabled = fals
 
     const normalizedSelected = selectedCard !== null ? normalizeCardValue(selectedCard) : null;
 
-    const handleCardClick = (value: CardValue, normalizedValue: string) => {
+    const handleCardClick = useCallback((value: CardValue, normalizedValue: string) => {
         if (disabled) return;
 
         if (normalizedSelected === normalizedValue) {
@@ -29,7 +59,7 @@ function CardDeckComponent({ selectedCard, onSelectCard, values, disabled = fals
         } else {
             onSelectCard(value);
         }
-    };
+    }, [disabled, normalizedSelected, onSelectCard]);
 
     return (
         <div className="w-full" role="group" aria-labelledby="card-deck-heading">
@@ -43,13 +73,13 @@ function CardDeckComponent({ selectedCard, onSelectCard, values, disabled = fals
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 pt-1">
                 {values.map((value, i) => (
-                    <Card
+                    <CardDeckItem
                         key={value}
                         value={value}
+                        normalizedValue={normalizedValues[i]}
                         isSelected={normalizedSelected !== null && normalizedSelected === normalizedValues[i]}
-                        onClick={() => handleCardClick(value, normalizedValues[i])}
+                        onSelect={handleCardClick}
                         disabled={disabled}
-                        size="md"
                     />
                 ))}
             </div>

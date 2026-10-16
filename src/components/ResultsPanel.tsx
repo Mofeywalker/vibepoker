@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { type Results, type CardValue, type RoundingPreference } from '@/types';
 import { CoffeeIcon } from './Card';
@@ -40,6 +40,11 @@ function ResultsPanelComponent({
     onSetRounding
 }: ResultsPanelProps) {
     const t = useTranslations('results');
+
+    const totalVotes = useMemo(
+        () => results.breakdown.reduce((acc, curr) => acc + curr.count, 0),
+        [results.breakdown]
+    );
 
     // If result is accepted, show clean summary banner with subtle emerald check badge
     if (results.acceptedValue) {
@@ -82,8 +87,6 @@ function ResultsPanelComponent({
             </section>
         );
     }
-
-    const totalVotes = results.breakdown.reduce((acc, curr) => acc + curr.count, 0);
 
     return (
         <section

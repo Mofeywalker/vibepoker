@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -72,18 +72,15 @@ export default function RoomPage() {
         }
     }, [toast.visible, toast.message]);
 
-    const handleSaveTopic = () => {
+    const handleSaveTopic = useCallback(() => {
         updateTopic(topicInput);
         setIsEditingTopic(false);
-    };
+    }, [topicInput, updateTopic]);
 
     // Check if user needs to join
+    const hasJoined = Boolean(room && room.id === roomId);
     useEffect(() => {
-        if (isLoading) return;
-
-        if (room && room.id === roomId) {
-            return;
-        }
+        if (isLoading || hasJoined) return;
 
         const savedPlayerName = getStorageItem(getPlayerStorageKey(roomId));
         const savedDeckType = getStorageItem(getDeckStorageKey(roomId)) as DeckType | null;
@@ -114,10 +111,10 @@ export default function RoomPage() {
             return;
         }
 
-        if (!room && !savedPlayerName) {
+        if (!savedPlayerName) {
             setShowJoinModal(true);
         }
-    }, [room, isLoading, error, roomId, joinRoom]);
+    }, [hasJoined, isLoading, error, roomId, joinRoom]);
 
     const handleJoin = useCallback(async (name: string) => {
         const trimmedName = name.trim();
@@ -128,7 +125,7 @@ export default function RoomPage() {
         }
     }, [joinRoom, roomId]);
 
-    const handleCopyLink = async () => {
+    const handleCopyLink = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(window.location.href);
             setCopySuccess(true);
@@ -136,13 +133,15 @@ export default function RoomPage() {
         } catch (err) {
             console.error('Failed to copy:', err);
         }
-    };
+    }, []);
 
     const votedCount = playersWithCards.size;
     const totalPlayers = room?.players.length || 0;
     const allVoted = votedCount === totalPlayers && totalPlayers > 0;
 
-    const deckValues = room?.deckType && DECKS[room.deckType] ? DECKS[room.deckType] : DECKS.scrum;
+    const deckValues = useMemo(() => {
+        return room?.deckType && DECKS[room.deckType] ? DECKS[room.deckType] : DECKS.scrum;
+    }, [room?.deckType]);
 
     return (
         <main className="min-h-dvh flex flex-col">

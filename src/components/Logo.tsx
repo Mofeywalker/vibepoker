@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface LogoProps {
     className?: string;
 }
@@ -6,7 +8,7 @@ interface LogoProps {
  * Brand mark: two overlapping estimation cards with clean monochrome geometric line art.
  * Inherits color from the surrounding text via `currentColor`.
  */
-export function Logo({ className = 'w-6 h-6' }: LogoProps) {
+export const Logo = memo(function Logo({ className = 'w-6 h-6' }: LogoProps) {
     return (
         <svg
             aria-hidden="true"
@@ -42,4 +44,6 @@ export function Logo({ className = 'w-6 h-6' }: LogoProps) {
             />
         </svg>
     );
-}
+});
+
+Logo.displayName = 'Logo';

@@ -13,7 +13,7 @@ interface CardProps {
     disabled?: boolean;
 }
 
-export function CoffeeIcon({ className = 'w-7 h-7', showSteam = true }: { className?: string; showSteam?: boolean }) {
+export const CoffeeIcon = memo(function CoffeeIcon({ className = 'w-7 h-7', showSteam = true }: { className?: string; showSteam?: boolean }) {
     return (
         <svg
             aria-hidden="true"
@@ -36,7 +36,7 @@ export function CoffeeIcon({ className = 'w-7 h-7', showSteam = true }: { classN
             <path d="M4 21h12" />
         </svg>
     );
-}
+});
 
 function getCenterTextSize(value: string, size: 'sm' | 'md' | 'lg'): string {
     const isQuestion = value === '?';
