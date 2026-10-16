@@ -1,7 +1,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import {
-    default as VibePOKERServer,
+    VibePOKERServer,
     expireDisconnectedPlayers,
     markPlayerDisconnected,
     RECONNECT_GRACE_MS,
@@ -190,11 +190,11 @@ describe('VibePOKERServer - reconnect grace period', () => {
         const oldConnection = { id: 'host-id' };
         const newConnection = { id: 'host-id' };
         const transaction = vi.fn();
-        const partyRoom = {
-            getConnection: () => newConnection,
+        const ctx = {
             storage: { transaction }
         };
-        const server = new VibePOKERServer(partyRoom as never);
+        const server = new VibePOKERServer(ctx as never, {} as never);
+        vi.spyOn(server, 'getConnection').mockReturnValue(newConnection as never);
 
         await server.onClose(oldConnection as never);
 

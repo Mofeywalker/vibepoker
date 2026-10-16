@@ -8,10 +8,16 @@ export default defineConfig({
         environment: 'jsdom',
         globals: true,
         setupFiles: './src/test/setup.ts',
+        server: {
+            deps: {
+                inline: ['partyserver'],
+            },
+        },
     },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
+            'cloudflare:workers': path.resolve(__dirname, './src/test/cloudflare-workers-mock.ts'),
         },
     },
 })

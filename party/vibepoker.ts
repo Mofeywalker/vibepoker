@@ -1,4 +1,5 @@
-import type * as Party from "partykit/server";
+/// <reference types="@cloudflare/workers-types" />
+import { routePartykitRequest, Server, type Connection, type ConnectionContext } from "partyserver";
 import { isDeckType, type Player, type Room, type EstimationHistoryItem } from "../src/types";
 import {
     calculateResults,
@@ -71,15 +72,19 @@ export function expireDisconnectedPlayers(room: Room, now: number): boolean {
     return true;
 }
 
-export default class VibePOKERServer implements Party.Server {
-    constructor(readonly room: Party.Room) { }
+export type Env = {
+    Main: DurableObjectNamespace<VibePOKERServer>;
+};
+
+export class VibePOKERServer extends Server<Env> {
+    static options = { hibernate: true };
 
     async onStart() {
         try {
-            const state = await this.room.storage.get<Room>("room-state");
+            const state = await this.ctx.storage.get<Room>("room-state");
             if (!state) {
                 const initialRoom: Room = {
-                    id: this.room.id,
+                    id: this.name,
                     hostId: "",
                     topic: null,
                     players: [],
@@ -89,14 +94,14 @@ export default class VibePOKERServer implements Party.Server {
                     roundingPreference: 'down',
                     lastActivityAt: Date.now()
                 };
-                await this.room.storage.put("room-state", initialRoom);
+                await this.ctx.storage.put("room-state", initialRoom);
             }
         } catch (e: unknown) {
             console.error("Error in onStart:", e);
         }
     }
 
-    async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
+    async onConnect(connection: Connection, ctx: ConnectionContext) {
         try {
             const url = new URL(ctx.request.url);
             const playerName = url.searchParams.get("name");
@@ -115,7 +120,7 @@ export default class VibePOKERServer implements Party.Server {
             }
 
             // Use transaction to prevent race conditions during join
-            await this.room.storage.transaction(async (txn) => {
+            await this.ctx.storage.transaction(async (txn) => {
                 const room = await txn.get<Room>("room-state");
                 if (!room) return;
 
@@ -172,11 +177,11 @@ export default class VibePOKERServer implements Party.Server {
         }
     }
 
-    async onMessage(message: string, sender: Party.Connection) {
+    async onMessage(sender: Connection, message: string) {
         try {
             const msg = JSON.parse(message);
             // We use transaction for all state updates to ensure consistency
-            await this.room.storage.transaction(async (txn) => {
+            await this.ctx.storage.transaction(async (txn) => {
                 const room = await txn.get<Room>("room-state");
                 if (!room) return;
 
@@ -223,19 +228,19 @@ export default class VibePOKERServer implements Party.Server {
         }
     }
 
-    async onClose(connection: Party.Connection) {
+    async onClose(connection: Connection) {
         await this.handleDisconnect(connection);
     }
 
-    async onError(connection: Party.Connection) {
+    async onError(connection: Connection) {
         await this.handleDisconnect(connection);
     }
 
-    private async handleDisconnect(connection: Party.Connection) {
-        const activeConnection = this.room.getConnection(connection.id);
+    private async handleDisconnect(connection: Connection) {
+        const activeConnection = this.getConnection(connection.id);
         if (activeConnection && activeConnection !== connection) return;
 
-        await this.room.storage.transaction(async (txn) => {
+        await this.ctx.storage.transaction(async (txn) => {
             const room = await txn.get<Room>("room-state");
             if (!room) return;
 
@@ -251,7 +256,7 @@ export default class VibePOKERServer implements Party.Server {
     }
 
     async onAlarm() {
-        await this.room.storage.transaction(async (txn) => {
+        await this.ctx.storage.transaction(async (txn) => {
             const room = await txn.get<Room>("room-state");
             if (!room) return;
 
@@ -277,11 +282,11 @@ export default class VibePOKERServer implements Party.Server {
     }
 
     private broadcastRoomState(room: Room) {
-        this.room.broadcast(JSON.stringify({ type: "room-state", data: room }));
+        this.broadcast(JSON.stringify({ type: "room-state", data: room }));
     }
 
     private async scheduleNextAlarm(
-        storage: Pick<Party.Storage, "setAlarm" | "deleteAlarm">,
+        storage: Pick<DurableObjectStorage, "setAlarm" | "deleteAlarm">,
         room: Room
     ) {
         const disconnectDeadlines = room.players
@@ -395,3 +400,12 @@ export default class VibePOKERServer implements Party.Server {
         return transferHost(room, playerId, targetId);
     }
 }
+
+export default {
+    async fetch(request: Request, env: Env): Promise<Response> {
+        return (
+            (await routePartykitRequest(request, env)) ||
+            new Response("Not Found", { status: 404 })
+        );
+    }
+} satisfies ExportedHandler<Env>;

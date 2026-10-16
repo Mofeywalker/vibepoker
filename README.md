@@ -52,13 +52,13 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Production Deployment
 
-#### 1. Deploy PartyKit Server
+#### 1. Deploy Real-Time Server to Cloudflare
 
 ```bash
-npx partykit deploy
+npm run party:deploy
 ```
 
-This will output your PartyKit server URL (e.g., `https://vibepoker.username.partykit.dev`).
+This deploys your PartyServer Worker to your Cloudflare account and outputs your worker URL (e.g., `https://vibepoker.<subdomain>.workers.dev`).
 
 #### 2. Deploy to Vercel
 
@@ -73,7 +73,7 @@ vercel --prod
 Set the following environment variable in Vercel:
 
 ```bash
-NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.username.partykit.dev
+NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.<subdomain>.workers.dev
 ```
 
 ## 🎮 How to Use
@@ -91,7 +91,7 @@ NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.username.partykit.dev
 
 - **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
 - **Language:** [TypeScript 5](https://www.typescriptlang.org/)
-- **Real-time:** [PartyKit](https://partykit.io/) (Cloudflare Workers)
+- **Real-time:** [PartyServer](https://github.com/cloudflare/partykit) (Cloudflare Workers + Durable Objects)
 - **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
 - **i18n:** [next-intl](https://next-intl-docs.vercel.app/)
 - **Theme:** [next-themes](https://github.com/pacocoursey/next-themes)
@@ -132,7 +132,8 @@ vibepoker/
 │   ├── types/               # TypeScript type definitions
 │   └── __tests__/           # Component tests
 ├── party/
-│   └── vibepoker.ts         # PartyKit server implementation
+│   └── vibepoker.ts         # PartyServer Durable Object implementation
+├── wrangler.jsonc           # Cloudflare Worker configuration
 ├── messages/                # i18n translation files
 └── public/                  # Static assets
 ```
@@ -147,8 +148,8 @@ Create a `.env.local` file:
 # PartyKit host (local development)
 NEXT_PUBLIC_PARTYKIT_HOST=localhost:1999
 
-# Production: use your PartyKit deployment URL
-# NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.username.partykit.dev
+# Production: use your Cloudflare Worker URL
+# NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.<subdomain>.workers.dev
 ```
 
 ## 🌍 Internationalization
