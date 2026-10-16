@@ -41,7 +41,7 @@ function CardDeckComponent({ selectedCard, onSelectCard, values, disabled = fals
                     {t('selectEstimate')}
                 </h2>
             </div>
-            <div className="flex-balance justify-center gap-2.5 sm:gap-3.5 pt-1">
+            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 pt-1">
                 {values.map((value, i) => (
                     <Card
                         key={value}

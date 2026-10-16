@@ -44,5 +44,9 @@ next-env.d.ts
 .wrangler
 .partykit
 
-#server logs
+# server logs
 server.log
+
+# bun
+bun.lock
+bun.lockb

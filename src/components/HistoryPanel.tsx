@@ -3,6 +3,7 @@
 import { memo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { EstimationHistoryItem } from '@/types';
+import { CoffeeIcon } from './Card';
 
 interface HistoryPanelProps {
     history: EstimationHistoryItem[];
@@ -77,7 +78,14 @@ function HistoryPanelComponent({ history }: HistoryPanelProps) {
                                         </td>
                                         <td className="px-4 py-3 text-right">
                                             <span className="inline-flex items-center justify-center min-w-8 h-8 px-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/60 text-zinc-900 dark:text-zinc-100 font-mono font-bold text-xs sm:text-sm tabular-nums">
-                                                {item.value}
+                                                {item.value === '☕' ? (
+                                                    <>
+                                                        <span className="visually-hidden">☕</span>
+                                                        <CoffeeIcon className="w-4 h-4" />
+                                                    </>
+                                                ) : (
+                                                    item.value
+                                                )}
                                             </span>
                                         </td>
                                     </tr>

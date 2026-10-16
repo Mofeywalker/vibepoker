@@ -85,12 +85,6 @@ p, blockquote, li {
   text-box: trim-both cap alphabetic;
 }
 
-/* Balanced flex row wrapping per Modern Web Guidance (css-layout) */
-.flex-balance {
-  display: flex;
-  flex-wrap: wrap;
-  flex-wrap: balance;
-}
 
 /* Clean architectural dot-matrix background — zero colored glows */
 .bg-gradient-main {

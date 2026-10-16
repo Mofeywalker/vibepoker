@@ -3,6 +3,7 @@
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { type Results, type CardValue, type RoundingPreference } from '@/types';
+import { CoffeeIcon } from './Card';
 
 interface ResultsPanelProps {
     results: Results;
@@ -13,6 +14,19 @@ interface ResultsPanelProps {
     onRevote: () => void;
     onStartNewRound: () => void;
     onSetRounding?: (rounding: RoundingPreference) => void;
+}
+
+function renderCardValue(val: string | number | null | undefined, iconClassName = 'w-6 h-6') {
+    if (val === null || val === undefined || val === '') return '—';
+    if (val === '☕') {
+        return (
+            <span className="inline-flex items-center justify-center">
+                <span className="visually-hidden">☕</span>
+                <CoffeeIcon className={iconClassName} />
+            </span>
+        );
+    }
+    return val;
 }
 
 function ResultsPanelComponent({
@@ -44,8 +58,8 @@ function ResultsPanelComponent({
                     {t('acceptedResult')}
                 </h2>
 
-                <div className="text-[clamp(2.75rem,5vw+1.5rem,4rem)] font-extrabold font-mono text-zinc-950 dark:text-zinc-50 my-4 tracking-tight tabular-nums leading-none">
-                    {results.acceptedValue}
+                <div className="text-[clamp(2.75rem,5vw+1.5rem,4rem)] font-extrabold font-mono text-zinc-950 dark:text-zinc-50 my-4 tracking-tight tabular-nums leading-none flex items-center justify-center">
+                    {renderCardValue(results.acceptedValue, 'w-12 h-12')}
                 </div>
 
                 {isHost && (
@@ -170,8 +184,8 @@ function ResultsPanelComponent({
                     <div className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5">
                         {t('mode')}
                     </div>
-                    <div className="text-[clamp(1.75rem,3cqi+1rem,2.25rem)] font-extrabold font-mono tabular-nums text-zinc-950 dark:text-zinc-50 leading-tight">
-                        {results.mode || '—'}
+                    <div className="text-[clamp(1.75rem,3cqi+1rem,2.25rem)] font-extrabold font-mono tabular-nums text-zinc-950 dark:text-zinc-50 leading-tight flex items-center min-h-[2.25rem]">
+                        {renderCardValue(results.mode, 'w-7 h-7')}
                     </div>
                 </div>
             </div>
@@ -187,8 +201,8 @@ function ResultsPanelComponent({
                             const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
                             return (
                                 <div key={value} className="flex items-center gap-3.5 text-sm">
-                                    <span className="w-9 font-mono font-bold tabular-nums text-zinc-950 dark:text-zinc-50 text-right">
-                                        {value}
+                                    <span className="w-9 font-mono font-bold tabular-nums text-zinc-950 dark:text-zinc-50 flex items-center justify-end">
+                                        {renderCardValue(value, 'w-4 h-4')}
                                     </span>
                                     <div className="flex-1 h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-clip">
                                         <div
