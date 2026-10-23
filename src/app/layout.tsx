@@ -47,9 +47,9 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider
             attribute="class"
+            themes={["light", "dark", "colorful"]}
             defaultTheme="system"
             enableSystem
-            disableTransitionOnChange
           >
             <ErrorBoundary>
               {children}

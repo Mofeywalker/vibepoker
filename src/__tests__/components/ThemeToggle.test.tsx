@@ -15,7 +15,7 @@ describe('ThemeToggle', () => {
             theme,
             resolvedTheme,
             setTheme,
-            themes: ['light', 'dark', 'system'],
+            themes: ['light', 'dark', 'colorful', 'system'],
         });
     };
 
@@ -34,18 +34,31 @@ describe('ThemeToggle', () => {
         expect(setTheme).toHaveBeenCalledWith('dark');
     });
 
-    it('toggles from dark to light', () => {
+    it('cycles from dark to colorful', () => {
         mockTheme('dark');
 
         render(<ThemeToggle />);
 
         const button = screen.getByRole('button');
+        expect(button).toHaveAttribute('title', 'Switch to colorful mode');
+        fireEvent.click(button);
+
+        expect(setTheme).toHaveBeenCalledWith('colorful');
+    });
+
+    it('cycles from colorful back to light', () => {
+        mockTheme('light', 'colorful');
+
+        render(<ThemeToggle />);
+
+        const button = screen.getByRole('button');
+        expect(button).toHaveAttribute('title', 'Switch to light mode');
         fireEvent.click(button);
 
         expect(setTheme).toHaveBeenCalledWith('light');
     });
 
-    it('toggles to light when theme is "system" but resolved theme is "dark"', () => {
+    it('continues from resolved dark when theme is "system"', () => {
         // When theme is 'system' and resolvedTheme is 'dark'
         mockTheme('dark', 'system');
 
@@ -53,13 +66,13 @@ describe('ThemeToggle', () => {
 
         const button = screen.getByRole('button');
 
-        // Should show "Switch to light" title since it's currently dark
-        expect(button).toHaveAttribute('title', 'Switch to light mode');
+        // Resolved dark is followed by colorful
+        expect(button).toHaveAttribute('title', 'Switch to colorful mode');
 
         fireEvent.click(button);
 
-        // Should toggle to 'light' because it' currently dark
-        expect(setTheme).toHaveBeenCalledWith('light');
+        // 'system' resolves to dark, so the cycle continues to colorful
+        expect(setTheme).toHaveBeenCalledWith('colorful');
     });
 
     it('toggles to dark when theme is "system" but resolved theme is "light"', () => {

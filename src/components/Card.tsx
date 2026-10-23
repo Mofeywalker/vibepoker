@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, type CSSProperties } from 'react';
 import type { CardValue } from '@/types';
 
 interface CardProps {
@@ -11,8 +11,10 @@ interface CardProps {
     onClick?: () => void;
     size?: 'sm' | 'md' | 'lg';
     disabled?: boolean;
+    /** Position in the deck — drives the ordered rainbow hue in the colorful theme. */
+    colorIndex?: number;
+    colorCount?: number;
 }
-
 export const CoffeeIcon = memo(function CoffeeIcon({ className = 'w-7 h-7', showSteam = true }: { className?: string; showSteam?: boolean }) {
     return (
         <svg
@@ -66,6 +68,18 @@ function getCoffeeIconSize(size: 'sm' | 'md' | 'lg'): string {
     if (size === 'lg') return 'w-9 h-9';
     return 'w-7 h-7 sm:w-8 sm:h-8';
 }
+/** Stable pseudo-random hue per card value — same card always gets the same rainbow color. */
+function getCardHue(value: string, colorIndex?: number, colorCount?: number): number {
+    if (colorIndex !== undefined && colorCount && colorCount > 1) {
+        // Full rainbow from the first (red) to the last card (magenta)
+        return Math.round((colorIndex / (colorCount - 1)) * 300);
+    }
+    let hash = 0;
+    for (let i = 0; i < value.length; i++) {
+        hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+    }
+    return Math.round((hash * 137.508) % 360);
+}
 
 function CardComponent({
     value,
@@ -74,7 +88,9 @@ function CardComponent({
     isBack = false,
     onClick,
     size = 'md',
-    disabled = false
+    disabled = false,
+    colorIndex,
+    colorCount
 }: CardProps) {
     const sizeClasses = {
         sm: 'w-14 h-20 rounded-xl',
@@ -176,7 +192,7 @@ function CardComponent({
 
     if (isRevealed) {
         return (
-            <div className={revealedClasses}>
+            <div className={revealedClasses} style={{ '--card-hue': getCardHue(value, colorIndex, colorCount) } as CSSProperties}>
                 {renderCornerIndices('text-zinc-400 dark:text-zinc-500')}
                 {renderCenterSymbol()}
             </div>
@@ -190,6 +206,7 @@ function CardComponent({
             disabled={disabled}
             aria-pressed={isSelected}
             className={frontClasses}
+            style={{ '--card-hue': getCardHue(value, colorIndex, colorCount) } as CSSProperties}
         >
             {renderCornerIndices(isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-zinc-500')}
             {renderCenterSymbol()}

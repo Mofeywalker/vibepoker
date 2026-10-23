@@ -16,7 +16,7 @@ A real-time Planning Poker application for agile teams to estimate story points 
 - **Smart Suggestions** — Automatic calculation of average, median, mode, and deck-aligned suggestions with configurable rounding
 - **Estimation History** — Track all accepted estimations with topics and timestamps
 - **Internationalization** — Full support for English and German (auto-detects browser language)
-- **Dark Mode** — Beautiful light/dark theme with system preference detection
+- **Themes** — Light, dark (with system preference detection), and a colorful violet-accent theme
 - **Responsive Design** — Works seamlessly on desktop, tablet, and mobile devices
 - **Host Controls** — Room creator can reveal cards, accept results, start new rounds, and transfer host permissions
 - **Auto-Rejoin** — Automatically rejoin your previous room and restore your session after a refresh

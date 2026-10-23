@@ -17,6 +17,8 @@ interface CardDeckItemProps {
     disabled: boolean;
     onSelect: (value: CardValue, normalizedValue: string) => void;
     normalizedValue: string;
+    colorIndex: number;
+    colorCount: number;
 }
 
 const CardDeckItem = memo(function CardDeckItem({
@@ -24,7 +26,9 @@ const CardDeckItem = memo(function CardDeckItem({
     isSelected,
     disabled,
     onSelect,
-    normalizedValue
+    normalizedValue,
+    colorIndex,
+    colorCount
 }: CardDeckItemProps) {
     const handleClick = useCallback(() => {
         onSelect(value, normalizedValue);
@@ -37,6 +41,8 @@ const CardDeckItem = memo(function CardDeckItem({
             onClick={handleClick}
             disabled={disabled}
             size="md"
+            colorIndex={colorIndex}
+            colorCount={colorCount}
         />
     );
 });
@@ -80,6 +86,8 @@ function CardDeckComponent({ selectedCard, onSelectCard, values, disabled = fals
                         isSelected={normalizedSelected !== null && normalizedSelected === normalizedValues[i]}
                         onSelect={handleCardClick}
                         disabled={disabled}
+                        colorIndex={i}
+                        colorCount={values.length}
                     />
                 ))}
             </div>

@@ -11,6 +11,7 @@ interface PlayerItemProps {
     isCurrentPlayer: boolean;
     hasCard: boolean;
     isRevealed: boolean;
+    deckValues?: readonly string[];
     onTransferHost?: (playerId: string) => void;
     canTransferHost?: boolean;
 }
@@ -25,14 +26,16 @@ function arePlayerItemPropsEqual(prev: PlayerItemProps, next: PlayerItemProps): 
         prev.isCurrentPlayer === next.isCurrentPlayer &&
         prev.hasCard === next.hasCard &&
         prev.isRevealed === next.isRevealed &&
+        prev.deckValues === next.deckValues &&
         prev.canTransferHost === next.canTransferHost &&
         prev.onTransferHost === next.onTransferHost
     );
 }
 
-const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTransferHost, canTransferHost }: PlayerItemProps) => {
+const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, deckValues, onTransferHost, canTransferHost }: PlayerItemProps) => {
     const t = useTranslations('players');
     const initials = getInitials(player.name);
+    const colorIndex = player.selectedCard ? deckValues?.indexOf(player.selectedCard) : undefined;
 
     return (
         <li
@@ -103,6 +106,8 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
                         value={player.selectedCard}
                         isRevealed={true}
                         size="sm"
+                        colorIndex={colorIndex === -1 ? undefined : colorIndex}
+                        colorCount={deckValues?.length}
                     />
                 ) : isCurrentPlayer && player.selectedCard ? (
                     <Card
@@ -110,6 +115,8 @@ const PlayerItem = memo(({ player, isCurrentPlayer, hasCard, isRevealed, onTrans
                         isRevealed={false}
                         isSelected={true}
                         size="sm"
+                        colorIndex={colorIndex === -1 ? undefined : colorIndex}
+                        colorCount={deckValues?.length}
                     />
                 ) : hasCard ? (
                     <Card
@@ -137,11 +144,12 @@ interface PlayerListProps {
     currentPlayerId: string | undefined;
     isRevealed: boolean;
     playersWithCards: Set<string>;
+    deckValues?: readonly string[];
     onTransferHost?: (playerId: string) => void;
     canTransferHost?: boolean;
 }
 
-function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWithCards, onTransferHost, canTransferHost }: PlayerListProps) {
+function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWithCards, deckValues, onTransferHost, canTransferHost }: PlayerListProps) {
     const t = useTranslations('players');
 
     return (
@@ -164,6 +172,7 @@ function PlayerListComponent({ players, currentPlayerId, isRevealed, playersWith
                         isCurrentPlayer={player.id === currentPlayerId}
                         hasCard={playersWithCards.has(player.id)}
                         isRevealed={isRevealed}
+                        deckValues={deckValues}
                         onTransferHost={onTransferHost}
                         canTransferHost={canTransferHost}
                     />

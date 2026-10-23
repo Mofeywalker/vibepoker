@@ -82,7 +82,8 @@
     "theme": {
         "toggle": "Theme wechseln",
         "switchToLight": "Zum Light Mode wechseln",
-        "switchToDark": "Zum Dark Mode wechseln"
+        "switchToDark": "Zum Dark Mode wechseln",
+        "switchToColorful": "Zum Colorful Mode wechseln"
     },
     "metadata": {
         "title": "VibePOKER – Planning Poker für Teams",

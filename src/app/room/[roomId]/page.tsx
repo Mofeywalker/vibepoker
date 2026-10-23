@@ -397,6 +397,7 @@ export default function RoomPage() {
                             currentPlayerId={currentPlayer?.id}
                             isRevealed={room.isRevealed}
                             playersWithCards={playersWithCards}
+                            deckValues={deckValues}
                             onTransferHost={transferHost}
                             canTransferHost={isHost}
                         />
