@@ -1,0 +1,92 @@
+{
+    "home": {
+        "tagline": "قدّروا نقاط القصة معاً كفريق",
+        "connected": "متصل",
+        "connecting": "جاري الاتصال...",
+        "createRoom": "إنشاء غرفة",
+        "yourName": "اسمك",
+        "namePlaceholder": "مثلاً: ماكس",
+        "cancel": "إلغاء",
+        "creating": "جاري الإنشاء...",
+        "create": "إنشاء",
+        "selectDeck": "اختر نوع المجموعة",
+        "or": "أو",
+        "roomId": "معرف الغرفة",
+        "roomIdPlaceholder": "مثلاً: a1b2c3d4",
+        "joinRoom": "الانضمام إلى الغرفة",
+        "footer": "لا يتطلب التسجيل • مزامنة في الوقت الفعلي"
+    },
+    "room": {
+        "room": "غرفة",
+        "shareLink": "مشاركة الرابط",
+        "copied": "تم النسخ!",
+        "connectingToServer": "جاري الاتصال بالخادم...",
+        "loadingRoom": "جاري تحميل الغرفة...",
+        "waitingToJoin": "بانتظار الانضمام...",
+        "noTopicSet": "لم يتم تحديد موضوع",
+        "topicPlaceholder": "الموضوع (مثلاً: JIRA-123)",
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "editTopic": "تعديل الموضوع",
+        "cardsRevealed": "تم الكشف عن البطاقات",
+        "votedOf": "تم التصويت: {voted}/{total}",
+        "readyToReveal": "جاهز للكشف!",
+        "reveal": "كشف",
+        "newRound": "جولة جديدة",
+        "hostChanged": "{name} هو المضيف الآن"
+    },
+    "join": {
+        "title": "الانضمام إلى الغرفة",
+        "description": "أدخل اسمك للمشاركة في التخطيط",
+        "yourName": "اسمك",
+        "namePlaceholder": "مثلاً: جون دو",
+        "joining": "جاري الانضمام...",
+        "join": "انضمام",
+        "errors": {
+            "nameTaken": "هذا الاسم مستخدم بالفعل في هذه الغرفة.",
+            "roomFull": "هذه الغرفة ممتلئة.",
+            "invalidName": "اسم غير صالح. يرجى استخدام اسم آخر.",
+            "identityMismatch": "تعارض في الجلسة. تم إعادة تعيين الجلسة - يرجى المحاولة مرة أخرى.",
+            "connectionError": "خطأ في الاتصال. يرجى المحاولة مرة أخرى.",
+            "serverError": "خطأ في الخادم. يرجى المحاولة لاحقاً.",
+            "retry": "إعادة المحاولة"
+        }
+    },
+    "players": {
+        "title": "اللاعبون",
+        "you": "(أنت)",
+        "makeHost": "تعيين كمضيف",
+        "host": "المضيف"
+    },
+    "results": {
+        "title": "النتائج",
+        "suggestion": "اقتراح",
+        "average": "المتوسط",
+        "median": "الوسيط",
+        "mode": "الأكثر شيوعاً",
+        "distribution": "التوزيع",
+        "accept": "قبول",
+        "history": "السجل",
+        "topic": "الموضوع",
+        "estimate": "التقدير",
+        "revote": "إعادة التصويت",
+        "rounding": "التقريب",
+        "roundUp": "تقريب للأعلى",
+        "roundDown": "تقريب للأسفل",
+        "acceptedResult": "تم قبول النتيجة",
+        "startNewRound": "بدء جولة جديدة"
+    },
+    "cardDeck": {
+        "selectEstimate": "اختر تقديرك"
+    },
+    "theme": {
+        "toggle": "تبديل المظهر",
+        "switchToLight": "التبديل إلى الوضع الفاتح",
+        "switchToDark": "التبديل إلى الوضع الداكن",
+        "switchToColorful": "التبديل إلى الوضع الملون"
+    },
+    "metadata": {
+        "title": "VibePOKER - بوكر التخطيط للفرق",
+        "description": "قدّروا نقاط القصة معاً باستخدام بوكر التخطيط في الوقت الفعلي. لا يتطلب التسجيل."
+    }
+}

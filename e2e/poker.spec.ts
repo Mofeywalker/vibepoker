@@ -140,3 +140,25 @@ test('deck selection changes available cards', async ({ page }) => {
   }
   await expect(deck.getByRole('button', { name: '13' })).toBeHidden()
 })
+
+test('language switcher changes locale, persists it, and applies RTL', async ({ page }) => {
+  await page.goto('/')
+
+  const switcher = page.getByRole('combobox', { name: 'Select language' })
+  await expect(switcher).toBeVisible()
+
+  await switcher.selectOption('tr')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'tr')
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr')
+  await expect(page.getByRole('button', { name: 'Oda Oluştur' })).toBeVisible()
+
+  // Explicit choice survives a reload via the NEXT_LOCALE cookie.
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'tr')
+  await expect(page.getByRole('button', { name: 'Oda Oluştur' })).toBeVisible()
+
+  // Arabic switches document direction as well.
+  await page.getByRole('combobox', { name: 'Select language' }).selectOption('ar')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ar')
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+})

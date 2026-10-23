@@ -1,0 +1,92 @@
+{
+    "home": {
+        "tagline": "与团队一起评估故事点",
+        "connected": "已连接",
+        "connecting": "连接中...",
+        "createRoom": "创建房间",
+        "yourName": "你的名字",
+        "namePlaceholder": "例如：Max",
+        "cancel": "取消",
+        "creating": "创建中...",
+        "create": "创建",
+        "selectDeck": "选择卡组类型",
+        "or": "或",
+        "roomId": "房间 ID",
+        "roomIdPlaceholder": "例如：a1b2c3d4",
+        "joinRoom": "加入房间",
+        "footer": "无需注册 • 实时同步"
+    },
+    "room": {
+        "room": "房间",
+        "shareLink": "分享链接",
+        "copied": "已复制！",
+        "connectingToServer": "正在连接服务器...",
+        "loadingRoom": "正在加载房间...",
+        "waitingToJoin": "等待加入...",
+        "noTopicSet": "未设置主题",
+        "topicPlaceholder": "主题 (例如：JIRA-123)",
+        "save": "保存",
+        "cancel": "取消",
+        "editTopic": "编辑主题",
+        "cardsRevealed": "卡片已揭晓",
+        "votedOf": "{voted}/{total} 已投票",
+        "readyToReveal": "准备揭晓！",
+        "reveal": "揭晓",
+        "newRound": "新一轮",
+        "hostChanged": "{name} 现在是房主"
+    },
+    "join": {
+        "title": "加入房间",
+        "description": "输入你的名字以参与规划",
+        "yourName": "你的名字",
+        "namePlaceholder": "例如：张三",
+        "joining": "加入中...",
+        "join": "加入",
+        "errors": {
+            "nameTaken": "这个名字在该房间中已被占用。",
+            "roomFull": "该房间已满。",
+            "invalidName": "名称无效，请使用其他名称。",
+            "identityMismatch": "会话冲突。会话已重置 - 请尝试重新加入。",
+            "connectionError": "连接错误，请重试。",
+            "serverError": "服务器错误，请稍后重试。",
+            "retry": "重试"
+        }
+    },
+    "players": {
+        "title": "玩家",
+        "you": "(你)",
+        "makeHost": "设为房主",
+        "host": "房主"
+    },
+    "results": {
+        "title": "结果",
+        "suggestion": "建议",
+        "average": "平均值",
+        "median": "中位数",
+        "mode": "众数",
+        "distribution": "分布",
+        "accept": "接受",
+        "history": "历史",
+        "topic": "主题",
+        "estimate": "评估",
+        "revote": "重新投票",
+        "rounding": "四舍五入",
+        "roundUp": "向上取整",
+        "roundDown": "向下取整",
+        "acceptedResult": "结果已接受",
+        "startNewRound": "开始新一轮"
+    },
+    "cardDeck": {
+        "selectEstimate": "选择你的评估值"
+    },
+    "theme": {
+        "toggle": "切换主题",
+        "switchToLight": "切换到浅色模式",
+        "switchToDark": "切换到深色模式",
+        "switchToColorful": "切换到多彩模式"
+    },
+    "metadata": {
+        "title": "VibePOKER – 团队规划扑克",
+        "description": "通过实时规划扑克与团队一起评估故事点。无需注册。"
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "home": {
+        "tagline": "Estimen puntos de historia juntos como equipo",
+        "connected": "Conectado",
+        "connecting": "Conectando...",
+        "createRoom": "Crear Sala",
+        "yourName": "Tu Nombre",
+        "namePlaceholder": "ej. Max",
+        "cancel": "Cancelar",
+        "creating": "Creando...",
+        "create": "Crear",
+        "selectDeck": "Seleccionar Tipo de Mazo",
+        "or": "o",
+        "roomId": "ID de Sala",
+        "roomIdPlaceholder": "ej. a1b2c3d4",
+        "joinRoom": "Unirse a Sala",
+        "footer": "No se requiere registro • Sincronización en tiempo real"
+    },
+    "room": {
+        "room": "Sala",
+        "shareLink": "Compartir Enlace",
+        "copied": "¡Copiado!",
+        "connectingToServer": "Conectando al servidor...",
+        "loadingRoom": "Cargando sala...",
+        "waitingToJoin": "Esperando para unirse...",
+        "noTopicSet": "Sin tema establecido",
+        "topicPlaceholder": "Tema (ej. JIRA-123)",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "editTopic": "Editar tema",
+        "cardsRevealed": "Cartas reveladas",
+        "votedOf": "{voted}/{total} votaron",
+        "readyToReveal": "¡Listo para revelar!",
+        "reveal": "Revelar",
+        "newRound": "Nueva Ronda",
+        "hostChanged": "{name} ahora es el anfitrión"
+    },
+    "join": {
+        "title": "Unirse a Sala",
+        "description": "Ingresa tu nombre para participar en la planificación",
+        "yourName": "Tu Nombre",
+        "namePlaceholder": "ej. John Doe",
+        "joining": "Uniéndose...",
+        "join": "Unirse",
+        "errors": {
+            "nameTaken": "Este nombre ya está tomado en esta sala.",
+            "roomFull": "Esta sala está llena.",
+            "invalidName": "Nombre no válido. Por favor, usa otro nombre.",
+            "identityMismatch": "Conflicto de sesión. La sesión fue reiniciada; por favor, intenta unirte de nuevo.",
+            "connectionError": "Error de conexión. Por favor, intenta de nuevo.",
+            "serverError": "Error del servidor. Por favor, intenta más tarde.",
+            "retry": "Reintentar"
+        }
+    },
+    "players": {
+        "title": "Jugadores",
+        "you": "(Tú)",
+        "makeHost": "Hacer Anfitrión",
+        "host": "Anfitrión"
+    },
+    "results": {
+        "title": "Resultados",
+        "suggestion": "Sugerencia",
+        "average": "Promedio",
+        "median": "Mediana",
+        "mode": "Más Común",
+        "distribution": "Distribución",
+        "accept": "Aceptar",
+        "history": "Historial",
+        "topic": "Tema",
+        "estimate": "Estimación",
+        "revote": "Votar de nuevo",
+        "rounding": "Redondeo",
+        "roundUp": "Redondear hacia arriba",
+        "roundDown": "Redondear hacia abajo",
+        "acceptedResult": "Resultado Aceptado",
+        "startNewRound": "Iniciar Nueva Ronda"
+    },
+    "cardDeck": {
+        "selectEstimate": "Selecciona tu estimación"
+    },
+    "theme": {
+        "toggle": "Cambiar tema",
+        "switchToLight": "Cambiar a modo claro",
+        "switchToDark": "Cambiar a modo oscuro",
+        "switchToColorful": "Cambiar a modo colorido"
+    },
+    "metadata": {
+        "title": "VibePOKER – Planning Poker para Equipos",
+        "description": "Estimen puntos de historia juntos con planning poker en tiempo real. No se requiere registro."
+    }
+}

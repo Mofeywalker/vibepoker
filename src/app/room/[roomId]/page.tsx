@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRoom } from '@/hooks/useRoom';
-import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, HistoryPanel, Logo } from '@/components';
+import { CardDeck, PlayerList, JoinModal, ResultsPanel, ThemeToggle, LanguageSwitcher, HistoryPanel, Logo } from '@/components';
 import { DECKS, type DeckType } from '@/types';
 import {
     getStorageItem,
@@ -171,6 +171,7 @@ export default function RoomPage() {
                     </div>
 
                     <div className="flex items-center gap-2.5 shrink-0">
+                        <LanguageSwitcher />
                         <ThemeToggle />
                         <button
                             type="button"

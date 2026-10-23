@@ -1,0 +1,92 @@
+{
+    "home": {
+        "tagline": "Bir ekip olarak hikaye puanlarını birlikte tahminleyin",
+        "connected": "Bağlandı",
+        "connecting": "Bağlanıyor...",
+        "createRoom": "Oda Oluştur",
+        "yourName": "Adınız",
+        "namePlaceholder": "ör. Max",
+        "cancel": "İptal",
+        "creating": "Oluşturuluyor...",
+        "create": "Oluştur",
+        "selectDeck": "Deste Tipini Seçin",
+        "or": "veya",
+        "roomId": "Oda Kimliği",
+        "roomIdPlaceholder": "ör. a1b2c3d4",
+        "joinRoom": "Odaya Katıl",
+        "footer": "Kayıt gerekmez • Gerçek zamanlı senkronizasyon"
+    },
+    "room": {
+        "room": "Oda",
+        "shareLink": "Bağlantıyı Paylaş",
+        "copied": "Kopyalandı!",
+        "connectingToServer": "Sunucuya bağlanılıyor...",
+        "loadingRoom": "Oda yükleniyor...",
+        "waitingToJoin": "Katılma bekleniyor...",
+        "noTopicSet": "Konu belirlenmedi",
+        "topicPlaceholder": "Konu (ör. JIRA-123)",
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "editTopic": "Konuyu düzenle",
+        "cardsRevealed": "Kartlar açıldı",
+        "votedOf": "{voted}/{total} oy kullandı",
+        "readyToReveal": "Açmaya hazır!",
+        "reveal": "Aç",
+        "newRound": "Yeni Tur",
+        "hostChanged": "{name} artık yönetici"
+    },
+    "join": {
+        "title": "Odaya Katıl",
+        "description": "Planlamaya katılmak için adınızı girin",
+        "yourName": "Adınız",
+        "namePlaceholder": "ör. John Doe",
+        "joining": "Katılıyor...",
+        "join": "Katıl",
+        "errors": {
+            "nameTaken": "Bu isim bu odada zaten alınmış.",
+            "roomFull": "Bu oda dolu.",
+            "invalidName": "Geçersiz isim. Lütfen başka bir isim kullanın.",
+            "identityMismatch": "Oturum çakışması. Oturum sıfırlandı – lütfen tekrar katılmayı deneyin.",
+            "connectionError": "Bağlantı hatası. Lütfen tekrar deneyin.",
+            "serverError": "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
+            "retry": "Tekrar Dene"
+        }
+    },
+    "players": {
+        "title": "Oyuncular",
+        "you": "(Siz)",
+        "makeHost": "Yönetici Yap",
+        "host": "Yönetici"
+    },
+    "results": {
+        "title": "Sonuçlar",
+        "suggestion": "Öneri",
+        "average": "Ortalama",
+        "median": "Medyan",
+        "mode": "En Yaygın",
+        "distribution": "Dağılım",
+        "accept": "Kabul Et",
+        "history": "Geçmiş",
+        "topic": "Konu",
+        "estimate": "Tahmin",
+        "revote": "Tekrar Oy Ver",
+        "rounding": "Yuvarlama",
+        "roundUp": "Yukarı Yuvarla",
+        "roundDown": "Aşağı Yuvarla",
+        "acceptedResult": "Sonuç Kabul Edildi",
+        "startNewRound": "Yeni Tur Başlat"
+    },
+    "cardDeck": {
+        "selectEstimate": "Tahmininizi seçin"
+    },
+    "theme": {
+        "toggle": "Temayı değiştir",
+        "switchToLight": "Açık moda geç",
+        "switchToDark": "Koyu moda geç",
+        "switchToColorful": "Renkli moda geç"
+    },
+    "metadata": {
+        "title": "VibePOKER – Ekipler için Planlama Pokeri",
+        "description": "Gerçek zamanlı planlama pokeri ile hikaye puanlarını birlikte tahminleyin. Kayıt gerekmez."
+    }
+}

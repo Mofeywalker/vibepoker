@@ -5,6 +5,7 @@ export { Card } from './Card';
 export { CardDeck } from './CardDeck';
 export { PlayerList } from './PlayerList';
 export { ThemeToggle } from './ThemeToggle';
+export { LanguageSwitcher } from './LanguageSwitcher';
 export { ErrorBoundary } from './ErrorBoundary';
 
 // Dynamic exports for code splitting and performance

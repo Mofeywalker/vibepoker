@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ThemeToggle, Logo } from '@/components';
+import { ThemeToggle, LanguageSwitcher, Logo } from '@/components';
 import type { DeckType } from '@/types';
 import { generateRoomId } from '@/lib/poker-logic';
 import { setStorageItem, getPlayerStorageKey, getDeckStorageKey } from '@/lib/storage';
@@ -41,7 +41,10 @@ export default function HomePage() {
     <main className="min-h-dvh flex flex-col items-center justify-center px-4 py-12 sm:p-6 relative">
       {/* Header Bar with Theme Toggle */}
       <header className="absolute top-4 right-4 sm:top-6 sm:right-6 z-40">
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Main Content Container */}
