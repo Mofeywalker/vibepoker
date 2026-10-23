@@ -96,8 +96,9 @@ export class PartyKitClient {
                     this.errorCallback?.(event.reason);
                     reject(new Error(event.reason || 'Policy violation'));
                 } else if (event.code !== 1000) {
-                    this.errorCallback?.('Connection error');
-                    reject(new Error('Connection error'));
+                    const message = `Connection error (${event.code})`;
+                    this.errorCallback?.(message);
+                    reject(new Error(message));
                 }
             };
 

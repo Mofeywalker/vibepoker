@@ -47,6 +47,24 @@ describe('JoinModal', () => {
         expect(screen.getByText('This name is already taken in this room.')).toBeInTheDocument();
     });
 
+    it('maps close codes to friendly messages', () => {
+        const { unmount } = render(<JoinModal onJoin={() => { }} error="Connection error (1011)" />);
+        expect(screen.getByText('Server error. Please try again later.')).toBeInTheDocument();
+        unmount();
+        render(<JoinModal onJoin={() => { }} error="Connection error (1006)" />);
+        expect(screen.getByText('Connection error. Please try again.')).toBeInTheDocument();
+    });
+
+    it('retries the join with the entered name', () => {
+        const handleJoin = vi.fn();
+        render(<JoinModal onJoin={handleJoin} error="Connection error (1006)" />);
+
+        fireEvent.change(screen.getByPlaceholderText('e.g. John Doe'), { target: { value: 'Alice' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+
+        expect(handleJoin).toHaveBeenCalledWith('Alice');
+    });
+
     it('shows loading state', () => {
         render(<JoinModal onJoin={() => { }} isLoading={true} />);
         expect(screen.getByText('Joining...')).toBeInTheDocument();

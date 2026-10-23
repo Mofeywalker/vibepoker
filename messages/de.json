@@ -47,7 +47,9 @@
             "roomFull": "Dieser Raum ist bereits voll.",
             "invalidName": "Ungültiger Name. Bitte verwende einen anderen Namen.",
             "identityMismatch": "Sitzungskonflikt. Die Sitzung wurde zurückgesetzt – bitte trete erneut bei.",
-            "connectionError": "Verbindungsfehler. Bitte versuche es erneut."
+            "connectionError": "Verbindungsfehler. Bitte versuche es erneut.",
+            "serverError": "Serverfehler. Bitte versuche es später erneut.",
+            "retry": "Erneut versuchen"
         }
     },
     "players": {

@@ -36,10 +36,18 @@ function JoinModalComponent({ onJoin, isLoading = false, error }: JoinModalProps
                 return t('errors.invalidName');
             case 'IDENTITY_MISMATCH':
                 return t('errors.identityMismatch');
-            case 'Connection error':
-                return t('errors.connectionError');
-            default:
+            default: {
+                const closeCode = err.match(/^Connection error \((\d+)\)$/)?.[1];
+                if (closeCode === '1011') return t('errors.serverError');
+                if (closeCode) return t('errors.connectionError');
                 return err;
+            }
+        }
+    };
+
+    const handleRetry = () => {
+        if (name.trim()) {
+            onJoin(name.trim());
         }
     };
 
@@ -98,9 +106,18 @@ function JoinModalComponent({ onJoin, isLoading = false, error }: JoinModalProps
                             className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs sm:text-sm flex items-center gap-2.5"
                         >
                             <svg aria-hidden="true" className="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.502-1.667-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
-                            <span>{formatErrorMessage(error)}</span>
+                            <span className="flex-1">{formatErrorMessage(error)}</span>
+                            {!isLoading && name.trim() && (
+                                <button
+                                    type="button"
+                                    onClick={handleRetry}
+                                    className="shrink-0 font-semibold underline underline-offset-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                >
+                                    {t('errors.retry')}
+                                </button>
+                            )}
                         </div>
                     )}
 

@@ -88,7 +88,7 @@ export default function RoomPage() {
         if (savedPlayerName) {
             if (attemptedAutoJoin.current) {
                 if (error) {
-                    if (error !== 'Connection error') {
+                    if (!error.startsWith('Connection error')) {
                         clearRoomSession(roomId);
                     }
                     // eslint-disable-next-line react-hooks/set-state-in-effect
