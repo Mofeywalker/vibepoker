@@ -115,14 +115,22 @@ npm run check:deploy -- https://vibepoker-scrum.vercel.app
 ## 🧪 Testing
 
 ```bash
-# Run all tests once
+# Run all unit tests once
 npm test -- --run
 
 # Run tests in watch mode
 npm test
+
+# Run end-to-end browser tests (Playwright; starts dev servers automatically)
+npm run e2e
+
+# Interactive mode
+npm run e2e:ui
 ```
 
 Run unit tests for components, poker logic, and the PartyServer with Vitest.
+End-to-end flows (room creation, multiplayer voting, reveal, accept, history,
+new round) are covered by Playwright tests in `e2e/`.
 
 ## 📁 Project Structure
 
