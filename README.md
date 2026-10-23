@@ -1,35 +1,35 @@
 # VibePOKER 🎴
 
-A real-time Planning Poker application for agile teams to estimate story points collaboratively. Built with Next.js, PartyKit, and TypeScript.
+A real-time Planning Poker application for agile teams to estimate story points collaboratively. Built with Next.js, PartyServer (Cloudflare Workers), and TypeScript.
 
 ![Planning Poker](https://img.shields.io/badge/Planning-Poker-violet)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
-![PartyKit](https://img.shields.io/badge/PartyKit-Latest-orange)
+![PartyServer](https://img.shields.io/badge/PartyServer-Cloudflare-orange)
 ![Vercel](https://img.shields.io/badge/Vercel-Ready-black)
 
 ## ✨ Features
 
-- **Real-time Collaboration** — Instant synchronization across all participants using PartyKit
+- **Real-time Collaboration** — Instant synchronization across all participants via PartyServer Durable Objects
 - **No Registration Required** — Create or join rooms instantly with just a name
 - **Flexible Deck Types** — Choose from Fibonacci, Scrum, Sequential, Hourly, or T-Shirt sizing
 - **Smart Suggestions** — Automatic calculation of average, median, mode, and deck-aligned suggestions with configurable rounding
 - **Estimation History** — Track all accepted estimations with topics and timestamps
 - **Internationalization** — Full support for English and German (auto-detects browser language)
-- **Themes** — Light, dark (with system preference detection), and a colorful violet-accent theme
+- **Themes** — Light, dark (with system preference detection), and a colorful theme with ordered rainbow cards
 - **Responsive Design** — Works seamlessly on desktop, tablet, and mobile devices
 - **Host Controls** — Room creator can reveal cards, accept results, start new rounds, and transfer host permissions
 - **Auto-Rejoin** — Automatically rejoin your previous room and restore your session after a refresh
 - **Revote Feature** — Re-estimate the same topic without resetting it
-- **Persistent State** — Room data persists using PartyKit's built-in storage
+- **Persistent State** — Room data persists in Durable Object storage
 - **Edge Deployment** — Runs on Cloudflare Workers for global low-latency access
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 20+
-- npm, yarn, pnpm, or bun
+- Node.js 20.9+
+- npm
 
 ### Installation
 
@@ -44,7 +44,7 @@ npm install
 # Copy environment configuration
 cp .env.example .env.local
 
-# Run the development server (starts both Next.js and PartyKit)
+# Run the development server (starts Next.js and the local Wrangler/PartyServer worker)
 npm run dev
 ```
 
@@ -75,6 +75,8 @@ Set the following environment variable in Vercel:
 ```bash
 NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.<subdomain>.workers.dev
 ```
+
+Optionally set `VERCEL_FORCE_NO_BUILD_CACHE=1` to avoid stale incremental CSS bundles.
 
 After deploying, verify the site serves the current CSS (catches stale Vercel build caches):
 
@@ -113,14 +115,14 @@ npm run check:deploy -- https://vibepoker-scrum.vercel.app
 ## 🧪 Testing
 
 ```bash
-# Run all tests
-npm test
+# Run all tests once
+npm test -- --run
 
 # Run tests in watch mode
-npm test -- --watch
+npm test
 ```
 
-Run unit tests for components and logic using Vitest.
+Run unit tests for components, poker logic, and the PartyServer with Vitest.
 
 ## 📁 Project Structure
 
@@ -132,14 +134,15 @@ vibepoker/
 │   ├── hooks/               # Custom React hooks (useRoom)
 │   ├── i18n/                # Internationalization config
 │   ├── lib/
-│   │   ├── realtime/        # PartyKit client
+│   │   ├── realtime/        # partysocket client (PartyKitClient)
 │   │   └── poker-logic.ts   # Core business logic
 │   ├── test/                # Test setup and utilities
 │   ├── types/               # TypeScript type definitions
-│   └── __tests__/           # Component tests
+│   └── __tests__/           # Unit and component tests
 ├── party/
 │   └── vibepoker.ts         # PartyServer Durable Object implementation
 ├── wrangler.jsonc           # Cloudflare Worker configuration
+├── scripts/                 # Deploy verification (check-deploy.mjs)
 ├── messages/                # i18n translation files
 └── public/                  # Static assets
 ```
@@ -151,7 +154,7 @@ vibepoker/
 Create a `.env.local` file:
 
 ```bash
-# PartyKit host (local development)
+# PartyServer host (local development)
 NEXT_PUBLIC_PARTYKIT_HOST=localhost:1999
 
 # Production: use your Cloudflare Worker URL
@@ -183,15 +186,15 @@ Remember to update `party/vibepoker.ts` if you introduce non-numeric decks that 
 
 ## 🏛️ Architecture
 
-VibePOKER uses PartyKit for real-time communication:
+VibePOKER uses PartyServer (Cloudflare Workers + Durable Objects) for real-time communication:
 
 ```
-Next.js Client → PartyKitClient → PartyKit Server
+Next.js Client → PartyKitClient (partysocket) → PartyServer Durable Object
 ```
 
 This architecture allows for:
 - **Type Safety** — Fully typed event system
-- **Vercel Compatibility** — PartyKit runs on Cloudflare Workers
+- **Vercel Compatibility** — Realtime server runs on Cloudflare Workers
 
 ## 📝 License
 
@@ -200,17 +203,6 @@ This project is open source and available under the MIT License.
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## ✨ What's New
-
-### v2.0 - PartyKit Migration
-
-- ✅ Migrated from Socket.IO to PartyKit
-- ✅ Full Vercel deployment support
-- ✅ Persistent state using PartyKit storage
-- ✅ Edge deployment on Cloudflare Workers
-- ✅ Direct, typed PartyKit integration
-- ✅ Improved type safety and error handling
 
 ## 📞 Support
 
