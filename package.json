@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest",
     "party:dev": "wrangler dev --port 1999",
-    "party:deploy": "wrangler deploy"
+    "party:deploy": "wrangler deploy",
+    "check:deploy": "node scripts/check-deploy.mjs"
   },
   "dependencies": {
     "next": "^16.3.3",

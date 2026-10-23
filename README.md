@@ -76,6 +76,12 @@ Set the following environment variable in Vercel:
 NEXT_PUBLIC_PARTYKIT_HOST=vibepoker.<subdomain>.workers.dev
 ```
 
+After deploying, verify the site serves the current CSS (catches stale Vercel build caches):
+
+```bash
+npm run check:deploy -- https://vibepoker-scrum.vercel.app
+```
+
 ## 🎮 How to Use
 
 1. **Create a Room** — Enter your name, select a deck type, and click "Create Room"
