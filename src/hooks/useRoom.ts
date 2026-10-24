@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { PartyKitClient } from '@/lib/realtime/partykit-client';
 import type { Room, Player, CardValue, DeckType, RoundingPreference } from '@/types';
-import { generateRoomId } from '@/lib/poker-logic';
+import { generateRoomId, roomsEqual } from '@/lib/poker-logic';
 
 interface UseRoomReturn {
     room: Room | null;
@@ -36,7 +36,7 @@ export function useRoom(): UseRoomReturn {
         clientRef.current = client;
 
         client.onRoomUpdate((newRoom) => {
-            setRoom(newRoom);
+            setRoom(prev => roomsEqual(prev, newRoom) ? prev : newRoom);
             setIsLoading(false);
         });
 
@@ -51,9 +51,9 @@ export function useRoom(): UseRoomReturn {
         };
     }, []);
 
-    const currentPlayer = room?.players.find(
-        p => p.id === currentPlayerId
-    ) || null;
+    const currentPlayer = useMemo(() => {
+        return room?.players.find(p => p.id === currentPlayerId) || null;
+    }, [room?.players, currentPlayerId]);
 
     const playersWithCards = useMemo(() => {
         const withCards = new Set<string>();

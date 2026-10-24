@@ -316,3 +316,80 @@ export function calculateResults(players: Player[], deckType: DeckType = 'scrum'
         breakdown
     };
 }
+
+/**
+ * Structural comparison for broadcast results. Avoids redundant client
+ * re-renders when the server re-sends an unchanged room snapshot.
+ */
+export function resultsEqual(a: Results | null | undefined, b: Results | null | undefined): boolean {
+    if (a === b) return true;
+    if (!a || !b) return false;
+
+    if (
+        a.average !== b.average ||
+        a.median !== b.median ||
+        a.mode !== b.mode ||
+        a.suggestion !== b.suggestion ||
+        a.acceptedValue !== b.acceptedValue
+    ) return false;
+
+    const breakdownA = a.breakdown ?? [];
+    const breakdownB = b.breakdown ?? [];
+    if (breakdownA.length !== breakdownB.length) return false;
+    for (let i = 0; i < breakdownA.length; i++) {
+        if (breakdownA[i].value !== breakdownB[i].value || breakdownA[i].count !== breakdownB[i].count) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Structural comparison for the sanitized room snapshot sent over the wire.
+ * Ignores volatile/irrelevant fields (e.g. lastActivityAt) so that a redundant
+ * broadcast does not trigger a full React re-render tree.
+ */
+export function roomsEqual(a: Room | null | undefined, b: Room | null | undefined): boolean {
+    if (a === b) return true;
+    if (!a || !b) return false;
+
+    if (
+        a.id !== b.id ||
+        a.hostId !== b.hostId ||
+        a.topic !== b.topic ||
+        a.deckType !== b.deckType ||
+        a.roundingPreference !== b.roundingPreference ||
+        a.isRevealed !== b.isRevealed
+    ) return false;
+
+    if (!resultsEqual(a.results, b.results)) return false;
+
+    const historyA = a.history ?? [];
+    const historyB = b.history ?? [];
+    if (historyA.length !== historyB.length) return false;
+    for (let i = 0; i < historyA.length; i++) {
+        const ha = historyA[i];
+        const hb = historyB[i];
+        if (ha.topic !== hb.topic || ha.value !== hb.value || ha.timestamp !== hb.timestamp) {
+            return false;
+        }
+    }
+
+    const playersA = a.players ?? [];
+    const playersB = b.players ?? [];
+    if (playersA.length !== playersB.length) return false;
+    for (let i = 0; i < playersA.length; i++) {
+        const pa = playersA[i];
+        const pb = playersB[i];
+        if (
+            pa.id !== pb.id ||
+            pa.name !== pb.name ||
+            pa.selectedCard !== pb.selectedCard ||
+            pa.isHost !== pb.isHost ||
+            pa.disconnectedAt !== pb.disconnectedAt
+        ) return false;
+    }
+
+    return true;
+}

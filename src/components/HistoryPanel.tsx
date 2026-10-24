@@ -71,8 +71,8 @@ function HistoryPanelComponent({ history }: HistoryPanelProps) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800 bg-white/80 dark:bg-zinc-900/80">
-                                {history.map((item, index) => (
-                                    <tr key={index} className="hover:bg-zinc-50/90 dark:hover:bg-zinc-800/35 transition-colors">
+                                {history.map((item) => (
+                                    <tr key={item.timestamp} className="hover:bg-zinc-50/90 dark:hover:bg-zinc-800/35 transition-colors">
                                         <td className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-medium">
                                             {item.topic}
                                         </td>

@@ -4,6 +4,12 @@
   "main": "party/vibepoker.ts",
   "compatibility_date": "2025-06-01",
   "compatibility_flags": ["nodejs_compat"],
+  // Origin allowlist for the WebSocket Worker. The Worker reads this value
+  // from its Cloudflare environment. Include the exact frontend origins
+  // (scheme + host + optional port, no trailing slash or path).
+  "vars": {
+    "ALLOWED_ORIGINS": "https://vibepoker-scrum.vercel.app,http://localhost:3000,http://127.0.0.1:3000"
+  },
   "durable_objects": {
     "bindings": [
       {

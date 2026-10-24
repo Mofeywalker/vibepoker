@@ -25,6 +25,12 @@ enum CloseCode {
 
 export type Env = {
     Main: DurableObjectNamespace<VibePOKERServer>;
+    /**
+     * Optional comma-separated allowlist of origins permitted to open WebSocket
+     * connections (e.g. "https://vibepoker.app,https://www.vibepoker.app").
+     * When unset/empty, all http(s) origins are allowed (local development).
+     */
+    ALLOWED_ORIGINS?: string;
 };
 
 export class VibePOKERServer extends Server<Env> {
@@ -437,6 +443,15 @@ export default {
                         try {
                             const originUrl = new URL(origin);
                             if (!['http:', 'https:'].includes(originUrl.protocol)) {
+                                return new Response("Forbidden", { status: 403 });
+                            }
+                            // Defense-in-depth against cross-site WebSocket hijacking (CSWSH).
+                            // When ALLOWED_ORIGINS is configured, only listed origins may connect.
+                            const allowedOrigins = env.ALLOWED_ORIGINS
+                                ?.split(',')
+                                .map(s => s.trim())
+                                .filter(Boolean) ?? [];
+                            if (allowedOrigins.length > 0 && !allowedOrigins.includes(originUrl.origin)) {
                                 return new Response("Forbidden", { status: 403 });
                             }
                         } catch {

@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, type CSSProperties } from 'react';
+import { memo, useMemo, type CSSProperties } from 'react';
 import type { CardValue } from '@/types';
 
 interface CardProps {
@@ -98,6 +98,11 @@ function CardComponent({
         lg: 'w-20 h-28 sm:w-24 sm:h-32 rounded-2xl'
     };
 
+    const cardHueStyle = useMemo(
+        () => ({ '--card-hue': getCardHue(value, colorIndex, colorCount) } as CSSProperties),
+        [value, colorIndex, colorCount]
+    );
+
     const isCoffee = value === '☕';
     const centerTextClasses = getCenterTextSize(value, size);
     const coffeeSizeClasses = getCoffeeIconSize(size);
@@ -192,7 +197,7 @@ function CardComponent({
 
     if (isRevealed) {
         return (
-            <div className={revealedClasses} style={{ '--card-hue': getCardHue(value, colorIndex, colorCount) } as CSSProperties}>
+            <div className={revealedClasses} style={cardHueStyle}>
                 {renderCornerIndices('text-zinc-400 dark:text-zinc-500')}
                 {renderCenterSymbol()}
             </div>
@@ -206,7 +211,7 @@ function CardComponent({
             disabled={disabled}
             aria-pressed={isSelected}
             className={frontClasses}
-            style={{ '--card-hue': getCardHue(value, colorIndex, colorCount) } as CSSProperties}
+            style={cardHueStyle}
         >
             {renderCornerIndices(isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-zinc-500')}
             {renderCenterSymbol()}
