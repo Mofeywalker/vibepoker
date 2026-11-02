@@ -31,6 +31,14 @@ function JoinModalComponent({
     const t = useTranslations('join');
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const safeTranslate = (key: string, fallback: string) => {
+        try {
+            return typeof t.has === 'function' && !t.has(key) ? fallback : t(key);
+        } catch {
+            return fallback;
+        }
+    };
+
     useEffect(() => {
         inputRef.current?.focus();
     }, []);
@@ -58,6 +66,8 @@ function JoinModalComponent({
                 return t('errors.invalidName');
             case 'IDENTITY_MISMATCH':
                 return t('errors.identityMismatch');
+            case 'Connection error':
+                return t('errors.connectionError');
             default: {
                 const closeCode = err.match(/^Connection error \((\d+)\)$/)?.[1];
                 if (closeCode === '1011') return t('errors.serverError');
@@ -170,7 +180,7 @@ function JoinModalComponent({
                                         onClick={() => setShowDetails(prev => !prev)}
                                         className="shrink-0 font-medium underline underline-offset-2 cursor-pointer hover:opacity-80 transition-opacity"
                                     >
-                                        {showDetails ? t('errors.hideDetails') : t('errors.showDetails')}
+                                        {showDetails ? safeTranslate('errors.hideDetails', 'Hide details') : safeTranslate('errors.showDetails', 'Show details')}
                                     </button>
                                 )}
                                 {!isLoading && name.trim() && (
@@ -179,7 +189,7 @@ function JoinModalComponent({
                                         onClick={handleRetry}
                                         className="shrink-0 font-semibold underline underline-offset-2 cursor-pointer hover:opacity-80 transition-opacity"
                                     >
-                                        {t('errors.retry')}
+                                        {safeTranslate('errors.retry', 'Retry')}
                                     </button>
                                 )}
                             </div>
@@ -191,14 +201,14 @@ function JoinModalComponent({
                                             <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            {t('errors.reportTitle')}
+                                            {safeTranslate('errors.reportTitle', 'Connection Diagnostic Report')}
                                         </span>
                                         <button
                                             type="button"
                                             onClick={handleCopyReport}
                                             className="text-[11px] font-medium px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
                                         >
-                                            {copied ? t('errors.reportCopied') : t('errors.copyReport')}
+                                            {copied ? safeTranslate('errors.reportCopied', 'Copied!') : safeTranslate('errors.copyReport', 'Copy report')}
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px] leading-relaxed">

@@ -129,14 +129,14 @@ export class PartyKitClient {
 
                 probeServer(host, config.roomId).then(probe => {
                     if (this.lastConnectionReport) {
-                        this.lastConnectionReport.httpStatus = probe.httpStatus;
-                        if (probe.diagnosticMessage) {
-                            this.lastConnectionReport.diagnosticMessage = probe.diagnosticMessage;
-                        }
-                        if (probe.suggestion) {
-                            this.lastConnectionReport.suggestion = probe.suggestion;
-                        }
-                        this.reportUpdateCallback?.(this.lastConnectionReport);
+                        const updatedReport: ConnectionReport = {
+                            ...this.lastConnectionReport,
+                            httpStatus: probe.httpStatus,
+                            diagnosticMessage: probe.diagnosticMessage || this.lastConnectionReport.diagnosticMessage,
+                            suggestion: probe.suggestion || this.lastConnectionReport.suggestion,
+                        };
+                        this.lastConnectionReport = updatedReport;
+                        this.reportUpdateCallback?.(updatedReport);
                     }
                 }).catch(() => {
                     // probe errors handled inside probeServer

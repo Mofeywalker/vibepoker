@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@/test/utils';
+import { render as rawRender } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
 import { JoinModal } from '@/components/JoinModal';
 
 describe('JoinModal', () => {
@@ -107,5 +109,33 @@ describe('JoinModal', () => {
         render(<JoinModal onJoin={() => { }} initialName="Bob" />);
         const input = screen.getByPlaceholderText('e.g. John Doe') as HTMLInputElement;
         expect(input.value).toBe('Bob');
+    });
+
+    it('does not crash when showing details with stale/missing translation keys', () => {
+        const partialMessages = {
+            join: {
+                title: 'Join Room',
+                description: 'Enter your name',
+                yourName: 'Your Name',
+                namePlaceholder: 'e.g. John Doe',
+                joining: 'Joining...',
+                join: 'Join',
+                errors: {
+                    connectionError: 'Connection error. Please try again.'
+                }
+            }
+        };
+
+        rawRender(
+            <NextIntlClientProvider locale="en" messages={partialMessages}>
+                <JoinModal onJoin={() => { }} error="Connection error (1006)" roomId="test-room" />
+            </NextIntlClientProvider>
+        );
+
+        const detailsButton = screen.getByRole('button', { name: 'Show details' });
+        fireEvent.click(detailsButton);
+
+        expect(screen.getByText('Connection Diagnostic Report')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Copy report' })).toBeInTheDocument();
     });
 });

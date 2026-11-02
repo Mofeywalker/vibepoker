@@ -39,9 +39,14 @@ export class ErrorBoundary extends Component<Props, State> {
                         <h2 className="text-xl font-bold text-zinc-950 dark:text-zinc-50 mb-2 tracking-tight">
                             Something went wrong
                         </h2>
-                        <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mb-6">
+                        <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 mb-4">
                             An unexpected error occurred. Please try reloading the page.
                         </p>
+                        {this.state.error?.message && (
+                            <pre className="text-left text-xs p-3 mb-6 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 overflow-x-auto whitespace-pre-wrap break-words font-mono">
+                                {this.state.error.message}
+                            </pre>
+                        )}
                         <button
                             type="button"
                             onClick={() => window.location.reload()}
