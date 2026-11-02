@@ -70,8 +70,10 @@ export class PartyKitClient {
 
         return new Promise((resolve, reject) => {
             if (!this.socket) return reject(new Error('Socket not initialized'));
+            let isConnected = false;
 
             const onOpen = () => {
+                isConnected = true;
                 setStorageItem(playerNameKey, config.playerName.trim());
                 if (config.deckType) {
                     setStorageItem(getDeckStorageKey(config.roomId), config.deckType);
@@ -103,6 +105,9 @@ export class PartyKitClient {
                         });
                         this.lastConnectionReport = report;
                         this.errorCallback?.('Connection error');
+                        if (!isConnected) {
+                            this.disconnect();
+                        }
                         reject(new Error('Connection error'));
                     }, 50);
                 }
@@ -142,14 +147,19 @@ export class PartyKitClient {
                         clearRoomSession(config.roomId);
                     }
                     this.errorCallback?.(event.reason);
+                    if (!isConnected) {
+                        this.disconnect();
+                    }
                     reject(new Error(event.reason || 'Policy violation'));
                 } else if (event.code !== 1000) {
                     const message = `Connection error (${event.code})`;
                     this.errorCallback?.(message);
+                    if (!isConnected) {
+                        this.disconnect();
+                    }
                     reject(new Error(message));
                 }
             };
-
             this.listeners = [
                 { type: 'open', handler: onOpen as EventListener },
                 { type: 'message', handler: onMessage as EventListener },

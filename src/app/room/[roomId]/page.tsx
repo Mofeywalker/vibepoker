@@ -98,13 +98,12 @@ export default function RoomPage() {
                 return;
             }
 
+            attemptedAutoJoin.current = true;
             joinRoom(roomId, savedPlayerName, savedDeckType ?? undefined).then(success => {
-                attemptedAutoJoin.current = true;
                 if (!success) {
                     setShowJoinModal(true);
                 }
             }).catch(() => {
-                attemptedAutoJoin.current = true;
                 setShowJoinModal(true);
             });
             return;

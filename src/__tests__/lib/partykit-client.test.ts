@@ -25,6 +25,14 @@ vi.mock('partysocket', () => ({
                     });
                     this.dispatchEvent(closeEvent);
                 });
+            } else if (options.query?.name === 'SimulateClose1006') {
+                queueMicrotask(() => {
+                    const closeEvent = Object.assign(new Event('close'), {
+                        code: 1006,
+                        reason: ''
+                    });
+                    this.dispatchEvent(closeEvent);
+                });
             } else {
                 queueMicrotask(() => this.dispatchEvent(new Event('open')));
             }
@@ -102,5 +110,21 @@ describe('PartyKitClient player identity', () => {
         expect(getStorageItem(getPlayerIdStorageKey('room-a'))).toBeNull();
         expect(getStorageItem(getPlayerStorageKey('room-a'))).toBeNull();
         expect(getStorageItem(getPlayerTokenStorageKey('room-a'))).toBeNull();
+    });
+
+    it('sets diagnostic report and disconnects socket on 1006 failure', async () => {
+        const client = new PartyKitClient();
+        const errorCallback = vi.fn();
+        client.onError(errorCallback);
+
+        await expect(
+            client.connect({
+                roomId: 'room-fail',
+                playerName: 'SimulateClose1006'
+            })
+        ).rejects.toThrow('Connection error (1006)');
+
+        expect(errorCallback).toHaveBeenCalledWith('Connection error (1006)');
+        expect(client.getConnectionReport()?.closeCode).toBe(1006);
     });
 });
