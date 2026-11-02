@@ -49,7 +49,12 @@
             "identityMismatch": "会话冲突。会话已重置 - 请尝试重新加入。",
             "connectionError": "连接错误，请重试。",
             "serverError": "服务器错误，请稍后重试。",
-            "retry": "重试"
+            "retry": "重试",
+            "reportTitle": "连接诊断报告",
+            "showDetails": "显示详情",
+            "hideDetails": "隐藏详情",
+            "copyReport": "复制报告",
+            "reportCopied": "已复制！"
         }
     },
     "players": {

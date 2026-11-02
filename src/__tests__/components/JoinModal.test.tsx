@@ -70,4 +70,42 @@ describe('JoinModal', () => {
         expect(screen.getByText('Joining...')).toBeInTheDocument();
         expect(screen.getByRole('button')).toBeDisabled();
     });
+
+    it('toggles detailed connection diagnostic report', () => {
+        render(<JoinModal onJoin={() => { }} error="Connection error (1006)" roomId="test-room" />);
+
+        const detailsButton = screen.getByRole('button', { name: 'Show details' });
+        expect(detailsButton).toBeInTheDocument();
+        expect(screen.queryByText('Connection Diagnostic Report')).not.toBeInTheDocument();
+
+        fireEvent.click(detailsButton);
+
+        expect(screen.getByText('Connection Diagnostic Report')).toBeInTheDocument();
+        expect(screen.getByText(/1006 \(Abnormal Closure\)/)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Hide details' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Copy report' })).toBeInTheDocument();
+    });
+
+    it('copies diagnostic report to clipboard', async () => {
+        const writeTextMock = vi.fn().mockResolvedValue(undefined);
+        Object.assign(navigator, {
+            clipboard: {
+                writeText: writeTextMock
+            }
+        });
+
+        render(<JoinModal onJoin={() => { }} error="Connection error (1006)" roomId="test-room" />);
+        fireEvent.click(screen.getByRole('button', { name: 'Show details' }));
+
+        const copyButton = screen.getByRole('button', { name: 'Copy report' });
+        fireEvent.click(copyButton);
+
+        expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('1006 (Abnormal Closure)'));
+    });
+
+    it('pre-fills initialName when provided', () => {
+        render(<JoinModal onJoin={() => { }} initialName="Bob" />);
+        const input = screen.getByPlaceholderText('e.g. John Doe') as HTMLInputElement;
+        expect(input.value).toBe('Bob');
+    });
 });

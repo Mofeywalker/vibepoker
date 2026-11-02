@@ -26,6 +26,7 @@ export default function RoomPage() {
         isHost,
         isLoading,
         error,
+        connectionReport,
         joinRoom,
         selectCard,
         revealCards,
@@ -100,12 +101,10 @@ export default function RoomPage() {
             joinRoom(roomId, savedPlayerName, savedDeckType ?? undefined).then(success => {
                 attemptedAutoJoin.current = true;
                 if (!success) {
-                    clearRoomSession(roomId);
                     setShowJoinModal(true);
                 }
             }).catch(() => {
                 attemptedAutoJoin.current = true;
-                clearRoomSession(roomId);
                 setShowJoinModal(true);
             });
             return;
@@ -207,6 +206,37 @@ export default function RoomPage() {
             <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                 {room ? (
                     <div className="space-y-6 sm:space-y-8">
+                        {error && (
+                            <div
+                                role="alert"
+                                aria-live="polite"
+                                className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-zoom-in"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <svg aria-hidden="true" className="w-5 h-5 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.502-1.667-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <div>
+                                        <p className="font-semibold">{error.startsWith('Connection error') ? 'Connection lost' : error}</p>
+                                        <p className="text-xs text-red-600/90 dark:text-red-400/90">
+                                            {connectionReport?.diagnosticMessage || 'The connection to the game server was interrupted.'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const savedName = currentPlayer?.name || getStorageItem(getPlayerStorageKey(roomId));
+                                            if (savedName) handleJoin(savedName);
+                                        }}
+                                        className="px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 text-xs font-semibold cursor-pointer transition-colors"
+                                    >
+                                        Reconnect
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                         {/* Topic Header */}
                         <div className="flex items-center justify-center min-h-[3.25rem]">
                             {isEditingTopic && isHost ? (
@@ -440,6 +470,9 @@ export default function RoomPage() {
                     onJoin={handleJoin}
                     isLoading={isLoading}
                     error={error}
+                    connectionReport={connectionReport}
+                    initialName={getStorageItem(getPlayerStorageKey(roomId)) || ''}
+                    roomId={roomId}
                 />
             )}
 

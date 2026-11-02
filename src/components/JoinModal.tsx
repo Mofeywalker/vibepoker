@@ -2,21 +2,43 @@
 
 import { useState, memo, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import {
+    parseErrorToReport,
+    formatReportAsText,
+    type ConnectionReport
+} from '@/lib/realtime/connection-diagnostics';
 
 interface JoinModalProps {
     onJoin: (name: string) => void;
     isLoading?: boolean;
     error?: string | null;
+    connectionReport?: ConnectionReport | null;
+    initialName?: string;
+    roomId?: string;
 }
 
-function JoinModalComponent({ onJoin, isLoading = false, error }: JoinModalProps) {
-    const [name, setName] = useState('');
+function JoinModalComponent({
+    onJoin,
+    isLoading = false,
+    error,
+    connectionReport,
+    initialName = '',
+    roomId
+}: JoinModalProps) {
+    const [name, setName] = useState(initialName);
+    const [showDetails, setShowDetails] = useState(false);
+    const [copied, setCopied] = useState(false);
     const t = useTranslations('join');
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         inputRef.current?.focus();
     }, []);
+    useEffect(() => {
+        if (initialName && !name) {
+            setName(initialName);
+        }
+    }, [initialName, name]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,6 +70,38 @@ function JoinModalComponent({ onJoin, isLoading = false, error }: JoinModalProps
     const handleRetry = () => {
         if (name.trim()) {
             onJoin(name.trim());
+        }
+    };
+    const isConnectionError = Boolean(
+        error && (
+            error.startsWith('Connection error') ||
+            error === 'IDENTITY_MISMATCH' ||
+            connectionReport != null
+        )
+    );
+
+    const activeReport = connectionReport ?? (error ? parseErrorToReport(error, { roomId }) : null);
+
+    const handleCopyReport = async () => {
+        if (!activeReport) return;
+        const text = formatReportAsText(activeReport);
+        try {
+            if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(text);
+            } else if (typeof document !== 'undefined') {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (copyErr) {
+            console.error('Failed to copy report:', copyErr);
         }
     };
 
@@ -103,20 +157,88 @@ function JoinModalComponent({ onJoin, isLoading = false, error }: JoinModalProps
                         <div
                             role="alert"
                             aria-live="polite"
-                            className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs sm:text-sm flex items-center gap-2.5"
+                            className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs sm:text-sm flex flex-col gap-2.5"
                         >
-                            <svg aria-hidden="true" className="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.502-1.667-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            <span className="flex-1">{formatErrorMessage(error)}</span>
-                            {!isLoading && name.trim() && (
-                                <button
-                                    type="button"
-                                    onClick={handleRetry}
-                                    className="shrink-0 font-semibold underline underline-offset-2 cursor-pointer hover:opacity-80 transition-opacity"
-                                >
-                                    {t('errors.retry')}
-                                </button>
+                            <div className="flex items-center gap-2.5">
+                                <svg aria-hidden="true" className="w-4.5 h-4.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.502-1.667-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <span className="flex-1 font-medium">{formatErrorMessage(error)}</span>
+                                {isConnectionError && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDetails(prev => !prev)}
+                                        className="shrink-0 font-medium underline underline-offset-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                    >
+                                        {showDetails ? t('errors.hideDetails') : t('errors.showDetails')}
+                                    </button>
+                                )}
+                                {!isLoading && name.trim() && (
+                                    <button
+                                        type="button"
+                                        onClick={handleRetry}
+                                        className="shrink-0 font-semibold underline underline-offset-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                    >
+                                        {t('errors.retry')}
+                                    </button>
+                                )}
+                            </div>
+
+                            {showDetails && activeReport && (
+                                <div className="mt-1 p-3 rounded-lg bg-zinc-950/5 dark:bg-white/5 border border-red-500/20 text-xs text-zinc-800 dark:text-zinc-200 space-y-2">
+                                    <div className="flex items-center justify-between pb-1 border-b border-zinc-200 dark:border-zinc-800">
+                                        <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                                            <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {t('errors.reportTitle')}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={handleCopyReport}
+                                            className="text-[11px] font-medium px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
+                                        >
+                                            {copied ? t('errors.reportCopied') : t('errors.copyReport')}
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px] leading-relaxed">
+                                        <span className="text-zinc-500 dark:text-zinc-400 font-mono">Diagnosis:</span>
+                                        <span className="font-medium text-red-600 dark:text-red-400">{activeReport.diagnosticMessage}</span>
+
+                                        {activeReport.suggestion && (
+                                            <>
+                                                <span className="text-zinc-500 dark:text-zinc-400 font-mono">Suggestion:</span>
+                                                <span className="text-zinc-700 dark:text-zinc-300">{activeReport.suggestion}</span>
+                                            </>
+                                        )}
+
+                                        <span className="text-zinc-500 dark:text-zinc-400 font-mono">Host:</span>
+                                        <span className="font-mono">{activeReport.host}</span>
+
+                                        <span className="text-zinc-500 dark:text-zinc-400 font-mono">Close code:</span>
+                                        <span className="font-mono">{activeReport.closeCode != null ? `${activeReport.closeCode} (${activeReport.closeCodeName})` : 'N/A'}</span>
+
+                                        {activeReport.reason && (
+                                            <>
+                                                <span className="text-zinc-500 dark:text-zinc-400 font-mono">Reason:</span>
+                                                <span className="font-mono">{activeReport.reason}</span>
+                                            </>
+                                        )}
+
+                                        <span className="text-zinc-500 dark:text-zinc-400 font-mono">Network:</span>
+                                        <span className="font-mono">{activeReport.isOnline ? 'Online' : 'Offline'}</span>
+
+                                        {activeReport.httpStatus && (
+                                            <>
+                                                <span className="text-zinc-500 dark:text-zinc-400 font-mono">HTTP probe:</span>
+                                                <span className="font-mono">{activeReport.httpStatus}</span>
+                                            </>
+                                        )}
+
+                                        <span className="text-zinc-500 dark:text-zinc-400 font-mono">Time:</span>
+                                        <span className="font-mono">{activeReport.timestamp}</span>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}

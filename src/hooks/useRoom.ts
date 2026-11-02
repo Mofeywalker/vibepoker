@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { PartyKitClient } from '@/lib/realtime/partykit-client';
+import type { ConnectionReport } from '@/lib/realtime/connection-diagnostics';
 import type { Room, Player, CardValue, DeckType, RoundingPreference } from '@/types';
 import { generateRoomId, roomsEqual } from '@/lib/poker-logic';
 
@@ -11,6 +12,7 @@ interface UseRoomReturn {
     isHost: boolean;
     isLoading: boolean;
     error: string | null;
+    connectionReport: ConnectionReport | null;
     createRoom: (playerName: string, deckType?: DeckType) => Promise<string>;
     joinRoom: (roomId: string, playerName: string, deckType?: DeckType) => Promise<boolean>;
     selectCard: (card: CardValue | null) => void;
@@ -29,6 +31,7 @@ export function useRoom(): UseRoomReturn {
     const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [connectionReport, setConnectionReport] = useState<ConnectionReport | null>(null);
     const clientRef = useRef<PartyKitClient | null>(null);
 
     useEffect(() => {
@@ -42,7 +45,12 @@ export function useRoom(): UseRoomReturn {
 
         client.onError((errorMsg) => {
             setError(errorMsg);
+            setConnectionReport(client.getConnectionReport());
             setIsLoading(false);
+        });
+
+        client.onReportUpdate((report) => {
+            setConnectionReport(report);
         });
 
         return () => {
@@ -72,6 +80,7 @@ export function useRoom(): UseRoomReturn {
 
         setIsLoading(true);
         setError(null);
+        setConnectionReport(null);
         setCurrentPlayerId(null);
 
         try {
@@ -79,6 +88,7 @@ export function useRoom(): UseRoomReturn {
             return roomId;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create room');
+            setConnectionReport(clientRef.current?.getConnectionReport() ?? null);
             setIsLoading(false);
             throw err;
         }
@@ -89,6 +99,7 @@ export function useRoom(): UseRoomReturn {
 
         setIsLoading(true);
         setError(null);
+        setConnectionReport(null);
         setCurrentPlayerId(null);
 
         try {
@@ -96,6 +107,7 @@ export function useRoom(): UseRoomReturn {
             return true;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to join room');
+            setConnectionReport(clientRef.current?.getConnectionReport() ?? null);
             setIsLoading(false);
             return false;
         }
@@ -139,6 +151,7 @@ export function useRoom(): UseRoomReturn {
         isHost: currentPlayer?.isHost || false,
         isLoading,
         error,
+        connectionReport,
         playersWithCards,
         createRoom,
         joinRoom,

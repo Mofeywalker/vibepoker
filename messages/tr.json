@@ -49,7 +49,12 @@
             "identityMismatch": "Oturum çakışması. Oturum sıfırlandı – lütfen tekrar katılmayı deneyin.",
             "connectionError": "Bağlantı hatası. Lütfen tekrar deneyin.",
             "serverError": "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
-            "retry": "Tekrar Dene"
+            "retry": "Tekrar Dene",
+            "reportTitle": "Bağlantı Teşhis Raporu",
+            "showDetails": "Ayrıntıları göster",
+            "hideDetails": "Ayrıntıları gizle",
+            "copyReport": "Raporu kopyala",
+            "reportCopied": "Kopyalandı!"
         }
     },
     "players": {

@@ -1,4 +1,9 @@
 import PartySocket from 'partysocket';
+import {
+    createConnectionReport,
+    probeServer,
+    type ConnectionReport
+} from '@/lib/realtime/connection-diagnostics';
 import type { Room, CardValue, DeckType, RoundingPreference } from '@/types';
 import {
     getStorageItem,
@@ -20,6 +25,8 @@ export class PartyKitClient {
     private socket: PartySocket | null = null;
     private roomUpdateCallback: ((room: Room) => void) | null = null;
     private errorCallback: ((error: string) => void) | null = null;
+    private reportUpdateCallback: ((report: ConnectionReport) => void) | null = null;
+    private lastConnectionReport: ConnectionReport | null = null;
     private listeners: { type: string; handler: EventListener }[] = [];
 
     async connect(config: ConnectionConfig): Promise<string> {
@@ -83,12 +90,53 @@ export class PartyKitClient {
                 }
             };
 
+            let closeTimer: number | NodeJS.Timeout | null = null;
+
             const onError = () => {
-                this.errorCallback?.('Connection error');
-                reject(new Error('Connection error'));
+                if (!closeTimer) {
+                    closeTimer = setTimeout(() => {
+                        const report = createConnectionReport({
+                            roomId: config.roomId,
+                            host,
+                            closeCode: null,
+                            reason: null,
+                        });
+                        this.lastConnectionReport = report;
+                        this.errorCallback?.('Connection error');
+                        reject(new Error('Connection error'));
+                    }, 50);
+                }
             };
 
             const onClose = (event: CloseEvent) => {
+                if (closeTimer) {
+                    clearTimeout(closeTimer);
+                    closeTimer = null;
+                }
+
+                const report = createConnectionReport({
+                    roomId: config.roomId,
+                    host,
+                    closeCode: event.code,
+                    reason: event.reason,
+                });
+                this.lastConnectionReport = report;
+
+                probeServer(host, config.roomId).then(probe => {
+                    if (this.lastConnectionReport) {
+                        this.lastConnectionReport.httpStatus = probe.httpStatus;
+                        if (probe.diagnosticMessage) {
+                            this.lastConnectionReport.diagnosticMessage = probe.diagnosticMessage;
+                        }
+                        if (probe.suggestion) {
+                            this.lastConnectionReport.suggestion = probe.suggestion;
+                        }
+                        this.reportUpdateCallback?.(this.lastConnectionReport);
+                    }
+                }).catch(() => {
+                    // probe errors handled inside probeServer
+                });
+
                 if (event.code === 1008) {
                     if (event.reason === 'IDENTITY_MISMATCH') {
                         clearRoomSession(config.roomId);
@@ -132,6 +180,13 @@ export class PartyKitClient {
 
     onError(callback: (error: string) => void): void {
         this.errorCallback = callback;
+    }
+    onReportUpdate(callback: (report: ConnectionReport) => void): void {
+        this.reportUpdateCallback = callback;
+    }
+
+    getConnectionReport(): ConnectionReport | null {
+        return this.lastConnectionReport;
     }
 
     private send(message: object): void {

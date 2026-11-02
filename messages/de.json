@@ -49,7 +49,12 @@
             "identityMismatch": "Sitzungskonflikt. Die Sitzung wurde zurückgesetzt – bitte trete erneut bei.",
             "connectionError": "Verbindungsfehler. Bitte versuche es erneut.",
             "serverError": "Serverfehler. Bitte versuche es später erneut.",
-            "retry": "Erneut versuchen"
+            "retry": "Erneut versuchen",
+            "reportTitle": "Verbindungsdiagnose",
+            "showDetails": "Details anzeigen",
+            "hideDetails": "Details ausblenden",
+            "copyReport": "Bericht kopieren",
+            "reportCopied": "Kopiert!"
         }
     },
     "players": {

@@ -49,7 +49,12 @@
             "identityMismatch": "Conflicto de sesión. La sesión fue reiniciada; por favor, intenta unirte de nuevo.",
             "connectionError": "Error de conexión. Por favor, intenta de nuevo.",
             "serverError": "Error del servidor. Por favor, intenta más tarde.",
-            "retry": "Reintentar"
+            "retry": "Reintentar",
+            "reportTitle": "Informe de diagnóstico de conexión",
+            "showDetails": "Mostrar detalles",
+            "hideDetails": "Ocultar detalles",
+            "copyReport": "Copiar informe",
+            "reportCopied": "¡Copiado!"
         }
     },
     "players": {
