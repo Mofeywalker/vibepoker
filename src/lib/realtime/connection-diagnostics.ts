@@ -37,10 +37,11 @@ export function getCloseCodeName(code: number | null | undefined): string {
 
 export function getDiagnosticExplanation(
     code: number | null | undefined,
-    reason?: string | null,
+    reason?: unknown,
     isOnline: boolean = true,
     host?: string
 ): { diagnosticMessage: string; suggestion: string } {
+    const cleanReason = typeof reason === 'string' && reason.trim() && !reason.startsWith('[object ') ? reason.trim() : null;
     if (!isOnline) {
         return {
             diagnosticMessage: 'Browser is offline. No internet connection detected.',
@@ -61,13 +62,13 @@ export function getDiagnosticExplanation(
             };
         case 1011:
             return {
-                diagnosticMessage: `Server encountered an internal error while handling the connection${reason ? `: ${reason}` : ''}.`,
+                diagnosticMessage: `Server encountered an internal error while handling the connection${cleanReason ? `: ${cleanReason}` : ''}.`,
                 suggestion: 'Check the PartyKit server logs for unhandled exceptions or runtime errors.',
             };
         case 1008:
             return {
-                diagnosticMessage: `Connection rejected due to policy violation${reason ? `: ${reason}` : ''}.`,
-                suggestion: reason === 'IDENTITY_MISMATCH'
+                diagnosticMessage: `Connection rejected due to policy violation${cleanReason ? `: ${cleanReason}` : ''}.`,
+                suggestion: cleanReason === 'IDENTITY_MISMATCH'
                     ? 'Session conflict detected. Try re-entering your name to start a new session.'
                     : 'The request parameters or origin were rejected by the server.',
             };
@@ -98,7 +99,7 @@ export function getDiagnosticExplanation(
             };
         default:
             return {
-                diagnosticMessage: `Connection terminated unexpectedly${code ? ` (code ${code}: ${getCloseCodeName(code)})` : ''}${reason ? ` - ${reason}` : ''}.`,
+                diagnosticMessage: `Connection terminated unexpectedly${code ? ` (code ${code}: ${getCloseCodeName(code)})` : ''}${cleanReason ? ` - ${cleanReason}` : ''}.`,
                 suggestion: 'Please try reconnecting. If the issue persists, verify server status.',
             };
     }
@@ -109,16 +110,17 @@ export function createConnectionReport(params: {
     host?: string;
     url?: string;
     closeCode?: number | null;
-    reason?: string | null;
+    reason?: unknown;
     isOnline?: boolean;
     httpStatus?: string | null;
 }): ConnectionReport {
     const host = params.host || process.env.NEXT_PUBLIC_PARTYKIT_HOST || 'localhost:1999';
     const isOnline = params.isOnline ?? (typeof navigator !== 'undefined' ? navigator.onLine : true);
-    const closeCode = params.closeCode ?? null;
-    const reason = params.reason ?? null;
+    const closeCode = typeof params.closeCode === 'number' ? params.closeCode : null;
+    const reason = typeof params.reason === 'string' && params.reason.trim() && !params.reason.startsWith('[object ')
+        ? params.reason.trim()
+        : null;
     const { diagnosticMessage, suggestion } = getDiagnosticExplanation(closeCode, reason, isOnline, host);
-
     return {
         timestamp: new Date().toISOString(),
         roomId: params.roomId,

@@ -119,11 +119,15 @@ export class PartyKitClient {
                     closeTimer = null;
                 }
 
+                const safeReason = typeof event.reason === 'string' && !event.reason.startsWith('[object ')
+                    ? event.reason
+                    : '';
+
                 const report = createConnectionReport({
                     roomId: config.roomId,
                     host,
                     closeCode: event.code,
-                    reason: event.reason,
+                    reason: safeReason || null,
                 });
                 this.lastConnectionReport = report;
 
@@ -143,14 +147,14 @@ export class PartyKitClient {
                 });
 
                 if (event.code === 1008) {
-                    if (event.reason === 'IDENTITY_MISMATCH') {
+                    if (safeReason === 'IDENTITY_MISMATCH') {
                         clearRoomSession(config.roomId);
                     }
-                    this.errorCallback?.(event.reason);
+                    this.errorCallback?.(safeReason || 'Policy violation');
                     if (!isConnected) {
                         this.disconnect();
                     }
-                    reject(new Error(event.reason || 'Policy violation'));
+                    reject(new Error(safeReason || 'Policy violation'));
                 } else if (event.code !== 1000) {
                     const message = `Connection error (${event.code})`;
                     this.errorCallback?.(message);

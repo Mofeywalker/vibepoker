@@ -213,22 +213,22 @@ function JoinModalComponent({
                                     </div>
                                     <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px] leading-relaxed">
                                         <span className="text-zinc-500 dark:text-zinc-400 font-mono">Diagnosis:</span>
-                                        <span className="font-medium text-red-600 dark:text-red-400">{activeReport.diagnosticMessage}</span>
+                                        <span className="font-medium text-red-600 dark:text-red-400">{String(activeReport.diagnosticMessage)}</span>
 
                                         {activeReport.suggestion && (
                                             <>
                                                 <span className="text-zinc-500 dark:text-zinc-400 font-mono">Suggestion:</span>
-                                                <span className="text-zinc-700 dark:text-zinc-300">{activeReport.suggestion}</span>
+                                                <span className="text-zinc-700 dark:text-zinc-300">{String(activeReport.suggestion)}</span>
                                             </>
                                         )}
 
                                         <span className="text-zinc-500 dark:text-zinc-400 font-mono">Host:</span>
-                                        <span className="font-mono">{activeReport.host}</span>
+                                        <span className="font-mono">{String(activeReport.host)}</span>
 
                                         <span className="text-zinc-500 dark:text-zinc-400 font-mono">Close code:</span>
                                         <span className="font-mono">{activeReport.closeCode != null ? `${activeReport.closeCode} (${activeReport.closeCodeName})` : 'N/A'}</span>
 
-                                        {activeReport.reason && (
+                                        {typeof activeReport.reason === 'string' && activeReport.reason && (
                                             <>
                                                 <span className="text-zinc-500 dark:text-zinc-400 font-mono">Reason:</span>
                                                 <span className="font-mono">{activeReport.reason}</span>
@@ -238,7 +238,7 @@ function JoinModalComponent({
                                         <span className="text-zinc-500 dark:text-zinc-400 font-mono">Network:</span>
                                         <span className="font-mono">{activeReport.isOnline ? 'Online' : 'Offline'}</span>
 
-                                        {activeReport.httpStatus && (
+                                        {typeof activeReport.httpStatus === 'string' && activeReport.httpStatus && (
                                             <>
                                                 <span className="text-zinc-500 dark:text-zinc-400 font-mono">HTTP probe:</span>
                                                 <span className="font-mono">{activeReport.httpStatus}</span>
@@ -246,7 +246,7 @@ function JoinModalComponent({
                                         )}
 
                                         <span className="text-zinc-500 dark:text-zinc-400 font-mono">Time:</span>
-                                        <span className="font-mono">{activeReport.timestamp}</span>
+                                        <span className="font-mono">{String(activeReport.timestamp)}</span>
                                     </div>
                                 </div>
                             )}

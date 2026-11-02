@@ -90,6 +90,15 @@ describe('connection-diagnostics', () => {
             expect(report.closeCode).toBe(1008);
             expect(report.reason).toBe('IDENTITY_MISMATCH');
         });
+
+        it('sanitizes non-string Event objects passed as reason by PartySocket', () => {
+            const report = createConnectionReport({
+                roomId: 'room-2',
+                closeCode: 1000,
+                reason: new Event('close')
+            });
+            expect(report.reason).toBeNull();
+        });
     });
 
     describe('formatReportAsText', () => {
